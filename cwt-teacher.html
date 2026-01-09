@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>教師管理系統 - CWT 命題工作平臺</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary-blue: #2563eb;
+        --bg-color: #f3f4f6;
+        --text-dark: #1f2937;
+        --text-gray: #6b7280;
+        --border-color: #e5e7eb;
+      }
+
+      body {
+        font-family: "Noto Sans TC", sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-dark);
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow-x: hidden;
+      }
+      /* =========================================
+         教師管理頁面內容樣式
+         ========================================= */
+      .main-content {
+        padding: 1.5rem 0;
+        flex-grow: 1;
+      }
+      .page-heading {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 0.75rem;
+      }
+
+      .content-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        padding: 1.25rem;
+        height: 100%;
+      }
+
+      /* 查詢區 */
+      .search-container {
+        background: white;
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid var(--border-color);
+      }
+      .form-label-sm {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.4rem;
+      }
+      .form-select-sm-custom {
+        font-size: 0.9rem;
+        padding: 0.5rem 0.75rem;
+        border-radius: 8px;
+        border-color: #d1d5db;
+        background-color: #f9fafb;
+        transition: all 0.2s;
+      }
+      .form-select-sm-custom:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+      }
+
+      /* 表格 */
+      .custom-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+      }
+      .custom-table th {
+        background-color: #f9fafb;
+        color: #4b5563;
+        font-weight: 600;
+        font-size: 0.85rem;
+        padding: 0.75rem 1rem;
+        border-bottom: 2px solid #e5e7eb;
+        text-align: left;
+        white-space: nowrap;
+      }
+      .custom-table td {
+        padding: 0.75rem 1rem;
+        vertical-align: middle;
+        border-bottom: 1px solid #f3f4f6;
+        color: #374151;
+        font-size: 0.9rem;
+        white-space: nowrap;
+      }
+
+      /* 狀態標籤 */
+      .status-badge {
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-weight: 600;
+      }
+      .status-enabled {
+        background-color: #dcfce7;
+        color: #15803d;
+      }
+      .status-disabled {
+        background-color: #fee2e2;
+        color: #b91c1c;
+      }
+
+      .action-link {
+        font-size: 0.85rem;
+        color: #2563eb;
+        text-decoration: none;
+        font-weight: 500;
+        cursor: pointer;
+      }
+      .action-link:hover {
+        text-decoration: underline;
+      }
+
+      .table-active-row td {
+        background-color: #eff6ff !important;
+      }
+
+      /* 滑動佈局 */
+      .sliding-container {
+        display: flex;
+        gap: 1.5rem;
+        height: 100%;
+        overflow: hidden;
+      }
+      .list-pane {
+        flex: 1;
+        min-width: 0;
+        transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+      }
+      .profile-pane {
+        width: 0;
+        opacity: 0;
+        overflow: hidden;
+        transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+      }
+      .profile-pane.active {
+        width: 40%;
+        opacity: 1;
+      }
+      .profile-inner-wrapper {
+        min-width: 450px;
+        height: 100%;
+      }
+
+      /* Profile 樣式 */
+      .profile-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid #f3f4f6;
+        margin-bottom: 1.5rem;
+        position: relative;
+      }
+      .btn-close-profile {
+        position: absolute;
+        top: 0;
+        right: 0;
+        background: #f3f4f6;
+        border: none;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6b7280;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .btn-close-profile:hover {
+        background: #e5e7eb;
+        color: #1f2937;
+      }
+      .btn-close-profile svg {
+        pointer-events: none;
+      }
+
+      .profile-avatar-large {
+        width: 64px;
+        height: 64px;
+        background-color: #e5e7eb;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: #6b7280;
+      }
+      .profile-name {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #111827;
+        line-height: 1.2;
+      }
+      .profile-name-en {
+        font-size: 0.9rem;
+        color: #6b7280;
+        font-weight: 500;
+      }
+      .info-group {
+        margin-bottom: 1.5rem;
+      }
+      .info-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.75rem;
+      }
+      .info-row {
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+        color: #4b5563;
+        display: flex;
+      }
+      .info-label {
+        width: 100px;
+        font-weight: 600;
+        color: #374151;
+        flex-shrink: 0;
+      }
+      .tag-pill {
+        display: inline-block;
+        background: #f3f4f6;
+        color: #4b5563;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        margin-right: 4px;
+      }
+      .history-table th,
+      .history-table td {
+        font-size: 0.85rem;
+        padding: 0.5rem;
+      }
+      .badge-history-active {
+        background: #dbeafe;
+        color: #1e40af;
+      }
+      .badge-history-done {
+        background: #d1fae5;
+        color: #065f46;
+      }
+
+      @media (max-width: 991px) {
+        .profile-pane.active {
+          width: 100%;
+          position: fixed;
+          top: 0;
+          right: 0;
+          height: 100vh;
+          z-index: 2000;
+          background: rgba(0, 0, 0, 0.5);
+          display: flex;
+          justify-content: flex-end;
+          opacity: 1;
+        }
+        .profile-inner-wrapper {
+          width: 90%;
+          min-width: auto;
+          background: white;
+          height: 100%;
+          padding: 1rem;
+          box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="top-navbar">
+      <div class="container-fluid px-4">
+        <div class="row align-items-center">
+          <div class="col-3">
+            <a href="index.html" class="navbar-brand">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
+                />
+              </svg>
+              CWT 命題工作平臺
+            </a>
+          </div>
+
+          <!-- 中間：專案切換器 -->
+          <div class="col-6 d-flex justify-content-center">
+            <div class="project-switcher">
+              <div class="project-display" id="projectToggle">
+                <div class="project-info">
+                  <div class="project-year" id="currentProjectYear">
+                    2024年度
+                  </div>
+                  <div class="project-name" id="currentProjectName">
+                    進行中梯次範例一
+                  </div>
+                </div>
+                <svg
+                  width="16"
+                  height="16"
+                  fill="currentColor"
+                  viewBox="0 0 16 16"
+                >
+                  <path
+                    d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"
+                  />
+                </svg>
+              </div>
+
+              <div class="project-dropdown" id="projectDropdown">
+                <div class="dropdown-header">
+                  <span>切換專案</span>
+                  <button class="close-btn" id="closeDropdown">
+                    <svg
+                      width="16"
+                      height="16"
+                      fill="currentColor"
+                      viewBox="0 0 16 16"
+                    >
+                      <path
+                        d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"
+                      />
+                    </svg>
+                  </button>
+                </div>
+
+                <div class="project-search">
+                  <input
+                    type="text"
+                    placeholder="搜尋專案名稱..."
+                    id="projectSearchInput"
+                  />
+                </div>
+
+                <div class="project-list" id="projectList">
+                  <div class="project-category">進行中 (3)</div>
+
+                  <div
+                    class="project-item active"
+                    data-project-id="1"
+                    data-year="2024"
+                    data-name="進行中梯次範例一"
+                    data-role="admin"
+                  >
+                    <div class="project-item-info">
+                      <div class="project-item-title">
+                        <span class="status-indicator status-active"></span>
+                        進行中梯次範例一
+                      </div>
+                      <div class="project-item-meta">
+                        <span>2024年度</span>
+                        <span>截止: 2024/12/31</span>
+                      </div>
+                    </div>
+                    <span class="role-badge role-admin">系統管理員</span>
+                  </div>
+
+                  <div
+                    class="project-item"
+                    data-project-id="2"
+                    data-year="2024"
+                    data-name="進行中梯次範例二"
+                    data-role="reviewer"
+                  >
+                    <div class="project-item-info">
+                      <div class="project-item-title">
+                        <span class="status-indicator status-active"></span>
+                        進行中梯次範例二
+                      </div>
+                      <div class="project-item-meta">
+                        <span>2024年度</span>
+                        <span>截止: 2024/11/15</span>
+                      </div>
+                    </div>
+                    <span class="role-badge role-reviewer">審題委員</span>
+                  </div>
+
+                  <div
+                    class="project-item"
+                    data-project-id="3"
+                    data-year="2024"
+                    data-name="進行中梯次範例三"
+                    data-role="teacher"
+                  >
+                    <div class="project-item-info">
+                      <div class="project-item-title">
+                        <span class="status-indicator status-active"></span>
+                        進行中梯次範例三
+                      </div>
+                      <div class="project-item-meta">
+                        <span>2024年度</span>
+                        <span>截止: 2025/01/20</span>
+                      </div>
+                    </div>
+                    <span class="role-badge role-teacher">命題教師</span>
+                  </div>
+
+                  <div class="project-category">已結束 (5)</div>
+
+                  <div
+                    class="project-item"
+                    data-project-id="4"
+                    data-year="2023"
+                    data-name="已結束梯次範例一"
+                    data-role="admin"
+                  >
+                    <div class="project-item-info">
+                      <div class="project-item-title">
+                        <span class="status-indicator status-finished"></span>
+                        已結束梯次範例一
+                      </div>
+                      <div class="project-item-meta">
+                        <span>2023年度</span>
+                        <span>已結束</span>
+                      </div>
+                    </div>
+                    <span class="role-badge role-admin">系統管理員</span>
+                  </div>
+
+                  <div
+                    class="project-item"
+                    data-project-id="5"
+                    data-year="2023"
+                    data-name="已結束梯次範例二"
+                    data-role="teacher"
+                  >
+                    <div class="project-item-info">
+                      <div class="project-item-title">
+                        <span class="status-indicator status-finished"></span>
+                        已結束梯次範例二
+                      </div>
+                      <div class="project-item-meta">
+                        <span>2023年度</span>
+                        <span>已結束</span>
+                      </div>
+                    </div>
+                    <span class="role-badge role-teacher">命題教師</span>
+                  </div>
+
+                  <div
+                    class="project-item"
+                    data-project-id="6"
+                    data-year="2023"
+                    data-name="已結束梯次範例三"
+                    data-role="reviewer"
+                  >
+                    <div class="project-item-info">
+                      <div class="project-item-title">
+                        <span class="status-indicator status-finished"></span>
+                        已結束梯次範例三
+                      </div>
+                      <div class="project-item-meta">
+                        <span>2023年度</span>
+                        <span>已結束</span>
+                      </div>
+                    </div>
+                    <span class="role-badge role-reviewer">審題委員</span>
+                  </div>
+
+                  <div
+                    class="project-item"
+                    data-project-id="7"
+                    data-year="2022"
+                    data-name="已結束梯次範例四"
+                    data-role="teacher"
+                  >
+                    <div class="project-item-info">
+                      <div class="project-item-title">
+                        <span class="status-indicator status-finished"></span>
+                        已結束梯次範例四
+                      </div>
+                      <div class="project-item-meta">
+                        <span>2022年度</span>
+                        <span>已結束</span>
+                      </div>
+                    </div>
+                    <span class="role-badge role-teacher">命題教師</span>
+                  </div>
+
+                  <div
+                    class="project-item"
+                    data-project-id="8"
+                    data-year="2022"
+                    data-name="已結束梯次範例五"
+                    data-role="teacher"
+                  >
+                    <div class="project-item-info">
+                      <div class="project-item-title">
+                        <span class="status-indicator status-finished"></span>
+                        已結束梯次範例五
+                      </div>
+                      <div class="project-item-meta">
+                        <span>2022年度</span>
+                        <span>已結束</span>
+                      </div>
+                    </div>
+                    <span class="role-badge role-teacher">命題教師</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-3">
+            <div class="user-section">
+              <div class="user-info">
+                <div class="user-avatar">沈</div>
+                <span class="user-name">沈雅茹</span>
+                <span class="role-badge role-admin" id="currentUserRole"
+                  >系統管理員</span
+                >
+              </div>
+              <a
+                href="Login.html"
+                class="btn btn-sm btn-light fw-bold text-primary px-3"
+              >
+                登出
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="breadcrumb-bar">
+      <div class="container-fluid px-4">
+        <a href="index.html" class="breadcrumb-item-link">首頁</a>
+        <span class="breadcrumb-separator">
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="3"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </span>
+        <span class="breadcrumb-current">教師管理</span>
+      </div>
+    </div>
+
+    <div class="main-content">
+      <div class="container-fluid px-4">
+        <div class="search-container">
+          <h5 class="page-heading">教師管理首頁—查詢與篩選區</h5>
+          <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+              <label class="form-label-sm">任教學校 (可多選)</label>
+              <div class="dropdown" id="schoolDropdownContainer">
+                <button
+                  class="form-select form-select-sm-custom text-start d-flex justify-content-between align-items-center"
+                  type="button"
+                  data-bs-toggle="dropdown"
+                  data-bs-auto-close="outside"
+                  aria-expanded="false"
+                  id="schoolDropdownBtn"
+                >
+                  <span>任教學校 (全部)</span>
+                </button>
+                <ul
+                  class="dropdown-menu w-100 p-2 shadow"
+                  style="max-height: 300px; overflow-y: auto"
+                >
+                  <li>
+                    <div class="form-check">
+                      <input
+                        class="form-check-input school-checkbox"
+                        type="checkbox"
+                        value="all"
+                        id="school_all"
+                        checked
+                      />
+                      <label class="form-check-label w-100" for="school_all"
+                        >全部學校</label
+                      >
+                    </div>
+                  </li>
+                  <li><hr class="dropdown-divider" /></li>
+                  <li>
+                    <div class="form-check">
+                      <input
+                        class="form-check-input school-checkbox"
+                        type="checkbox"
+                        value="國立臺灣大學"
+                        id="s1"
+                      />
+                      <label class="form-check-label w-100" for="s1"
+                        >國立臺灣大學</label
+                      >
+                    </div>
+                  </li>
+                  <li>
+                    <div class="form-check">
+                      <input
+                        class="form-check-input school-checkbox"
+                        type="checkbox"
+                        value="國立政治大學"
+                        id="s2"
+                      />
+                      <label class="form-check-label w-100" for="s2"
+                        >國立政治大學</label
+                      >
+                    </div>
+                  </li>
+                  <li>
+                    <div class="form-check">
+                      <input
+                        class="form-check-input school-checkbox"
+                        type="checkbox"
+                        value="臺北市立第一女子高級中學"
+                        id="s3"
+                      />
+                      <label class="form-check-label w-100" for="s3"
+                        >臺北市立第一女子高級中學</label
+                      >
+                    </div>
+                  </li>
+                  <li>
+                    <div class="form-check">
+                      <input
+                        class="form-check-input school-checkbox"
+                        type="checkbox"
+                        value="國立臺灣師範大學"
+                        id="s4"
+                      />
+                      <label class="form-check-label w-100" for="s4"
+                        >國立臺灣師範大學</label
+                      >
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label-sm">教師身分</label>
+              <select class="form-select form-select-sm-custom" id="filterType">
+                <option value="all" selected>全部身分</option>
+                <option value="大學教師">大學教師</option>
+                <option value="中學教師">中學教師</option>
+                <option value="兼任教師">兼任教師</option>
+                <option value="專家學者">專家學者</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label-sm">參與年度</label>
+              <select class="form-select form-select-sm-custom" id="filterYear">
+                <option value="all" selected>全部年度</option>
+                <option value="2024">2024</option>
+                <option value="2023">2023</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label-sm">參與考試類型</label>
+              <select class="form-select form-select-sm-custom" id="filterExam">
+                <option value="all" selected>全部類型</option>
+                <option value="cap">國中教育會考</option>
+                <option value="gsat">高中學科能力測驗</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="sliding-container">
+          <div class="list-pane">
+            <div class="content-card p-0 overflow-hidden">
+              <div
+                class="p-3 bg-white border-bottom d-flex justify-content-between align-items-center"
+              >
+                <h5 class="page-heading m-0">教師列表 (命題人員清冊)</h5>
+                <span
+                  class="badge bg-light text-secondary border"
+                  id="resultCount"
+                  >共 5 筆</span
+                >
+              </div>
+              <div class="table-responsive">
+                <table class="custom-table table-hover" id="teacherTable">
+                  <thead>
+                    <tr>
+                      <th>教師姓名</th>
+                      <th>任教學校</th>
+                      <th>教師身分別</th>
+                      <th>聯絡信箱</th>
+                      <th>系統帳號狀態</th>
+                      <th>操作</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      class="table-row-item"
+                      data-name="李文華"
+                      data-en="Wen-Hua Li"
+                      data-school="國立臺灣大學"
+                      data-dept="中國文學系"
+                      data-type="大學教師"
+                      data-email="liwenhua@ntu.edu.tw"
+                      data-year="2024"
+                      data-exam="cap"
+                    >
+                      <td class="fw-bold">李文華</td>
+                      <td>國立臺灣大學</td>
+                      <td>大學教師</td>
+                      <td>liwenhua@ntu.edu.tw</td>
+                      <td>
+                        <span class="status-badge status-enabled">啟用</span>
+                      </td>
+                      <td>
+                        <a
+                          href="javascript:void(0)"
+                          class="action-link btn-view"
+                          >查看</a
+                        >
+                        |
+                        <a
+                          href="javascript:void(0)"
+                          class="action-link btn-view"
+                          >編輯</a
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="table-row-item"
+                      data-name="陳秀蘭"
+                      data-en="Xiu-Lan Chen"
+                      data-school="臺北市立第一女子高級中學"
+                      data-dept="國文科"
+                      data-type="中學教師"
+                      data-email="chenxiulan@fg.tp.edu.tw"
+                      data-year="2024"
+                      data-exam="cap"
+                    >
+                      <td class="fw-bold">陳秀蘭</td>
+                      <td>臺北市立第一女子高級中學</td>
+                      <td>中學教師</td>
+                      <td>chenxiulan@fg.tp.edu.tw</td>
+                      <td>
+                        <span class="status-badge status-enabled">啟用</span>
+                      </td>
+                      <td>
+                        <a
+                          href="javascript:void(0)"
+                          class="action-link btn-view"
+                          >查看</a
+                        >
+                        |
+                        <a
+                          href="javascript:void(0)"
+                          class="action-link btn-view"
+                          >編輯</a
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="table-row-item"
+                      data-name="王偉"
+                      data-en="Wei Wang"
+                      data-school="國立政治大學"
+                      data-dept="外文中心"
+                      data-type="兼任教師"
+                      data-email="wangwei@nccu.edu.tw"
+                      data-year="2023"
+                      data-exam="gsat"
+                    >
+                      <td class="fw-bold">王偉</td>
+                      <td>國立政治大學</td>
+                      <td>兼任教師</td>
+                      <td>wangwei@nccu.edu.tw</td>
+                      <td>
+                        <span class="status-badge status-disabled">停用</span>
+                      </td>
+                      <td>
+                        <a
+                          href="javascript:void(0)"
+                          class="action-link btn-view"
+                          >查看</a
+                        >
+                        |
+                        <a
+                          href="javascript:void(0)"
+                          class="action-link btn-view"
+                          >編輯</a
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="table-row-item"
+                      data-name="李大華"
+                      data-en="Wen-Hua Li"
+                      data-school="國立臺灣大學"
+                      data-dept="中國文學系"
+                      data-type="大學教師"
+                      data-email="merhua@ntu.edu.tw"
+                      data-year="2023"
+                      data-exam="gsat"
+                    >
+                      <td class="fw-bold">李大華</td>
+                      <td>國立臺灣大學</td>
+                      <td>大學教師</td>
+                      <td>merhua@ntu.edu.tw</td>
+                      <td>
+                        <span class="status-badge status-enabled">啟用</span>
+                      </td>
+                      <td>
+                        <a
+                          href="javascript:void(0)"
+                          class="action-link btn-view"
+                          >查看</a
+                        >
+                        |
+                        <a
+                          href="javascript:void(0)"
+                          class="action-link btn-view"
+                          >編輯</a
+                        >
+                      </td>
+                    </tr>
+                    <tr
+                      class="table-row-item"
+                      data-name="林志豪"
+                      data-en="Zhi-Hao Lin"
+                      data-school="國立臺灣師範大學"
+                      data-dept="國文系"
+                      data-type="專家學者"
+                      data-email="linzh@ntnu.edu.tw"
+                      data-year="2024"
+                      data-exam="cap"
+                    >
+                      <td class="fw-bold">林志豪</td>
+                      <td>國立臺灣師範大學</td>
+                      <td>專家學者</td>
+                      <td>linzh@ntnu.edu.tw</td>
+                      <td>
+                        <span class="status-badge status-enabled">啟用</span>
+                      </td>
+                      <td>
+                        <a
+                          href="javascript:void(0)"
+                          class="action-link btn-view"
+                          >查看</a
+                        >
+                        |
+                        <a
+                          href="javascript:void(0)"
+                          class="action-link btn-view"
+                          >編輯</a
+                        >
+                      </td>
+                    </tr>
+                    <tr id="noDataRow" style="display: none">
+                      <td colspan="6" class="text-center py-5">
+                        <div
+                          class="d-flex flex-column align-items-center justify-content-center text-secondary"
+                        >
+                          <div class="mb-3" style="opacity: 0.5">
+                            <svg
+                              width="64"
+                              height="64"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="1.5"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+                              ></path>
+                            </svg>
+                          </div>
+                          <h6 class="fw-bold mb-1">查無符合條件的教師</h6>
+                          <p class="small mb-0">
+                            請嘗試調整篩選條件或是搜尋關鍵字
+                          </p>
+                          <button
+                            id="btnResetFilters"
+                            class="btn btn-sm btn-outline-secondary mt-3"
+                          >
+                            重置所有篩選
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="profile-pane" id="teacherProfilePane">
+            <div class="profile-inner-wrapper">
+              <div class="content-card">
+                <div class="profile-header">
+                  <button
+                    class="btn-close-profile"
+                    id="closeProfileBtn"
+                    title="關閉"
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      fill="currentColor"
+                      viewBox="0 0 16 16"
+                    >
+                      <path
+                        d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"
+                      />
+                    </svg>
+                  </button>
+                  <div class="profile-avatar-large">
+                    <svg
+                      width="32"
+                      height="32"
+                      fill="currentColor"
+                      viewBox="0 0 16 16"
+                    >
+                      <path
+                        d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3Zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="profile-name" id="pName">Name</div>
+                    <div class="profile-name-en" id="pNameEn">En Name</div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-6 info-group">
+                    <div class="info-title">(一) 教師基本身分資料</div>
+                    <div class="info-row">
+                      <span class="info-label">中文姓名：</span
+                      ><span id="pName2">--</span>
+                    </div>
+                    <div class="info-row">
+                      <span class="info-label">英文姓名：</span
+                      ><span id="pNameEn2">--</span>
+                    </div>
+                    <div class="info-row">
+                      <span class="info-label">身分證字號：</span>A123456789
+                    </div>
+                    <div class="info-row">
+                      <span class="info-label">聯絡信箱：</span
+                      ><span id="pEmail">--</span>
+                    </div>
+                    <div class="info-row">
+                      <span class="info-label">聯絡電話：</span>02-2363xxxx
+                    </div>
+                  </div>
+                  <div class="col-md-6 info-group">
+                    <div class="info-title">(二) 任教與背景資料</div>
+                    <div class="info-row">
+                      <span class="info-label">任教學校：</span
+                      ><span id="pSchool">--</span>
+                    </div>
+                    <div class="info-row">
+                      <span class="info-label">任教單位：</span
+                      ><span id="pDept">--</span>
+                    </div>
+                    <div class="info-row">
+                      <span class="info-label">教師身分別：</span>
+                      <div><span class="tag-pill" id="pType">--</span></div>
+                    </div>
+                    <div class="info-row">
+                      <span class="info-label">備註標記：</span>專長為命題研究
+                    </div>
+                  </div>
+                </div>
+                <hr class="my-4 text-muted" />
+                <div class="info-group">
+                  <div class="info-title">(五) 教師參與紀錄</div>
+                  <div class="table-responsive">
+                    <table class="custom-table history-table">
+                      <thead>
+                        <tr>
+                          <th>年度</th>
+                          <th>考試類型</th>
+                          <th>科目</th>
+                          <th>狀態</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>2024</td>
+                          <td>國中教育會考</td>
+                          <td>國語文</td>
+                          <td>
+                            <span
+                              class="badge status-badge badge-history-active"
+                              >進行中</span
+                            >
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // =========================================
+        // 1. 定義 DOM 元素與變數
+        // =========================================
+        const filterType = document.getElementById("filterType");
+        const filterYear = document.getElementById("filterYear");
+        const filterExam = document.getElementById("filterExam");
+        const tableRows = document.querySelectorAll(".table-row-item");
+        const resultCount = document.getElementById("resultCount");
+        const teacherProfilePane =
+          document.getElementById("teacherProfilePane");
+        const closeProfileBtn = document.getElementById("closeProfileBtn");
+        const viewButtons = document.querySelectorAll(".btn-view");
+        const schoolCheckboxes = document.querySelectorAll(".school-checkbox");
+        const schoolDropdownBtn = document.getElementById("schoolDropdownBtn");
+        const btnResetFilters = document.getElementById("btnResetFilters"); // 抓取重置按鈕
+
+        // =========================================
+        // 2. 核心篩選功能 (Perform Filter)
+        // =========================================
+        function performFilter() {
+          // A. 取得目前勾選的學校
+          let selectedSchools = [];
+          if (document.getElementById("school_all").checked) {
+            selectedSchools = ["all"];
+          } else {
+            selectedSchools = Array.from(
+              document.querySelectorAll(".school-checkbox:checked")
+            ).map((c) => c.value);
+          }
+
+          // B. 取得下拉選單的值
+          const sType = filterType.value;
+          const sYear = filterYear.value;
+          const sExam = filterExam.value;
+
+          let visibleCount = 0;
+
+          // C. 比對每一列資料
+          tableRows.forEach((row) => {
+            const rSchool = row.getAttribute("data-school");
+            const rType = row.getAttribute("data-type");
+            const rYear = row.getAttribute("data-year");
+            const rExam = row.getAttribute("data-exam");
+
+            let show = true;
+
+            // 檢查學校 (若非全選，則需包含在勾選名單內)
+            if (!selectedSchools.includes("all")) {
+              if (!selectedSchools.includes(rSchool)) show = false;
+            }
+
+            // 檢查下拉選單
+            if (sType !== "all" && rType !== sType) show = false;
+            if (sYear !== "all" && rYear !== sYear) show = false;
+            if (sExam !== "all" && rExam !== sExam) show = false;
+
+            // D. 設定顯示或隱藏
+            if (show) {
+              row.style.display = ""; // 清除 display:none
+              visibleCount++;
+            } else {
+              row.style.display = "none";
+            }
+          });
+
+          // E. 控制「查無資料」列的顯示
+          const noDataRow = document.getElementById("noDataRow");
+          if (noDataRow) {
+            if (visibleCount === 0) {
+              noDataRow.style.display = "table-row";
+            } else {
+              noDataRow.style.display = "none";
+            }
+          }
+
+          // F. 更新筆數與關閉側邊欄
+          resultCount.textContent = `共 ${visibleCount} 筆`;
+          teacherProfilePane.classList.remove("active");
+          tableRows.forEach((r) => r.classList.remove("table-active-row"));
+        }
+
+        // =========================================
+        // 3. 重置功能 (Reset Filters)
+        // =========================================
+        function resetFilters() {
+          console.log("執行重置..."); // Debug 用
+
+          // 重置學校複選框
+          document.getElementById("school_all").checked = true;
+          schoolCheckboxes.forEach((cb) => {
+            if (cb.value !== "all") cb.checked = false;
+          });
+
+          // 更新學校按鈕文字
+          updateSchoolButton();
+
+          // 重置下拉選單
+          filterType.value = "all";
+          filterYear.value = "all";
+          filterExam.value = "all";
+
+          // ★ 關鍵：手動呼叫篩選函式來更新表格
+          performFilter();
+        }
+
+        // 綁定重置按鈕點擊事件 (如果有找到按鈕才綁定)
+        if (btnResetFilters) {
+          btnResetFilters.addEventListener("click", function (e) {
+            e.preventDefault(); // 防止按鈕預設行為
+            resetFilters();
+          });
+        }
+
+        // =========================================
+        // 4. 學校選單 UI 邏輯
+        // =========================================
+        function updateSchoolButton() {
+          const allChecked = document.getElementById("school_all").checked;
+          if (allChecked) {
+            schoolDropdownBtn.querySelector("span").innerText =
+              "任教學校 (全部)";
+            return;
+          }
+
+          const checked = Array.from(
+            document.querySelectorAll(".school-checkbox:checked")
+          )
+            .filter((c) => c.value !== "all")
+            .map((c) => c.value);
+
+          if (checked.length === 0) {
+            schoolDropdownBtn.querySelector("span").innerText =
+              "任教學校 (未選)";
+          } else if (checked.length <= 2) {
+            schoolDropdownBtn.querySelector("span").innerText =
+              checked.join(", ");
+          } else {
+            schoolDropdownBtn.querySelector(
+              "span"
+            ).innerText = `已選擇 ${checked.length} 間學校`;
+          }
+        }
+
+        schoolCheckboxes.forEach((cb) => {
+          cb.addEventListener("change", function () {
+            if (this.value === "all" && this.checked) {
+              schoolCheckboxes.forEach((c) => {
+                if (c.value !== "all") c.checked = false;
+              });
+            } else if (this.value !== "all" && this.checked) {
+              document.getElementById("school_all").checked = false;
+            }
+
+            const anyChecked = Array.from(schoolCheckboxes).some(
+              (c) => c.checked
+            );
+            if (!anyChecked) {
+              document.getElementById("school_all").checked = true;
+            }
+
+            updateSchoolButton();
+            performFilter();
+          });
+        });
+
+        // =========================================
+        // 5. 綁定其他篩選器事件
+        // =========================================
+        [filterType, filterYear, filterExam].forEach((select) => {
+          select.addEventListener("change", performFilter);
+        });
+
+        // =========================================
+        // 6. 綁定列表查看按鈕 (View Profile)
+        // =========================================
+        viewButtons.forEach((btn) => {
+          btn.addEventListener("click", function (e) {
+            e.preventDefault();
+            const row = this.closest("tr");
+
+            // 填入資料到右側 Profile Pane
+            document.getElementById("pName").textContent =
+              row.getAttribute("data-name");
+            document.getElementById("pName2").textContent =
+              row.getAttribute("data-name");
+            document.getElementById("pNameEn").textContent =
+              row.getAttribute("data-en");
+            document.getElementById("pNameEn2").textContent =
+              row.getAttribute("data-en");
+            document.getElementById("pSchool").textContent =
+              row.getAttribute("data-school");
+            document.getElementById("pDept").textContent =
+              row.getAttribute("data-dept");
+            document.getElementById("pType").textContent =
+              row.getAttribute("data-type");
+            document.getElementById("pEmail").textContent =
+              row.getAttribute("data-email");
+
+            // 樣式切換
+            tableRows.forEach((r) => r.classList.remove("table-active-row"));
+            row.classList.add("table-active-row");
+            teacherProfilePane.classList.add("active");
+          });
+        });
+
+        closeProfileBtn.addEventListener("click", () => {
+          teacherProfilePane.classList.remove("active");
+          tableRows.forEach((r) => r.classList.remove("table-active-row"));
+        });
+      });
+      
+    </script>
+    <script src="app.js"></script>
+  </body>
+</html>

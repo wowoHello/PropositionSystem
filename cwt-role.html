@@ -1,0 +1,2637 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>角色與權限管理 - CWT 命題工作平臺</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+    />
+    <style>
+      /* --- 1. 動態切換器樣式 (Sliding Segmented Control) --- */
+      .nav-segment-container {
+        position: relative;
+        display: flex;
+        background-color: #f1f5f9;
+        padding: 4px;
+        border-radius: 50rem;
+        border: 1px solid #e2e8f0;
+        width: fit-content;
+      }
+      .nav-segment-indicator {
+        position: absolute;
+        top: 4px;
+        bottom: 4px;
+        left: 4px;
+        width: calc(33.3% - 4px);
+        background-color: white;
+        border-radius: 50rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 1;
+      }
+      .nav-segment-item {
+        flex: 1;
+        position: relative;
+        z-index: 2;
+        padding: 0.5rem 1rem;
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: #64748b;
+        text-align: center;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        transition: color 0.3s ease;
+        border-radius: 50rem;
+        white-space: nowrap;
+      }
+      .nav-segment-item.active {
+        color: #2563eb;
+      }
+
+      /* --- 2. 權限設定卡片 --- */
+      .permission-item-card {
+        background-color: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 1rem 1.25rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        user-select: none;
+      }
+      .permission-item-card:hover {
+        border-color: #93c5fd;
+      }
+      .permission-item-card.checked {
+        border-color: #3b82f6;
+        background-color: #eff6ff;
+        box-shadow: 0 0 0 1px #3b82f6 inset;
+      }
+      .custom-switch-lg {
+        width: 3.2rem !important;
+        height: 1.6rem !important;
+        cursor: pointer;
+        margin-left: 1rem;
+      }
+
+      /* --- 3. 角色卡片 (v1) --- */
+      .role-card-v1 {
+        position: relative;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 1.75rem;
+        height: 100%;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        overflow: hidden;
+      }
+      .role-card-v1::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--card-color), transparent);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      .role-card-v1:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+        border-color: var(--card-color);
+      }
+      .role-card-v1:hover::before {
+        opacity: 1;
+      }
+      .role-card-v1 .icon-wrapper {
+        width: 64px;
+        height: 64px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+        margin-bottom: 1.25rem;
+        background: var(--card-bg);
+        color: var(--card-color);
+        transition: transform 0.3s ease;
+      }
+      .role-card-v1:hover .icon-wrapper {
+        transform: scale(1.1) rotate(5deg);
+      }
+      .role-card-v1 .role-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 0.5rem;
+      }
+      .role-card-v1 .role-description {
+        font-size: 0.875rem;
+        color: #64748b;
+        line-height: 1.6;
+        margin-bottom: 1.25rem;
+        min-height: 3rem;
+      }
+      .role-card-v1 .stats-row {
+        display: flex;
+        gap: 1.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid #f1f5f9;
+      }
+      .role-card-v1 .stat-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+      }
+      .role-card-v1 .stat-label {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        font-weight: 500;
+      }
+      .role-card-v1 .stat-value {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: var(--card-color);
+      }
+      .role-card-v1 .action-button {
+        position: absolute;
+        top: 1.5rem;
+        right: 1.5rem;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #64748b;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        opacity: 0;
+      }
+      .role-card-v1:hover .action-button {
+        opacity: 1;
+      }
+      .role-card-v1 .action-button:hover {
+        background: var(--card-bg);
+        color: var(--card-color);
+        border-color: var(--card-color);
+      }
+
+      /* --- 4. 新增角色卡片 --- */
+      .add-role-card {
+        border: 2px dashed #cbd5e1;
+        border-radius: 16px;
+        background: #f8fafc;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem 2rem;
+        height: 100%;
+        min-height: 300px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+      .add-role-card:hover {
+        border-color: #3b82f6;
+        background: #eff6ff;
+        transform: translateY(-4px);
+      }
+      .add-role-card .icon-plus {
+        width: 64px;
+        height: 64px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+        color: #94a3b8;
+        margin-bottom: 1rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+      }
+      .add-role-card:hover .icon-plus {
+        color: #3b82f6;
+        transform: rotate(90deg);
+      }
+      .add-role-card .add-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #475569;
+        margin-bottom: 0.5rem;
+      }
+      .add-role-card .add-description {
+        font-size: 0.875rem;
+        color: #94a3b8;
+        text-align: center;
+      }
+
+      /* --- 5. 顏色主題 --- */
+      .theme-admin {
+        --card-color: #d97706;
+        --card-bg: #fef3c7;
+      }
+      .theme-teacher {
+        --card-color: #059669;
+        --card-bg: #d1fae5;
+      }
+      .theme-reviewer {
+        --card-color: #2563eb;
+        --card-bg: #dbeafe;
+      }
+      .theme-staff {
+        --card-color: #7c3aed;
+        --card-bg: #ede9fe;
+      }
+      .theme-custom1 {
+        --card-color: #7c3aed;
+        --card-bg: #ede9fe;
+      }
+      .theme-custom2 {
+        --card-color: #e11d48;
+        --card-bg: #fee2e2;
+      }
+
+      /* --- 6. Icon 選擇器 --- */
+      .icon-picker-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+        gap: 0.5rem;
+        max-height: 300px;
+        overflow-y: auto;
+        padding: 1rem;
+        background: #f8fafc;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+      }
+      .icon-option {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        background: white;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 1.5rem;
+      }
+      .icon-option:hover {
+        border-color: #3b82f6;
+        background: #eff6ff;
+        transform: scale(1.1);
+      }
+      .icon-option.selected {
+        border-color: #3b82f6;
+        background: #eff6ff;
+        box-shadow: 0 0 0 2px #3b82f6 inset;
+      }
+      .icon-preview {
+        width: 80px;
+        height: 80px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        margin: 0 auto 1rem;
+        background-color: var(--card-bg, #f3f4f6);
+        color: var(--card-color, #6b7280);
+      }
+      .multi-role-badges {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      /* 專案管理頁籤專用樣式 */
+
+      /* 自訂捲軸 (讓左側列表更美觀) */
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: #f1f5f9;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 3px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+      }
+      /* --- 修正列表過短時的視覺問題 --- */
+
+      /* --- 列表樣式優化 (Wrapper 版本) --- */
+
+      /* --- 列表樣式優化 (Wrapper 版本) --- */
+
+      /* 1. 列表本體背景設為白色 */
+      #projectListContainer {
+        background-color: #fff;
+      }
+
+      /* 2. 確保列表最後一個項目有底線 */
+      /* 這條線是用來區隔「白色列表」與「下方灰色空白區」的重要界線 */
+      #projectListContainer .list-group-item:last-child {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.125) !important;
+      }
+
+      /* 3. 列表項目互動效果 */
+      #projectListContainer .list-group-item {
+        border-left: 4px solid transparent; /* 預留左側邊框位置 */
+        transition: all 0.2s ease;
+      }
+
+      #projectListContainer .list-group-item:hover {
+        background-color: #f8f9fa; /* Hover 淺灰 */
+      }
+
+      /* Active 狀態樣式 (保持原本設計) */
+      #projectListContainer .list-group-item.active {
+        background-color: #2563eb !important;
+        border-color: #2563eb !important; /* 左側邊框 */
+        color: white !important;
+        z-index: 2; /* 確保浮在最上層 */
+      }
+
+      /* 確保 Active 狀態下的文字顏色正確 */
+      #projectListContainer .list-group-item.active h6 {
+        color: white !important;
+      }
+      #projectListContainer .list-group-item.active small,
+      #projectListContainer .list-group-item.active i {
+        color: rgba(255, 255, 255, 0.8) !important;
+      }
+      #projectListContainer .list-group-item.active .badge.bg-primary {
+        background-color: white !important;
+        color: #2563eb !important;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="top-navbar">
+      <div class="container-fluid px-4">
+        <div class="row align-items-center">
+          <div class="col-3">
+            <a href="index.html" class="navbar-brand">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
+                />
+              </svg>
+              CWT 命題工作平臺
+            </a>
+          </div>
+          <!-- 中間：專案切換器 -->
+          <div class="col-6 d-flex justify-content-center">
+            <div class="project-switcher">
+              <div class="project-display" id="projectToggle">
+                <div class="project-info">
+                  <div class="project-year" id="currentProjectYear">
+                    2024年度
+                  </div>
+                  <div class="project-name" id="currentProjectName">
+                    進行中梯次範例一
+                  </div>
+                </div>
+                <svg
+                  width="16"
+                  height="16"
+                  fill="currentColor"
+                  viewBox="0 0 16 16"
+                >
+                  <path
+                    d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"
+                  />
+                </svg>
+              </div>
+
+              <div class="project-dropdown" id="projectDropdown">
+                <div class="dropdown-header">
+                  <span>切換專案</span>
+                  <button class="close-btn" id="closeDropdown">
+                    <svg
+                      width="16"
+                      height="16"
+                      fill="currentColor"
+                      viewBox="0 0 16 16"
+                    >
+                      <path
+                        d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"
+                      />
+                    </svg>
+                  </button>
+                </div>
+
+                <div class="project-search">
+                  <input
+                    type="text"
+                    placeholder="搜尋專案名稱..."
+                    id="projectSearchInput"
+                  />
+                </div>
+
+                <div class="project-list" id="projectList">
+                  <div class="project-category">進行中 (3)</div>
+
+                  <div
+                    class="project-item active"
+                    data-project-id="1"
+                    data-year="2024"
+                    data-name="進行中梯次範例一"
+                    data-role="admin"
+                  >
+                    <div class="project-item-info">
+                      <div class="project-item-title">
+                        <span class="status-indicator status-active"></span>
+                        進行中梯次範例一
+                      </div>
+                      <div class="project-item-meta">
+                        <span>2024年度</span>
+                        <span>截止: 2024/12/31</span>
+                      </div>
+                    </div>
+                    <span class="role-badge role-admin">系統管理員</span>
+                  </div>
+
+                  <div
+                    class="project-item"
+                    data-project-id="2"
+                    data-year="2024"
+                    data-name="進行中梯次範例二"
+                    data-role="reviewer"
+                  >
+                    <div class="project-item-info">
+                      <div class="project-item-title">
+                        <span class="status-indicator status-active"></span>
+                        進行中梯次範例二
+                      </div>
+                      <div class="project-item-meta">
+                        <span>2024年度</span>
+                        <span>截止: 2024/11/15</span>
+                      </div>
+                    </div>
+                    <span class="role-badge role-reviewer">審題委員</span>
+                  </div>
+
+                  <div
+                    class="project-item"
+                    data-project-id="3"
+                    data-year="2024"
+                    data-name="進行中梯次範例三"
+                    data-role="teacher"
+                  >
+                    <div class="project-item-info">
+                      <div class="project-item-title">
+                        <span class="status-indicator status-active"></span>
+                        進行中梯次範例三
+                      </div>
+                      <div class="project-item-meta">
+                        <span>2024年度</span>
+                        <span>截止: 2025/01/20</span>
+                      </div>
+                    </div>
+                    <span class="role-badge role-teacher">命題教師</span>
+                  </div>
+
+                  <div class="project-category">已結束 (5)</div>
+
+                  <div
+                    class="project-item"
+                    data-project-id="4"
+                    data-year="2023"
+                    data-name="已結束梯次範例一"
+                    data-role="admin"
+                  >
+                    <div class="project-item-info">
+                      <div class="project-item-title">
+                        <span class="status-indicator status-finished"></span>
+                        已結束梯次範例一
+                      </div>
+                      <div class="project-item-meta">
+                        <span>2023年度</span>
+                        <span>已結束</span>
+                      </div>
+                    </div>
+                    <span class="role-badge role-admin">系統管理員</span>
+                  </div>
+
+                  <div
+                    class="project-item"
+                    data-project-id="5"
+                    data-year="2023"
+                    data-name="已結束梯次範例二"
+                    data-role="teacher"
+                  >
+                    <div class="project-item-info">
+                      <div class="project-item-title">
+                        <span class="status-indicator status-finished"></span>
+                        已結束梯次範例二
+                      </div>
+                      <div class="project-item-meta">
+                        <span>2023年度</span>
+                        <span>已結束</span>
+                      </div>
+                    </div>
+                    <span class="role-badge role-teacher">命題教師</span>
+                  </div>
+
+                  <div
+                    class="project-item"
+                    data-project-id="6"
+                    data-year="2023"
+                    data-name="已結束梯次範例三"
+                    data-role="reviewer"
+                  >
+                    <div class="project-item-info">
+                      <div class="project-item-title">
+                        <span class="status-indicator status-finished"></span>
+                        已結束梯次範例三
+                      </div>
+                      <div class="project-item-meta">
+                        <span>2023年度</span>
+                        <span>已結束</span>
+                      </div>
+                    </div>
+                    <span class="role-badge role-reviewer">審題委員</span>
+                  </div>
+
+                  <div
+                    class="project-item"
+                    data-project-id="7"
+                    data-year="2022"
+                    data-name="已結束梯次範例四"
+                    data-role="teacher"
+                  >
+                    <div class="project-item-info">
+                      <div class="project-item-title">
+                        <span class="status-indicator status-finished"></span>
+                        已結束梯次範例四
+                      </div>
+                      <div class="project-item-meta">
+                        <span>2022年度</span>
+                        <span>已結束</span>
+                      </div>
+                    </div>
+                    <span class="role-badge role-teacher">命題教師</span>
+                  </div>
+
+                  <div
+                    class="project-item"
+                    data-project-id="8"
+                    data-year="2022"
+                    data-name="已結束梯次範例五"
+                    data-role="teacher"
+                  >
+                    <div class="project-item-info">
+                      <div class="project-item-title">
+                        <span class="status-indicator status-finished"></span>
+                        已結束梯次範例五
+                      </div>
+                      <div class="project-item-meta">
+                        <span>2022年度</span>
+                        <span>已結束</span>
+                      </div>
+                    </div>
+                    <span class="role-badge role-teacher">命題教師</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 右側：使用者資訊 -->
+          <div class="col-3">
+            <div class="user-section">
+              <div class="user-info">
+                <div class="user-avatar">沈</div>
+                <span class="user-name">沈雅茹</span>
+                <span class="role-badge role-admin" id="currentUserRole"
+                  >系統管理員</span
+                >
+              </div>
+              <a
+                href="Login.html"
+                class="btn btn-sm btn-light fw-bold text-primary px-3"
+                >登出</a
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="breadcrumb-bar">
+      <div class="container-fluid px-4">
+        <a href="index.html" class="breadcrumb-item-link">首頁</a>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current">角色與權限管理</span>
+      </div>
+    </div>
+
+    <div class="main-content">
+      <div class="container px-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h1 class="h3 fw-bold text-dark mb-1">角色與權限管理</h1>
+            <p class="text-secondary small mb-0">
+              管理系統使用者帳號、指派身分，以及定義各身分的存取權限。
+            </p>
+          </div>
+          <div class="nav-segment-container">
+            <div class="nav-segment-indicator" id="segmentIndicator"></div>
+            <button
+              class="nav-segment-item active"
+              onclick="switchTab(0, '#pills-users')"
+            >
+              人員帳號管理
+            </button>
+            <button
+              class="nav-segment-item"
+              onclick="switchTab(1, '#pills-projects')"
+            >
+              命題專案管理
+            </button>
+            <button
+              class="nav-segment-item"
+              onclick="switchTab(2, '#pills-roles')"
+            >
+              管理角色權限
+            </button>
+          </div>
+        </div>
+
+        <div class="tab-content" id="pills-tabContent">
+          <!--  ==================
+                人員帳號管理區塊 
+                ================== -->
+          <div
+            class="tab-pane fade show active"
+            id="pills-users"
+            role="tabpanel"
+          >
+            <div
+              class="alert alert-primary d-flex align-items-center border-0 bg-opacity-10 mb-4"
+              role="alert"
+            >
+              <i class="bi bi-info-circle-fill text-primary me-3 fs-5"></i>
+              <div>
+                <strong>帳號管理說明：</strong>
+                此處僅管理使用者的「基本登入帳號」與「系統存取狀態」。<br />
+                若需指派命題或審題工作，請至
+                <strong>[命題專案管理]</strong> 頁籤進行設定。
+              </div>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4">
+              <div class="card-body p-4">
+                <div
+                  class="d-flex justify-content-between align-items-center mb-3"
+                >
+                  <div class="d-flex gap-2">
+                    <div class="input-group" style="width: 300px">
+                      <span class="input-group-text bg-white border-end-0"
+                        ><i class="bi bi-search text-muted"></i
+                      ></span>
+                      <input
+                        type="text"
+                        class="form-control border-start-0 ps-0"
+                        placeholder="搜尋姓名、Email 或單位..."
+                      />
+                    </div>
+                    <button class="btn btn-primary">查詢</button>
+                  </div>
+                  <button
+                    class="btn btn-success fw-bold px-3 shadow-sm"
+                    onclick="openAddUserModal()"
+                  >
+                    <i class="bi bi-person-plus-fill me-1"></i> 新增使用者
+                  </button>
+                </div>
+
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle">
+                    <thead class="bg-light text-secondary small">
+                      <tr>
+                        <th width="60" class="ps-3">#</th>
+                        <th>使用者姓名</th>
+                        <th>登入帳號 (Email)</th>
+                        <th>服務單位 / 職稱</th>
+                        <th>最後登入</th>
+                        <th>帳號狀態</th>
+                        <th class="text-end pe-3">操作</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="ps-3">1</td>
+                        <td>
+                          <div class="d-flex align-items-center">
+                            <div
+                              class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex justify-content-center align-items-center me-2 fw-bold"
+                              style="width: 36px; height: 36px"
+                            >
+                              李
+                            </div>
+                            <span class="fw-bold text-dark">李文華</span>
+                          </div>
+                        </td>
+                        <td class="font-monospace text-secondary">
+                          wenhua.li@test.com
+                        </td>
+                        <td>
+                          <div class="text-dark small">國立臺北大學</div>
+                          <div
+                            class="text-muted small"
+                            style="font-size: 0.75rem"
+                          >
+                            中文系 / 副教授
+                          </div>
+                        </td>
+                        <td class="text-secondary small">
+                          2024/01/15<br />14:30
+                        </td>
+                        <td>
+                          <span
+                            class="badge bg-success bg-opacity-10 text-success rounded-pill"
+                            >啟用中</span
+                          >
+                        </td>
+                        <td class="text-end pe-3">
+                          <button
+                            class="btn btn-sm btn-outline-secondary border-0 btn-edit-user"
+                            onclick="openEditUserModal(0)"
+                          >
+                            <i class="bi bi-pencil-square"></i>
+                          </button>
+                          <div class="btn-group">
+                            <button
+                              class="btn btn-sm btn-outline-secondary border-0"
+                              data-bs-toggle="dropdown"
+                            >
+                              <i class="bi bi-three-dots-vertical"></i>
+                            </button>
+                            <ul
+                              class="dropdown-menu dropdown-menu-end shadow border-0"
+                            >
+                              <li>
+                                <a class="dropdown-item" href="#">重設密碼</a>
+                              </li>
+                              <li>
+                                <a class="dropdown-item text-danger" href="#"
+                                  >停用帳號</a
+                                >
+                              </li>
+                            </ul>
+                          </div>
+                        </td>
+                      </tr>
+
+                      <tr>
+                        <td class="ps-3">2</td>
+                        <td>
+                          <div class="d-flex align-items-center">
+                            <div
+                              class="bg-warning bg-opacity-10 text-warning rounded-circle d-flex justify-content-center align-items-center me-2 fw-bold"
+                              style="width: 36px; height: 36px"
+                            >
+                              林
+                            </div>
+                            <span class="fw-bold text-dark">林志豪</span>
+                          </div>
+                        </td>
+                        <td class="font-monospace text-secondary">
+                          lin.zhihao@test.com
+                        </td>
+                        <td>
+                          <div class="text-dark small">市立建國中學</div>
+                          <div
+                            class="text-muted small"
+                            style="font-size: 0.75rem"
+                          >
+                            國文科 / 專任教師
+                          </div>
+                        </td>
+                        <td class="text-secondary small">
+                          2024/01/18<br />09:15
+                        </td>
+                        <td>
+                          <span
+                            class="badge bg-success bg-opacity-10 text-success rounded-pill"
+                            >啟用中</span
+                          >
+                        </td>
+                        <td class="text-end pe-3">
+                          <button
+                            class="btn btn-sm btn-outline-secondary border-0 btn-edit-user"
+                            onclick="openEditUserModal(1)"
+                          >
+                            <i class="bi bi-pencil-square"></i>
+                          </button>
+                          <div class="btn-group">
+                            <button
+                              class="btn btn-sm btn-outline-secondary border-0"
+                              data-bs-toggle="dropdown"
+                            >
+                              <i class="bi bi-three-dots-vertical"></i>
+                            </button>
+                            <ul
+                              class="dropdown-menu dropdown-menu-end shadow border-0"
+                            >
+                              <li>
+                                <a class="dropdown-item" href="#">重設密碼</a>
+                              </li>
+                              <li>
+                                <a class="dropdown-item text-danger" href="#"
+                                  >停用帳號</a
+                                >
+                              </li>
+                            </ul>
+                          </div>
+                        </td>
+                      </tr>
+
+                      <tr class="bg-light">
+                        <td class="ps-3">3</td>
+                        <td>
+                          <div class="d-flex align-items-center">
+                            <div
+                              class="bg-secondary bg-opacity-10 text-secondary rounded-circle d-flex justify-content-center align-items-center me-2 fw-bold"
+                              style="width: 36px; height: 36px"
+                            >
+                              李
+                            </div>
+                            <span class="fw-bold text-secondary">李大華</span>
+                          </div>
+                        </td>
+                        <td class="font-monospace text-secondary">
+                          dahua.li@test.com
+                        </td>
+                        <td>
+                          <div class="text-secondary small">退休人員</div>
+                        </td>
+                        <td class="text-secondary small">
+                          2023/11/05<br />10:00
+                        </td>
+                        <td>
+                          <span
+                            class="badge bg-danger bg-opacity-10 text-danger rounded-pill"
+                            >已停用</span
+                          >
+                        </td>
+                        <td class="text-end pe-3">
+                          <button
+                            class="btn btn-sm btn-outline-secondary border-0 btn-edit-user"
+                            onclick="openEditUserModal(4)"
+                          >
+                            <i class="bi bi-pencil-square"></i>
+                          </button>
+                          <div class="btn-group">
+                            <button
+                              class="btn btn-sm btn-outline-secondary border-0"
+                              data-bs-toggle="dropdown"
+                            >
+                              <i class="bi bi-three-dots-vertical"></i>
+                            </button>
+                            <ul
+                              class="dropdown-menu dropdown-menu-end shadow border-0"
+                            >
+                              <li>
+                                <a class="dropdown-item" href="#">啟用帳號</a>
+                              </li>
+                            </ul>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <nav class="mt-4 d-flex justify-content-center">
+                  <ul class="pagination pagination-sm">
+                    <li class="page-item disabled">
+                      <a class="page-link" href="#"
+                        ><i class="bi bi-chevron-left"></i
+                      ></a>
+                    </li>
+                    <li class="page-item active">
+                      <a class="page-link" href="#">1</a>
+                    </li>
+                    <li class="page-item">
+                      <a class="page-link" href="#">2</a>
+                    </li>
+                    <li class="page-item">
+                      <a class="page-link" href="#">3</a>
+                    </li>
+                    <li class="page-item">
+                      <a class="page-link" href="#"
+                        ><i class="bi bi-chevron-right"></i
+                      ></a>
+                    </li>
+                  </ul>
+                </nav>
+              </div>
+            </div>
+          </div>
+          <!--  ==================
+                命題專案管理區塊 
+                ================== -->
+          <div class="tab-pane fade" id="pills-projects" role="tabpanel">
+            <div class="row g-4 h-100">
+              <div class="col-lg-3 col-md-4">
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden d-flex flex-column" 
+       style="height: calc(100vh - 200px); min-height: 600px;">
+                  <div class="card-header bg-white border-bottom p-3">
+                    <div
+                      class="d-flex justify-content-between align-items-center mb-2"
+                    >
+                      <h6 class="fw-bold m-0 text-dark">命題專案列表</h6>
+                      <button
+                        class="btn btn-sm btn-primary rounded-circle shadow-sm"
+                        style="width: 32px; height: 32px"
+                        onclick="openProjectModal('add')"
+                        title="新增專案"
+                      >
+                        <i class="bi bi-plus-lg"></i>
+                      </button>
+                    </div>
+                    <select
+                      class="form-select form-select-sm bg-light border-0"
+                      id="yearFilter"
+                      onchange="renderProjectList()"
+                    >
+                      <option value="all" selected>所有年度</option>
+                      <option value="2024">2024 年度</option>
+                      <option value="2023">2023 年度</option>
+                    </select>
+                  </div>
+                  <div
+                    class="flex-grow-1 custom-scrollbar"
+                    style="
+                      overflow-y: auto;
+                      min-height: 0;
+                      background-color: #f8fafc;
+                    "
+                  >
+                    <div
+                      class="list-group"
+                      id="projectListContainer"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-lg-9 col-md-8">
+                <div
+                  class="card border-0 shadow-sm rounded-4 h-100"
+                  id="projectDetailCard"
+                >
+                  <div class="card-header bg-white border-bottom p-4">
+                    <div
+                      class="d-flex justify-content-between align-items-start"
+                    >
+                      <div>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                          <span class="badge bg-primary" id="detailYearBadge"
+                            >2024</span
+                          >
+                          <h5
+                            class="fw-bold text-dark m-0"
+                            id="detailProjectName"
+                          >
+                            載入中...
+                          </h5>
+                          <span
+                            class="badge rounded-pill ms-2"
+                            id="detailStatusBadge"
+                            >狀態</span
+                          >
+                        </div>
+                        <p class="text-secondary small mb-0">
+                          專案區間：<span id="detailDateRange">--</span>
+                        </p>
+                      </div>
+                      <div class="d-flex gap-2">
+                        <button
+                          class="btn btn-outline-secondary btn-sm"
+                          onclick="editCurrentProject()"
+                        >
+                          <i class="bi bi-pencil-square"></i> 編輯
+                        </button>
+                        <button
+                          class="btn btn-outline-danger btn-sm"
+                          onclick="deleteCurrentProject()"
+                        >
+                          <i class="bi bi-trash"></i> 刪除
+                        </button>
+                        <div class="vr mx-1"></div>
+                        <button
+                          class="btn btn-primary btn-sm fw-bold shadow-sm"
+                          onclick="openAddMemberModal()"
+                        >
+                          <i class="bi bi-person-plus-fill me-1"></i> 加入人員
+                        </button>
+                      </div>
+                    </div>
+
+                    <ul
+                      class="nav nav-pills mt-4 gap-2"
+                      id="memberStatsFilter"
+                    ></ul>
+                  </div>
+
+                  <div class="card-body p-0 d-flex flex-column">
+                    <div class="table-responsive flex-grow-1">
+                      <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light text-secondary small">
+                          <tr>
+                            <th class="ps-4" width="250">人員姓名 / Email</th>
+                            <th>在此專案身分</th>
+                            <th>狀態</th>
+                            <th class="text-end pe-4">操作</th>
+                          </tr>
+                        </thead>
+                        <tbody id="memberListContainer"></tbody>
+                      </table>
+                    </div>
+                    <div id="emptyState" class="d-none text-center py-5">
+                      <div class="text-secondary mb-3 fs-1">
+                        <i class="bi bi-folder-x"></i>
+                      </div>
+                      <h5 class="fw-bold text-secondary">
+                        沒有選擇專案或專案已被刪除
+                      </h5>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal fade" id="projectFormModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-white border-bottom">
+                  <h5 class="modal-title fw-bold" id="projectModalTitle">
+                    新增命題專案
+                  </h5>
+                  <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                  ></button>
+                </div>
+                <div class="modal-body p-4">
+                  <input type="hidden" id="projId" />
+                  <div class="row g-3">
+                    <div class="col-md-4">
+                      <label class="form-label fw-bold">年度</label>
+                      <select class="form-select" id="projYear"></select>
+                    </div>
+                    <div class="col-md-8">
+                      <label class="form-label fw-bold">專案狀態</label>
+                      <select class="form-select" id="projStatus">
+                        <option value="active">進行中</option>
+                        <option value="closed">已截止</option>
+                      </select>
+                    </div>
+                    <div class="col-12">
+                      <label class="form-label fw-bold">專案名稱</label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="projName"
+                        placeholder="例如：第 113 梯次中文檢定"
+                      />
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label fw-bold">開始日期</label>
+                      <input type="date" class="form-control" id="projStart" />
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label fw-bold">結束日期</label>
+                      <input type="date" class="form-control" id="projEnd" />
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                  <button
+                    type="button"
+                    class="btn btn-light"
+                    data-bs-dismiss="modal"
+                  >
+                    取消
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-primary fw-bold px-4"
+                    onclick="saveProject()"
+                  >
+                    儲存
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!--  ==================
+                角色權限管理區塊 
+                ================== -->
+          <div class="tab-pane fade" id="pills-roles" role="tabpanel">
+            <div class="row g-4">
+              <div class="col-md-6 col-lg-4">
+                <div class="role-card-v1 theme-admin">
+                  <button class="action-button">編輯權限</button>
+                  <div class="icon-wrapper">
+                    <i class="bi bi-gear-fill"></i>
+                  </div>
+                  <h3 class="role-title">系統管理員</h3>
+                  <p class="role-description">
+                    負責系統設定、使用者管理、權限分配與整體平台維護工作。
+                  </p>
+                  <div class="stats-row">
+                    <div class="stat-item">
+                      <span class="stat-label">使用者數</span
+                      ><span class="stat-value">1</span>
+                    </div>
+                    <div class="stat-item">
+                      <span class="stat-label">權限項目</span
+                      ><span class="stat-value">6</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6 col-lg-4">
+                <div class="role-card-v1 theme-teacher">
+                  <button class="action-button">編輯權限</button>
+                  <div class="icon-wrapper">
+                    <i class="bi bi-pencil-square"></i>
+                  </div>
+                  <h3 class="role-title">命題教師</h3>
+                  <p class="role-description">
+                    負責試題設計、題庫管理，以及配合審題委員進行題目修正。
+                  </p>
+                  <div class="stats-row">
+                    <div class="stat-item">
+                      <span class="stat-label">使用者數</span
+                      ><span class="stat-value">1</span>
+                    </div>
+                    <div class="stat-item">
+                      <span class="stat-label">權限項目</span
+                      ><span class="stat-value">2</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6 col-lg-4">
+                <div class="role-card-v1 theme-reviewer">
+                  <button class="action-button">編輯權限</button>
+                  <div class="icon-wrapper">
+                    <i class="bi bi-search"></i>
+                  </div>
+                  <h3 class="role-title">審題委員</h3>
+                  <p class="role-description">
+                    審核題目品質、提供專業建議，確保試題符合學術標準與規範。
+                  </p>
+                  <div class="stats-row">
+                    <div class="stat-item">
+                      <span class="stat-label">使用者數</span
+                      ><span class="stat-value">1</span>
+                    </div>
+                    <div class="stat-item">
+                      <span class="stat-label">權限項目</span
+                      ><span class="stat-value">2</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6 col-lg-4">
+                <div class="add-role-card">
+                  <div class="icon-plus"><i class="bi bi-plus-lg"></i></div>
+                  <h4 class="add-title">新增角色</h4>
+                  <p class="add-description">自訂新的身分類別與權限配置</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="addRoleModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow-lg">
+          <div class="modal-header bg-white border-bottom">
+            <div>
+              <h5 class="modal-title fw-bold text-dark">新增角色</h5>
+              <p class="text-secondary small mb-0">
+                設定新角色的基本資訊與圖示
+              </p>
+            </div>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body p-4">
+            <div class="mb-4">
+              <label class="form-label fw-bold"
+                >角色名稱 <span class="text-danger">*</span></label
+              >
+              <input
+                type="text"
+                class="form-control form-control-lg"
+                id="newRoleName"
+                placeholder="例如：專案經理"
+              />
+            </div>
+            <div class="mb-4">
+              <label class="form-label fw-bold">角色描述</label>
+              <textarea
+                class="form-control"
+                id="newRoleDesc"
+                rows="2"
+                placeholder="描述此角色的職責"
+              ></textarea>
+            </div>
+            <div class="mb-4">
+              <label class="form-label fw-bold"
+                >選擇圖示 <span class="text-danger">*</span></label
+              >
+              <div class="d-flex align-items-center gap-3 mb-3">
+                <div id="selectedIconPreview" class="icon-preview theme-admin">
+                  <i class="bi bi-question-circle"></i>
+                </div>
+                <div class="flex-grow-1">
+                  <p class="mb-1 text-secondary small">
+                    目前選擇：<span
+                      id="selectedIconName"
+                      class="fw-bold text-dark"
+                      >未選擇</span
+                    >
+                  </p>
+                  <p class="mb-0 text-muted" style="font-size: 0.75rem">
+                    點選下方圖示進行選擇
+                  </p>
+                </div>
+              </div>
+              <div class="icon-picker-container" id="iconPicker">
+                <div
+                  class="icon-option"
+                  data-icon="bi-gear-fill"
+                  data-name="設定"
+                >
+                  <i class="bi bi-gear-fill"></i>
+                </div>
+                <div
+                  class="icon-option"
+                  data-icon="bi-pencil-square"
+                  data-name="編輯"
+                >
+                  <i class="bi bi-pencil-square"></i>
+                </div>
+                <div class="icon-option" data-icon="bi-search" data-name="搜尋">
+                  <i class="bi bi-search"></i>
+                </div>
+                <div
+                  class="icon-option"
+                  data-icon="bi-people-fill"
+                  data-name="群組"
+                >
+                  <i class="bi bi-people-fill"></i>
+                </div>
+                <div
+                  class="icon-option"
+                  data-icon="bi-shield-check"
+                  data-name="安全"
+                >
+                  <i class="bi bi-shield-check"></i>
+                </div>
+                <div
+                  class="icon-option"
+                  data-icon="bi-envelope-fill"
+                  data-name="信封"
+                >
+                  <i class="bi bi-envelope-fill"></i>
+                </div>
+                <div
+                  class="icon-option"
+                  data-icon="bi-telephone-fill"
+                  data-name="電話"
+                >
+                  <i class="bi bi-telephone-fill"></i>
+                </div>
+                <div
+                  class="icon-option"
+                  data-icon="bi-printer-fill"
+                  data-name="印表機"
+                >
+                  <i class="bi bi-printer-fill"></i>
+                </div>
+                <div
+                  class="icon-option"
+                  data-icon="bi-file-earmark-text"
+                  data-name="文件"
+                >
+                  <i class="bi bi-file-earmark-text"></i>
+                </div>
+              </div>
+              <input type="hidden" id="selectedIconValue" value="" />
+            </div>
+            <div class="mb-4">
+              <label class="form-label fw-bold">主題顏色</label>
+              <div class="d-flex gap-2">
+                <button
+                  type="button"
+                  class="btn border"
+                  style="width: 50px; height: 50px; background: #fef3c7"
+                  data-theme="admin"
+                  onclick="selectTheme('admin')"
+                ></button>
+                <button
+                  type="button"
+                  class="btn border"
+                  style="width: 50px; height: 50px; background: #d1fae5"
+                  data-theme="teacher"
+                  onclick="selectTheme('teacher')"
+                ></button>
+                <button
+                  type="button"
+                  class="btn border"
+                  style="width: 50px; height: 50px; background: #dbeafe"
+                  data-theme="reviewer"
+                  onclick="selectTheme('reviewer')"
+                ></button>
+                <button
+                  type="button"
+                  class="btn border"
+                  style="width: 50px; height: 50px; background: #ede9fe"
+                  data-theme="custom1"
+                  onclick="selectTheme('custom1')"
+                ></button>
+                <button
+                  type="button"
+                  class="btn border"
+                  style="width: 50px; height: 50px; background: #fee2e2"
+                  data-theme="custom2"
+                  onclick="selectTheme('custom2')"
+                ></button>
+              </div>
+              <input type="hidden" id="selectedTheme" value="admin" />
+            </div>
+          </div>
+          <div class="modal-footer bg-white border-top-0 pt-0 pb-4 pe-4">
+            <button
+              type="button"
+              class="btn btn-light btn-lg px-4"
+              data-bs-dismiss="modal"
+            >
+              取消
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary btn-lg px-4 fw-bold shadow-sm"
+              onclick="saveNewRole()"
+            >
+              確認新增
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="permissionModal" tabindex="-1">
+      <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow-lg">
+          <div class="modal-header bg-white border-bottom-0 pb-0">
+            <div>
+              <h5 class="modal-title fw-bold text-dark">權限設定</h5>
+              <p class="text-secondary small mb-0">
+                正在設定角色：<span
+                  id="modalRoleTitle"
+                  class="fw-bold text-primary fs-5"
+                  >系統管理員</span
+                >
+              </p>
+            </div>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body p-4 bg-light">
+            <div class="mb-4">
+              <h6 class="fw-bold text-secondary mb-3">可見區塊控制</h6>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="permission-item-card">
+                    <div>
+                      <div class="fw-bold text-dark">今日提醒區塊</div>
+                      <div class="text-secondary small mt-1">
+                        顯示截止日、公告通知。
+                      </div>
+                    </div>
+                    <div class="form-check form-switch m-0">
+                      <input
+                        class="form-check-input custom-switch-lg"
+                        type="checkbox"
+                        id="perm_1"
+                        checked
+                      />
+                    </div>
+                  </label>
+                </div>
+                <div class="col-md-6">
+                  <label class="permission-item-card">
+                    <div>
+                      <div class="fw-bold text-dark">命題儀表板</div>
+                      <div class="text-secondary small mt-1">
+                        全體進度圓餅圖與統計。
+                      </div>
+                    </div>
+                    <div class="form-check form-switch m-0">
+                      <input
+                        class="form-check-input custom-switch-lg"
+                        type="checkbox"
+                        id="perm_2"
+                      />
+                    </div>
+                  </label>
+                </div>
+                <div class="col-md-6">
+                  <label class="permission-item-card">
+                    <div>
+                      <div class="fw-bold text-dark">我的命題任務</div>
+                      <div class="text-secondary small mt-1">
+                        個人的命題入口卡片。
+                      </div>
+                    </div>
+                    <div class="form-check form-switch m-0">
+                      <input
+                        class="form-check-input custom-switch-lg"
+                        type="checkbox"
+                        id="perm_3"
+                      />
+                    </div>
+                  </label>
+                </div>
+                <div class="col-md-6">
+                  <label class="permission-item-card">
+                    <div>
+                      <div class="fw-bold text-dark">審題清單</div>
+                      <div class="text-secondary small mt-1">
+                        待審核題目入口卡片。
+                      </div>
+                    </div>
+                    <div class="form-check form-switch m-0">
+                      <input
+                        class="form-check-input custom-switch-lg"
+                        type="checkbox"
+                        id="perm_4"
+                      />
+                    </div>
+                  </label>
+                </div>
+                <div class="col-md-6">
+                  <label class="permission-item-card">
+                    <div>
+                      <div class="fw-bold text-dark">教師管理系統</div>
+                      <div class="text-secondary small mt-1">
+                        進入教師名單列表。
+                      </div>
+                    </div>
+                    <div class="form-check form-switch m-0">
+                      <input
+                        class="form-check-input custom-switch-lg"
+                        type="checkbox"
+                        id="perm_5"
+                      />
+                    </div>
+                  </label>
+                </div>
+                <div class="col-md-6">
+                  <label class="permission-item-card">
+                    <div>
+                      <div class="fw-bold text-dark">角色與權限管理</div>
+                      <div class="text-secondary small mt-1">
+                        設定系統管理員、新增使用者。
+                      </div>
+                    </div>
+                    <div class="form-check form-switch m-0">
+                      <input
+                        class="form-check-input custom-switch-lg"
+                        type="checkbox"
+                        id="perm_6"
+                      />
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer bg-white border-top-0 pt-0 pb-4 pe-4">
+            <button
+              type="button"
+              class="btn btn-light btn-lg px-4 fs-6"
+              data-bs-dismiss="modal"
+            >
+              取消
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary btn-lg px-4 fs-6 fw-bold shadow-sm"
+            >
+              儲存設定
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="editUserModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow-lg">
+          <div class="modal-header bg-white border-bottom">
+            <div>
+              <h5 class="modal-title fw-bold text-dark">
+                編輯使用者：<span id="modalEditTitleName" class="text-primary"
+                  >--</span
+                >
+              </h5>
+              <p class="text-secondary small mb-0">
+                管理個人資料、聯絡方式與帳號狀態
+              </p>
+            </div>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+
+          <div class="modal-body p-0">
+            <input type="hidden" id="editUserId" />
+
+            <ul class="nav nav-tabs nav-justified" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button
+                  class="nav-link active py-3 fw-bold"
+                  data-bs-toggle="tab"
+                  data-bs-target="#edit-basic"
+                  type="button"
+                >
+                  基本帳號資料
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button
+                  class="nav-link py-3 fw-bold"
+                  data-bs-toggle="tab"
+                  data-bs-target="#edit-projects"
+                  type="button"
+                >
+                  參與梯次與身分
+                </button>
+              </li>
+            </ul>
+
+            <div class="tab-content p-4">
+              <div class="tab-pane fade show active" id="edit-basic">
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label fw-bold">真實姓名</label>
+                    <input type="text" class="form-control" id="editRealName" />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label fw-bold">登入帳號 (Email)</label>
+                    <input
+                      type="email"
+                      class="form-control bg-light"
+                      id="editEmail"
+                      readonly
+                    />
+                    <div class="form-text">帳號建立後不可修改</div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label fw-bold">服務單位 / 學校</label>
+                    <input type="text" class="form-control" id="editOrg" />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label fw-bold">職稱</label>
+                    <input type="text" class="form-control" id="editTitle" />
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label fw-bold">聯絡電話 / 手機</label>
+                    <input type="text" class="form-control" id="editPhone" />
+                  </div>
+
+                  <hr class="my-4" />
+
+                  <div class="col-12">
+                    <label class="form-label fw-bold mb-2">帳號安全設定</label>
+                    <div
+                      class="d-flex justify-content-between align-items-center p-3 border rounded bg-light"
+                    >
+                      <div>
+                        <div class="fw-bold">登入密碼</div>
+                        <div class="small text-muted">
+                          若使用者忘記密碼，可在此協助重設
+                        </div>
+                      </div>
+                      <button class="btn btn-outline-secondary btn-sm bg-white">
+                        發送重設密碼信
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="col-12 mt-3">
+                    <div
+                      class="form-check form-switch p-3 border rounded bg-white"
+                    >
+                      <input
+                        class="form-check-input ms-0 me-3"
+                        type="checkbox"
+                        id="accountStatus"
+                        style="transform: scale(1.2)"
+                      />
+                      <div class="d-inline-block align-middle">
+                        <label
+                          class="form-check-label fw-bold"
+                          for="accountStatus"
+                          >啟用此帳號</label
+                        >
+                        <div class="text-muted small">
+                          關閉後，使用者將無法登入系統
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="tab-pane fade" id="edit-projects">
+                <div class="card bg-light border-0 mb-4">
+                  <div class="card-body">
+                    <h6 class="fw-bold mb-3 text-dark">
+                      <i class="bi bi-plus-circle-fill text-primary me-2"></i
+                      >指派至新梯次
+                    </h6>
+                    <div class="row g-2 align-items-end">
+                      <div class="col-md-5">
+                        <label class="small text-muted mb-1"
+                          >選擇梯次專案</label
+                        >
+                        <select
+                          class="form-select form-select-sm"
+                          id="assignProjectSelect"
+                        >
+                          <option selected disabled>請選擇梯次...</option>
+                        </select>
+                      </div>
+                      <div class="col-md-4">
+                        <label class="small text-muted mb-1">擔任身分</label>
+                        <select
+                          class="form-select form-select-sm"
+                          id="assignRoleSelect"
+                        >
+                          <option value="teacher">命題教師</option>
+                          <option value="reviewer">審題委員</option>
+                        </select>
+                      </div>
+                      <div class="col-md-3">
+                        <button
+                          class="btn btn-primary btn-sm w-100 fw-bold"
+                          onclick="addProjectRoleMock()"
+                        >
+                          新增指派
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <h6 class="fw-bold mb-3">已參與的梯次列表</h6>
+                <div
+                  class="border rounded bg-white custom-scrollbar"
+                  style="max-height: 300px; overflow-y: auto"
+                  id="userProjectHistory"
+                ></div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer bg-white pt-3 pe-4">
+            <button
+              type="button"
+              class="btn btn-light btn-lg px-4 fs-6"
+              data-bs-dismiss="modal"
+            >
+              關閉
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary btn-lg px-4 fs-6 fw-bold shadow-sm"
+            >
+              儲存變更
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- ================
+        編輯與新增使用者
+         ================ -->
+    <div class="modal fade" id="addUserModal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+          <div class="modal-header bg-white border-bottom">
+            <h5 class="modal-title fw-bold">新增系統使用者</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body p-4">
+            <div class="mb-3">
+              <label class="form-label fw-bold"
+                >真實姓名 <span class="text-danger">*</span></label
+              >
+              <input
+                type="text"
+                class="form-control"
+                id="addUserName"
+                placeholder="例如：王小明"
+              />
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-bold"
+                >登入帳號 (Email) <span class="text-danger">*</span></label
+              >
+              <input
+                type="email"
+                class="form-control"
+                id="addUserEmail"
+                placeholder="name@example.com"
+              />
+            </div>
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label fw-bold">服務單位</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="addUserOrg"
+                  placeholder="例如：臺灣大學"
+                />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold">職稱</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="addUserTitle"
+                  placeholder="例如：教授"
+                />
+              </div>
+            </div>
+            <div class="alert alert-light border small text-secondary">
+              <i class="bi bi-info-circle me-1"></i> 預設密碼為
+              <strong>Cwt123456</strong>，使用者首次登入時須強制更改密碼。
+            </div>
+          </div>
+          <div class="modal-footer border-top-0 pt-0">
+            <button type="button" class="btn btn-light" data-bs-dismiss="modal">
+              取消
+            </button>
+            <button type="button" class="btn btn-primary fw-bold px-4">
+              建立帳號
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="editUserModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow-lg">
+          <div class="modal-header bg-white border-bottom">
+            <div>
+              <h5 class="modal-title fw-bold text-dark">
+                編輯使用者：<span id="modalEditTitleName" class="text-primary"
+                  >--</span
+                >
+              </h5>
+              <p class="text-secondary small mb-0">
+                管理個人資料、聯絡方式與帳號狀態
+              </p>
+            </div>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+
+          <div class="modal-body p-0">
+            <input type="hidden" id="editUserId" />
+
+            <ul class="nav nav-tabs nav-justified" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button
+                  class="nav-link active py-3 fw-bold"
+                  data-bs-toggle="tab"
+                  data-bs-target="#edit-basic"
+                  type="button"
+                >
+                  基本帳號資料
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button
+                  class="nav-link py-3 fw-bold"
+                  data-bs-toggle="tab"
+                  data-bs-target="#edit-projects"
+                  type="button"
+                >
+                  參與梯次紀錄
+                </button>
+              </li>
+            </ul>
+
+            <div class="tab-content p-4">
+              <div class="tab-pane fade show active" id="edit-basic">
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label fw-bold">真實姓名</label>
+                    <input type="text" class="form-control" id="editRealName" />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label fw-bold">登入帳號 (Email)</label>
+                    <input
+                      type="email"
+                      class="form-control bg-light"
+                      id="editEmail"
+                      readonly
+                    />
+                    <div class="form-text">帳號建立後不可修改</div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label fw-bold">服務單位 / 學校</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="editOrg"
+                      placeholder="例如：國立臺灣大學"
+                    />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label fw-bold">職稱</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="editTitle"
+                      placeholder="例如：副教授"
+                    />
+                  </div>
+
+                  <div class="col-12">
+                    <label class="form-label fw-bold">聯絡電話 / 手機</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="editPhone"
+                      placeholder="09xx-xxx-xxx"
+                    />
+                  </div>
+
+                  <hr class="my-4" />
+
+                  <div class="col-12">
+                    <label class="form-label fw-bold mb-2">帳號安全設定</label>
+                    <div
+                      class="d-flex justify-content-between align-items-center p-3 border rounded bg-light"
+                    >
+                      <div>
+                        <div class="fw-bold">登入密碼</div>
+                        <div class="small text-muted">
+                          若使用者忘記密碼，可在此協助重設
+                        </div>
+                      </div>
+                      <button class="btn btn-outline-secondary btn-sm bg-white">
+                        發送重設密碼信
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="col-12 mt-3">
+                    <div
+                      class="form-check form-switch p-3 border rounded bg-white"
+                    >
+                      <input
+                        class="form-check-input ms-0 me-3"
+                        type="checkbox"
+                        id="accountStatus"
+                        style="transform: scale(1.2)"
+                      />
+                      <div class="d-inline-block align-middle">
+                        <label
+                          class="form-check-label fw-bold"
+                          for="accountStatus"
+                          >啟用此帳號</label
+                        >
+                        <div class="text-muted small">
+                          關閉後，使用者將無法登入系統
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="tab-pane fade" id="edit-projects">
+                <div
+                  class="alert alert-info border-0 bg-opacity-10 d-flex align-items-center mb-3"
+                >
+                  <i class="bi bi-info-circle-fill text-info me-2"></i>
+                  <div class="small">
+                    此處僅顯示該人員參與的歷史紀錄。<br />
+                    如需指派新梯次或調整身分，請前往
+                    <strong>[命題專案管理]</strong>。
+                  </div>
+                </div>
+
+                <div
+                  class="border rounded bg-white custom-scrollbar"
+                  style="max-height: 400px; overflow-y: auto"
+                  id="userProjectHistory"
+                ></div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer bg-white pt-3 pe-4">
+            <button
+              type="button"
+              class="btn btn-light btn-lg px-4 fs-6"
+              data-bs-dismiss="modal"
+            >
+              關閉
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary btn-lg px-4 fs-6 fw-bold shadow-sm"
+            >
+              儲存變更
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="edituser.js"></script>
+    <script src="newuser.js"></script>
+    <script src="app.js"></script>
+    <script>
+      // 1. 動態分頁切換
+      function switchTab(index, targetId) {
+        const indicator = document.getElementById("segmentIndicator");
+        const items = document.querySelectorAll(".nav-segment-item");
+
+        // 計算滑動位置 (0%, 100%, 200%)
+        // 加上 translateX 微調是為了對應 CSS 中的 gap 或 padding
+        if (index === 0) {
+          indicator.style.transform = "translateX(0)";
+        } else if (index === 1) {
+          indicator.style.transform = "translateX(100%) translateX(4px)";
+        } else if (index === 2) {
+          indicator.style.transform = "translateX(200%) translateX(8px)";
+        }
+
+        // 更新按鈕樣式
+        items.forEach((item) => item.classList.remove("active"));
+        items[index].classList.add("active");
+
+        // 切換內容顯示
+        document.querySelectorAll(".tab-pane").forEach((el) => {
+          el.classList.remove("show", "active");
+        });
+        document.querySelector(targetId).classList.add("show", "active");
+      }
+
+      // 2. 權限 Modal 邏輯
+      function updateCardStyles() {
+        document
+          .querySelectorAll('.permission-item-card input[type="checkbox"]')
+          .forEach((input) => {
+            const card = input.closest(".permission-item-card");
+            if (input.checked) {
+              card.classList.add("checked");
+            } else {
+              card.classList.remove("checked");
+            }
+          });
+      }
+      document.addEventListener("DOMContentLoaded", () => {
+        updateCardStyles();
+        document
+          .querySelectorAll('.permission-item-card input[type="checkbox"]')
+          .forEach((input) => {
+            input.addEventListener("change", updateCardStyles);
+          });
+
+        // 綁定編輯使用者按鈕
+        const editButtons = document.querySelectorAll(".btn-edit-user");
+        editButtons.forEach((btn) => {
+          btn.addEventListener("click", function () {
+            const row = this.closest("tr");
+            const name = row.querySelector(".fw-bold").innerText;
+            const email = row.querySelector(".font-monospace").innerText;
+
+            document.getElementById("editUserName").innerText = name;
+            document.getElementById("editRealName").value = name;
+            document.getElementById("editEmail").value = email;
+
+            const modal = new bootstrap.Modal(
+              document.getElementById("editUserModal")
+            );
+            modal.show();
+          });
+        });
+      });
+
+      function openPermissionModal(roleName, iconClass, theme) {
+        document.getElementById("modalRoleTitle").innerText = roleName;
+        const myModal = new bootstrap.Modal(
+          document.getElementById("permissionModal")
+        );
+        const allChecks = document.querySelectorAll(
+          '#permissionModal input[type="checkbox"]'
+        );
+        allChecks.forEach((c) => (c.checked = false));
+        // 模擬預設值
+        document.getElementById("perm_1").checked = true;
+        if (roleName === "命題教師") {
+          document.getElementById("perm_3").checked = true;
+        } else if (roleName === "審題委員") {
+          document.getElementById("perm_4").checked = true;
+        } else {
+          allChecks.forEach((c) => (c.checked = true));
+        }
+        updateCardStyles();
+        myModal.show();
+      }
+
+      // 3. Icon 選擇器
+      let selectedIcon = null;
+      let selectedThemeValue = "admin";
+      document.addEventListener("DOMContentLoaded", () => {
+        const iconOptions = document.querySelectorAll(".icon-option");
+        const preview = document.getElementById("selectedIconPreview");
+        const iconName = document.getElementById("selectedIconName");
+        const iconValue = document.getElementById("selectedIconValue");
+        iconOptions.forEach((option) => {
+          option.addEventListener("click", function () {
+            iconOptions.forEach((opt) => opt.classList.remove("selected"));
+            this.classList.add("selected");
+            const iconClass = this.dataset.icon;
+            const name = this.dataset.name;
+            preview.innerHTML = `<i class="${iconClass}"></i>`;
+            iconName.textContent = name;
+            iconValue.value = iconClass;
+            selectedIcon = iconClass;
+          });
+        });
+      });
+
+      function openAddRoleModal() {
+        const modal = new bootstrap.Modal(
+          document.getElementById("addRoleModal")
+        );
+        document.getElementById("newRoleName").value = "";
+        document.getElementById("newRoleDesc").value = "";
+        document.getElementById("selectedIconValue").value = "";
+        document.getElementById("selectedIconName").textContent = "未選擇";
+        document.getElementById("selectedIconPreview").innerHTML =
+          '<i class="bi bi-question-circle"></i>';
+        document
+          .querySelectorAll(".icon-option")
+          .forEach((opt) => opt.classList.remove("selected"));
+        selectedIcon = null;
+        selectedThemeValue = "admin";
+        modal.show();
+      }
+
+      function selectTheme(theme) {
+        selectedThemeValue = theme;
+        document.getElementById("selectedTheme").value = theme;
+        const preview = document.getElementById("selectedIconPreview");
+        preview.className = "icon-preview theme-" + theme;
+        const buttons = document.querySelectorAll("button[data-theme]");
+        buttons.forEach((btn) => {
+          btn.style.boxShadow = "none";
+          btn.style.transform = "scale(1)";
+        });
+        const activeBtn = document.querySelector(
+          `button[data-theme="${theme}"]`
+        );
+        if (activeBtn) {
+          activeBtn.style.boxShadow = "0 0 0 3px rgba(59, 130, 246, 0.5)";
+          activeBtn.style.transform = "scale(1.1)";
+        }
+      }
+
+      function saveNewRole() {
+        const roleName = document.getElementById("newRoleName").value.trim();
+        const iconClass = document.getElementById("selectedIconValue").value;
+        if (!roleName) {
+          alert("請輸入角色名稱");
+          return;
+        }
+        if (!iconClass) {
+          alert("請選擇圖示");
+          return;
+        }
+        // 這裡可加入 AJAX 呼叫
+        alert(`角色「${roleName}」已新增成功！`);
+        bootstrap.Modal.getInstance(
+          document.getElementById("addRoleModal")
+        ).hide();
+      }
+
+      document.querySelectorAll(".role-card-v1").forEach((card) => {
+        card.addEventListener("click", function (e) {
+          if (e.target.closest(".action-button")) return; // 防止點擊按鈕時觸發
+          const roleTitle = this.querySelector(".role-title").innerText;
+          openPermissionModal(roleTitle);
+        });
+        // 綁定卡片上的「編輯權限」按鈕
+        const actionBtn = card.querySelector(".action-button");
+        if (actionBtn) {
+          actionBtn.addEventListener("click", function (e) {
+            e.stopPropagation(); // 阻止冒泡
+            const roleTitle = card.querySelector(".role-title").innerText;
+            openPermissionModal(roleTitle);
+          });
+        }
+      });
+
+      document.querySelector(".add-role-card").addEventListener("click", () => {
+        openAddRoleModal();
+      });
+
+      /**
+       * 假資料：模擬後端資料庫
+       * 包含了指定的五位老師：李文華、陳秀蘭、王偉、李大華、林志豪
+       */
+      const mockUsers = [
+        {
+          name: "李文華",
+          email: "wenhua.li@test.com",
+          avatar: "李",
+          color: "primary",
+        },
+        {
+          name: "林志豪",
+          email: "lin.zhihao@test.com",
+          avatar: "林",
+          color: "warning",
+        },
+        {
+          name: "陳秀蘭",
+          email: "xiulan.chen@test.com",
+          avatar: "陳",
+          color: "danger",
+        },
+        {
+          name: "王偉",
+          email: "wang.wei@test.com",
+          avatar: "王",
+          color: "info",
+        },
+        {
+          name: "李大華",
+          email: "dahua.li@test.com",
+          avatar: "李",
+          color: "secondary",
+        },
+      ];
+
+      // 專案資料庫 (包含成員關聯)
+      let projectsData = [
+        {
+          id: 1,
+          year: 2024,
+          name: "進行中梯次範例一",
+          status: "active", // active, closed
+          startDate: "2024-01-01",
+          endDate: "2024-12-31",
+          members: [
+            {
+              userId: 0,
+              roles: ["teacher"],
+              status: "active",
+              joinedDate: "2024/01/15",
+            }, // 李文華
+            {
+              userId: 1,
+              roles: ["teacher", "reviewer"],
+              status: "active",
+              joinedDate: "2024/01/18",
+            }, // 林志豪 (多重身分)
+            {
+              userId: 2,
+              roles: ["reviewer"],
+              status: "active",
+              joinedDate: "2024/02/01",
+            }, // 陳秀蘭
+            {
+              userId: 3,
+              roles: ["teacher"],
+              status: "pending",
+              joinedDate: "2024/02/05",
+            }, // 王偉 (未開通)
+            {
+              userId: 4,
+              roles: ["teacher"],
+              status: "suspended",
+              joinedDate: "2024/01/10",
+            }, // 李大華 (停權)
+          ],
+        },
+        {
+          id: 2,
+          year: 2024,
+          name: "進行中梯次範例二",
+          status: "active",
+          startDate: "2024-03-01",
+          endDate: "2024-06-30",
+          members: [
+            {
+              userId: 2,
+              roles: ["teacher"],
+              status: "active",
+              joinedDate: "2024/03/05",
+            }, // 只有陳秀蘭
+          ],
+        },
+        {
+          id: 3,
+          year: 2023,
+          name: "2023 年度總結算",
+          status: "closed",
+          startDate: "2023-01-01",
+          endDate: "2023-12-31",
+          members: [],
+        },
+      ];
+
+      // 當前選中的專案 ID
+      let currentProjectId = 1;
+
+      // 初始化
+      document.addEventListener("DOMContentLoaded", () => {
+        initYearSelect();
+        renderProjectList();
+        renderProjectDetail();
+      });
+
+      /**
+       * 1. 渲染左側專案列表
+       */
+      function renderProjectList() {
+        const container = document.getElementById("projectListContainer");
+        const filterYear = document.getElementById("yearFilter").value;
+
+        container.innerHTML = ""; // 清空
+
+        // 篩選與排序
+        const filteredProjects = projectsData.filter(
+          (p) => filterYear === "all" || p.year.toString() === filterYear
+        );
+
+        filteredProjects.forEach((p) => {
+          const isActive = p.id === currentProjectId;
+          const activeClass = isActive
+            ? "active border-primary"
+            : "border-transparent";
+          const badgeClass =
+            p.status === "active"
+              ? "bg-success text-success bg-opacity-10"
+              : "bg-secondary text-secondary bg-opacity-10";
+          const badgeText = p.status === "active" ? "進行中" : "已截止";
+
+          // 如果是 Active 狀態，文字顏色要調整
+          const badgeRender = isActive
+            ? `<span class="badge bg-white text-primary rounded-pill">${badgeText}</span>`
+            : `<span class="badge ${badgeClass} rounded-pill">${badgeText}</span>`;
+
+          const textMutedClass = isActive ? "text-white-50" : "text-muted";
+          const textTitleClass = isActive ? "text-white" : "text-dark";
+
+          const html = `
+            <a href="javascript:void(0)" onclick="switchProject(${p.id})" 
+               class="list-group-item list-group-item-action py-3 border-start border-4 ${activeClass}">
+                <div class="d-flex w-100 justify-content-between mb-1">
+                    <small class="${textMutedClass}">${p.year} 年度</small>
+                    ${badgeRender}
+                </div>
+                <h6 class="mb-1 fw-bold ${textTitleClass}">${p.name}</h6>
+                <small class="${isActive ? "text-white-50" : "text-secondary"}">
+                    <i class="bi bi-people-fill me-1"></i>成員：${
+                      p.members.length
+                    } 人
+                </small>
+            </a>
+        `;
+          container.innerHTML += html;
+        });
+        container.innerHTML += '<div style="height: 1px;"></div>';
+      }
+
+      /**
+       * 2. 切換專案
+       */
+      function switchProject(id) {
+        currentProjectId = id;
+        renderProjectList(); // 重新渲染列表以更新 Active 樣式
+        renderProjectDetail(); // 更新右側內容
+      }
+
+      /**
+       * 3. 渲染右側詳細內容
+       */
+      function renderProjectDetail() {
+        const project = projectsData.find((p) => p.id === currentProjectId);
+        const detailCard = document.getElementById("projectDetailCard");
+
+        // 如果找不到專案 (可能被刪除了)
+        if (!project) {
+          document
+            .querySelector("#projectDetailCard .card-header")
+            .classList.add("d-none");
+          document
+            .querySelector("#projectDetailCard .card-body table")
+            .classList.add("d-none");
+          document.getElementById("emptyState").classList.remove("d-none");
+          return;
+        }
+
+        // 恢復顯示
+        document
+          .querySelector("#projectDetailCard .card-header")
+          .classList.remove("d-none");
+        document
+          .querySelector("#projectDetailCard .card-body table")
+          .classList.remove("d-none");
+        document.getElementById("emptyState").classList.add("d-none");
+
+        // 填入基本資訊
+        document.getElementById("detailYearBadge").innerText = project.year;
+        document.getElementById("detailProjectName").innerText = project.name;
+        document.getElementById(
+          "detailDateRange"
+        ).innerText = `${project.startDate} ~ ${project.endDate}`;
+
+        const statusBadge = document.getElementById("detailStatusBadge");
+        if (project.status === "active") {
+          statusBadge.className =
+            "badge bg-success bg-opacity-10 text-success rounded-pill ms-2";
+          statusBadge.innerText = "進行中";
+        } else {
+          statusBadge.className =
+            "badge bg-secondary bg-opacity-10 text-secondary rounded-pill ms-2";
+          statusBadge.innerText = "已截止";
+        }
+
+        // 渲染成員統計
+        renderMemberStats(project);
+
+        // 渲染成員列表表格
+        const tbody = document.getElementById("memberListContainer");
+        tbody.innerHTML = "";
+
+        if (project.members.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-secondary">尚無成員</td></tr>`;
+          return;
+        }
+
+        project.members.forEach((memberData) => {
+          const user = mockUsers[memberData.userId];
+
+          // 產生角色標籤 HTML
+          let rolesHtml = "";
+          memberData.roles.forEach((r) => {
+            if (r === "teacher")
+              rolesHtml += `<span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-10 me-1">命題教師</span>`;
+            if (r === "reviewer")
+              rolesHtml += `<span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-10 me-1">審題委員</span>`;
+            if (r === "admin")
+              rolesHtml += `<span class="badge bg-dark me-1">管理員</span>`;
+          });
+
+          // 產生狀態標籤 HTML
+          let statusHtml = "";
+          switch (memberData.status) {
+            case "active":
+              statusHtml = `<span class="badge bg-success bg-opacity-10 text-success rounded-pill">啟用中</span>`;
+              break;
+            case "pending":
+              statusHtml = `<span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill">未開通</span>`;
+              break;
+            case "suspended":
+              statusHtml = `<span class="badge bg-danger bg-opacity-10 text-danger rounded-pill">已停權</span>`;
+              break;
+          }
+
+          const row = `
+            <tr>
+                <td class="ps-4">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-${user.color} bg-opacity-10 text-${user.color} rounded-circle d-flex justify-content-center align-items-center me-3 fw-bold" style="width: 36px; height: 36px">${user.avatar}</div>
+                        <div>
+                            <div class="fw-bold text-dark">${user.name}</div>
+                            <div class="small text-muted font-monospace">${user.email}</div>
+                        </div>
+                    </div>
+                </td>
+                <td>${rolesHtml}</td>
+                <td>${statusHtml}</td>
+                <td class="text-end pe-4">
+                    <button class="btn btn-sm btn-light text-secondary"><i class="bi bi-three-dots-vertical"></i></button>
+                </td>
+            </tr>
+        `;
+          tbody.innerHTML += row;
+        });
+      }
+
+      function renderMemberStats(project) {
+        const statsContainer = document.getElementById("memberStatsFilter");
+        const total = project.members.length;
+        const teachers = project.members.filter((m) =>
+          m.roles.includes("teacher")
+        ).length;
+        const reviewers = project.members.filter((m) =>
+          m.roles.includes("reviewer")
+        ).length;
+
+        statsContainer.innerHTML = `
+        <li class="nav-item"><a class="nav-link active rounded-pill px-3 py-1 small fw-bold" href="#">全部成員 (${total})</a></li>
+        <li class="nav-item"><a class="nav-link rounded-pill px-3 py-1 small text-secondary bg-light" href="#">命題教師 (${teachers})</a></li>
+        <li class="nav-item"><a class="nav-link rounded-pill px-3 py-1 small text-secondary bg-light" href="#">審題委員 (${reviewers})</a></li>
+    `;
+      }
+
+      /**
+       * 4. 新增/編輯 專案邏輯
+       */
+      const projectModal = new bootstrap.Modal(
+        document.getElementById("projectFormModal")
+      );
+      let isEditMode = false;
+
+      function openProjectModal(mode) {
+        const modalTitle = document.getElementById("projectModalTitle");
+        const formFields = {
+          id: document.getElementById("projId"),
+          year: document.getElementById("projYear"),
+          name: document.getElementById("projName"),
+          status: document.getElementById("projStatus"),
+          start: document.getElementById("projStart"),
+          end: document.getElementById("projEnd"),
+        };
+
+        if (mode === "add") {
+          isEditMode = false;
+          modalTitle.innerText = "新增命題專案";
+          // 清空表單
+          formFields.id.value = "";
+          formFields.name.value = "";
+          formFields.start.value = "";
+          formFields.end.value = "";
+          formFields.status.value = "active";
+        } else {
+          isEditMode = true;
+          modalTitle.innerText = "編輯專案內容";
+          // 填入現有資料
+          const p = projectsData.find((x) => x.id === currentProjectId);
+          formFields.id.value = p.id;
+          formFields.year.value = p.year;
+          formFields.name.value = p.name;
+          formFields.status.value = p.status;
+          formFields.start.value = p.startDate;
+          formFields.end.value = p.endDate;
+        }
+        projectModal.show();
+      }
+
+      function editCurrentProject() {
+        openProjectModal("edit");
+      }
+
+      function saveProject() {
+        const idField = document.getElementById("projId").value;
+        const newData = {
+          year: parseInt(document.getElementById("projYear").value),
+          name: document.getElementById("projName").value,
+          status: document.getElementById("projStatus").value,
+          startDate: document.getElementById("projStart").value,
+          endDate: document.getElementById("projEnd").value,
+        };
+
+        if (!newData.name) {
+          alert("請輸入專案名稱");
+          return;
+        }
+
+        if (isEditMode) {
+          // 更新模式
+          const idx = projectsData.findIndex((p) => p.id == idField);
+          if (idx !== -1) {
+            // 保留原本的 members
+            projectsData[idx] = { ...projectsData[idx], ...newData };
+          }
+        } else {
+          // 新增模式
+          const newId = Math.max(...projectsData.map((p) => p.id)) + 1;
+          projectsData.unshift({
+            // 加到最前面
+            id: newId,
+            ...newData,
+            members: [], // 新專案預設沒人
+          });
+          currentProjectId = newId; // 切換到新專案
+        }
+
+        projectModal.hide();
+        renderProjectList();
+        renderProjectDetail();
+      }
+
+      /**
+       * 5. 刪除專案
+       */
+      function deleteCurrentProject() {
+        if (confirm("確定要刪除此專案嗎？此操作無法復原。")) {
+          projectsData = projectsData.filter((p) => p.id !== currentProjectId);
+
+          // 刪除後，如果還有專案，選第一個；如果沒了，設為 null
+          if (projectsData.length > 0) {
+            currentProjectId = projectsData[0].id;
+          } else {
+            currentProjectId = null;
+          }
+
+          renderProjectList();
+          renderProjectDetail();
+        }
+      }
+      /**
+       * 6. 年份篩選
+       */
+      // --- 新增這個函式 ---
+      function initYearSelect() {
+        const select = document.getElementById("projYear");
+        const currentYear = new Date().getFullYear(); // 抓取現在年份 (例如 2026)
+
+        select.innerHTML = ""; // 清空現有選項
+
+        // 設定範圍：顯示從 [今年] 到 [未來 4 年] (共 5 個選項)
+        // 如果需要包含去年，可以把 let i = 0 改成 let i = -1
+        for (let i = -5; i < 5; i++) {
+          const year = currentYear + i;
+          const option = document.createElement("option");
+          option.value = year;
+          option.text = `${year} 年度`; // 顯示 "2026 年度"
+          select.appendChild(option);
+        }
+      }
+    </script>
+  </body>
+</html>
