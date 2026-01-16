@@ -139,6 +139,64 @@ body {
     }
 }
 
+/* =========================================
+   7. 專案管理相關樣式 (Moved from cwt-role.html)
+   ========================================= */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+#projectListContainer {
+    background-color: #fff;
+}
+
+#projectListContainer .list-group-item:last-child {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125) !important;
+}
+
+#projectListContainer .list-group-item {
+    border-left: 4px solid transparent;
+    transition: all 0.2s ease;
+}
+
+#projectListContainer .list-group-item:hover {
+    background-color: #f8f9fa;
+}
+
+#projectListContainer .list-group-item.active {
+    background-color: #2563eb !important;
+    border-color: #2563eb !important;
+    color: white !important;
+    z-index: 2;
+}
+
+#projectListContainer .list-group-item.active h6 {
+    color: white !important;
+}
+
+#projectListContainer .list-group-item.active small,
+#projectListContainer .list-group-item.active i {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+#projectListContainer .list-group-item.active .badge.bg-primary {
+    background-color: white !important;
+    color: #2563eb !important;
+}
+
 /* 下拉選單內部元件 */
 .dropdown-header {
     padding: 1rem 1.25rem;

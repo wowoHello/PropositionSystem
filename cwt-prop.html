@@ -1,0 +1,1410 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CWT 命題工作平臺 - 命題專案管理</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
+    <style>
+        html,
+        body {
+            height: 100%;
+            overflow-x: hidden;
+        }
+
+        .sidebar {
+            width: 280px;
+            background-color: white;
+            border-left: 1px solid #dee2e6;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        /* Modal Dual Panel Responsive Fix */
+        @media (min-width: 768px) {
+            .modal-dual-pane {
+                height: 600px;
+                max-height: calc(90vh - 140px);
+                overflow: hidden;
+            }
+
+            .modal-dual-pane .pane-left {
+                height: 100%;
+                border-right: 1px solid #dee2e6;
+            }
+
+            .modal-dual-pane .pane-right {
+                height: 100%;
+                background-color: #f8f9fa;
+            }
+
+            .modal-dual-pane .pane-scroll {
+                overflow-y: auto;
+                /* height: 100%; Removed to allow proper scrolling in flex container */
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            .modal-dual-pane {
+                height: auto;
+                max-height: none;
+                overflow: visible;
+            }
+
+            .modal-dual-pane .pane-left {
+                height: 400px;
+                /* Fixed height for teacher list on mobile */
+                border-bottom: 1px solid #dee2e6;
+            }
+
+            .modal-dual-pane .pane-right {
+                height: auto;
+                min-height: 200px;
+                background-color: #f8f9fa;
+            }
+
+            .modal-dual-pane .pane-scroll {
+                overflow-y: auto;
+                /* Allow internal scrolling if needed */
+            }
+        }
+
+        body {
+            font-family: "Noto Sans TC", sans-serif;
+            background-color: #f3f4f6;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 2rem 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar (Same as firstpage.html) -->
+    <nav class="top-navbar">
+        <div class="container-fluid px-4">
+            <div class="row align-items-center">
+                <div class="col-3">
+                    <a href="firstpage.html" class="navbar-brand">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                        </svg>
+                        CWT 命題工作平臺
+                    </a>
+                </div>
+
+                <!-- 中間：專案切換器 -->
+                <div class="col-6 d-flex justify-content-center">
+                    <div class="project-switcher">
+                        <div class="project-display" id="projectToggle">
+                            <div class="project-info">
+                                <div class="project-year" id="currentProjectYear">
+                                    2024年度
+                                </div>
+                                <div class="project-name" id="currentProjectName">
+                                    進行中梯次範例一
+                                </div>
+                            </div>
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path
+                                    d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z" />
+                            </svg>
+                        </div>
+
+                        <div class="project-dropdown" id="projectDropdown">
+                            <div class="dropdown-header">
+                                <span>切換專案</span>
+                                <button class="close-btn" id="closeDropdown">
+                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                        <path
+                                            d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <div class="project-search">
+                                <input type="text" placeholder="搜尋專案名稱..." id="projectSearchInput" />
+                            </div>
+
+                            <div class="project-list" id="projectList">
+                                <div class="project-category">進行中 (3)</div>
+
+                                <div class="project-item active" data-project-id="1" data-year="2024"
+                                    data-name="進行中梯次範例一" data-role="admin">
+                                    <div class="project-item-info">
+                                        <div class="project-item-title">
+                                            <span class="status-indicator status-active"></span>
+                                            進行中梯次範例一
+                                        </div>
+                                        <div class="project-item-meta">
+                                            <span>2024年度</span>
+                                            <span>截止: 2024/12/31</span>
+                                        </div>
+                                    </div>
+                                    <span class="role-badge role-admin">系統管理員</span>
+                                </div>
+
+                                <div class="project-item" data-project-id="2" data-year="2024" data-name="進行中梯次範例二"
+                                    data-role="reviewer">
+                                    <div class="project-item-info">
+                                        <div class="project-item-title">
+                                            <span class="status-indicator status-active"></span>
+                                            進行中梯次範例二
+                                        </div>
+                                        <div class="project-item-meta">
+                                            <span>2024年度</span>
+                                            <span>截止: 2024/11/15</span>
+                                        </div>
+                                    </div>
+                                    <span class="role-badge role-reviewer">審題委員</span>
+                                </div>
+
+                                <div class="project-item" data-project-id="3" data-year="2024" data-name="進行中梯次範例三"
+                                    data-role="teacher">
+                                    <div class="project-item-info">
+                                        <div class="project-item-title">
+                                            <span class="status-indicator status-active"></span>
+                                            進行中梯次範例三
+                                        </div>
+                                        <div class="project-item-meta">
+                                            <span>2024年度</span>
+                                            <span>截止: 2025/01/20</span>
+                                        </div>
+                                    </div>
+                                    <span class="role-badge role-teacher">命題教師</span>
+                                </div>
+
+                                <div class="project-category">已結束 (5)</div>
+
+                                <div class="project-item" data-project-id="4" data-year="2023" data-name="已結束梯次範例一"
+                                    data-role="admin">
+                                    <div class="project-item-info">
+                                        <div class="project-item-title">
+                                            <span class="status-indicator status-finished"></span>
+                                            已結束梯次範例一
+                                        </div>
+                                        <div class="project-item-meta">
+                                            <span>2023年度</span>
+                                            <span>已結束</span>
+                                        </div>
+                                    </div>
+                                    <span class="role-badge role-admin">系統管理員</span>
+                                </div>
+
+                                <div class="project-item" data-project-id="5" data-year="2023" data-name="已結束梯次範例二"
+                                    data-role="teacher">
+                                    <div class="project-item-info">
+                                        <div class="project-item-title">
+                                            <span class="status-indicator status-finished"></span>
+                                            已結束梯次範例二
+                                        </div>
+                                        <div class="project-item-meta">
+                                            <span>2023年度</span>
+                                            <span>已結束</span>
+                                        </div>
+                                    </div>
+                                    <span class="role-badge role-teacher">命題教師</span>
+                                </div>
+
+                                <div class="project-item" data-project-id="6" data-year="2023" data-name="已結束梯次範例三"
+                                    data-role="reviewer">
+                                    <div class="project-item-info">
+                                        <div class="project-item-title">
+                                            <span class="status-indicator status-finished"></span>
+                                            已結束梯次範例三
+                                        </div>
+                                        <div class="project-item-meta">
+                                            <span>2023年度</span>
+                                            <span>已結束</span>
+                                        </div>
+                                    </div>
+                                    <span class="role-badge role-reviewer">審題委員</span>
+                                </div>
+
+                                <div class="project-item" data-project-id="7" data-year="2022" data-name="已結束梯次範例四"
+                                    data-role="teacher">
+                                    <div class="project-item-info">
+                                        <div class="project-item-title">
+                                            <span class="status-indicator status-finished"></span>
+                                            已結束梯次範例四
+                                        </div>
+                                        <div class="project-item-meta">
+                                            <span>2022年度</span>
+                                            <span>已結束</span>
+                                        </div>
+                                    </div>
+                                    <span class="role-badge role-teacher">命題教師</span>
+                                </div>
+
+                                <div class="project-item" data-project-id="8" data-year="2022" data-name="已結束梯次範例五"
+                                    data-role="teacher">
+                                    <div class="project-item-info">
+                                        <div class="project-item-title">
+                                            <span class="status-indicator status-finished"></span>
+                                            已結束梯次範例五
+                                        </div>
+                                        <div class="project-item-meta">
+                                            <span>2022年度</span>
+                                            <span>已結束</span>
+                                        </div>
+                                    </div>
+                                    <span class="role-badge role-teacher">命題教師</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右側：使用者資訊 -->
+                <div class="col-3">
+                    <div class="user-section">
+                        <div class="user-info">
+                            <div class="user-avatar">沈</div>
+                            <span class="user-name">沈雅茹</span>
+                            <span class="role-badge role-admin" id="currentUserRole">系統管理員</span>
+                        </div>
+                        <a href="index.html" class="btn btn-sm btn-light fw-bold text-primary px-3">登出</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <!-- 麵包屑 -->
+    <div class="breadcrumb-bar">
+        <div class="container-fluid px-4">
+            <a href="firstpage.html" class="breadcrumb-item-link">首頁</a>
+            <span class="breadcrumb-separator">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+            </span>
+            <span class="breadcrumb-current">命題專案列表</span>
+        </div>
+    </div>
+    <div class="main-content">
+        <div class="container-fluid px-4 content-container">
+            <div class="row g-4 h-100">
+                <!-- 命題專案列表 -->
+                <div class="col-lg-3 col-md-4">
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden d-flex flex-column"
+                        style="min-height: 100%">
+                        <div class="card-header bg-white border-bottom p-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="fw-bold m-0 text-dark">命題專案列表</h6>
+                                <button class="btn btn-sm btn-primary rounded-circle shadow-sm"
+                                    style="width: 32px; height: 32px" onclick="openProjectModal('add')" title="新增專案">
+                                    <i class="bi bi-plus-lg"></i>
+                                </button>
+                            </div>
+                            <!-- 篩選器改為狀態篩選，預設進行中 -->
+                            <select class="form-select form-select-sm bg-light border-0" id="statusFilter"
+                                onchange="renderProjectList()">
+                                <option value="active" selected>進行中</option>
+                                <option value="closed">已結案</option>
+                            </select>
+                        </div>
+                        <div class="flex-grow-1 custom-scrollbar"
+                            style="overflow-y: auto; min-height: 0; background-color: #f8fafc">
+                            <div class="list-group" id="projectListContainer"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右側詳情與編輯 -->
+                <div class="col-lg-9 col-md-8">
+                    <div class="card border-0 shadow-sm rounded-4 h-100" id="projectDetailCard">
+                        <div class="card-header bg-white border-bottom p-4">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <span class="badge bg-primary" id="detailYearBadge">2024</span>
+                                        <h5 class="fw-bold text-dark m-0" id="detailProjectName">
+                                            載入中...
+                                        </h5>
+                                        <span class="badge rounded-pill ms-2" id="detailStatusBadge">狀態</span>
+                                    </div>
+                                    <p class="text-secondary small mb-0">
+                                        專案區間：<span id="detailDateRange">--</span>
+                                    </p>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-outline-secondary btn-sm" onclick="editCurrentProject()">
+                                        <i class="bi bi-pencil-square"></i> 編輯
+                                    </button>
+                                    <button class="btn btn-outline-danger btn-sm" onclick="deleteCurrentProject()">
+                                        <i class="bi bi-trash"></i> 刪除
+                                    </button>
+                                    <div class="vr mx-1"></div>
+                                    <button class="btn btn-primary btn-sm fw-bold shadow-sm"
+                                        onclick="openAddMemberModal()">
+                                        <i class="bi bi-person-plus-fill me-1"></i> 加入人員
+                                    </button>
+                                </div>
+                            </div>
+
+                            <ul class="nav nav-pills mt-4 gap-2" id="memberStatsFilter"></ul>
+                        </div>
+
+                        <div class="card-body p-0 d-flex flex-column">
+                            <div class="table-responsive flex-grow-1">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="bg-light text-secondary small">
+                                        <tr>
+                                            <th class="ps-4" width="250">人員姓名 / Email</th>
+                                            <th>在此專案身分</th>
+                                            <th>狀態</th>
+                                            <th class="text-end pe-4">操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="memberListContainer"></tbody>
+                                </table>
+                            </div>
+                            <div id="emptyState" class="d-none text-center py-5">
+                                <div class="text-secondary mb-3 fs-1">
+                                    <i class="bi bi-folder-x"></i>
+                                </div>
+                                <h5 class="fw-bold text-secondary">
+                                    沒有選擇專案或專案已被刪除
+                                </h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Form Modal -->
+    <div class="modal fade" id="projectFormModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-white border-bottom">
+                    <h5 class="modal-title fw-bold" id="projectModalTitle">
+                        新增命題專案
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <input type="hidden" id="projId" />
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">年度</label>
+                            <select class="form-select" id="projYear"></select>
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label fw-bold">專案狀態</label>
+                            <select class="form-select" id="projStatus">
+                                <option value="active">進行中</option>
+                                <option value="closed">已結案</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">專案名稱</label>
+                            <input type="text" class="form-control" id="projName" placeholder="例如：第 113 梯次中文檢定" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">開始日期</label>
+                            <input type="date" class="form-control" id="projStart" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">結束日期</label>
+                            <input type="date" class="form-control" id="projEnd" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">
+                        取消
+                    </button>
+                    <button type="button" class="btn btn-primary fw-bold px-4" onclick="saveProject()">
+                        儲存
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Member Modal (Redesigned) -->
+    <div class="modal fade" id="addMemberModal" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="max-height: 90vh;">
+                <div class="modal-header bg-white border-bottom">
+                    <h5 class="modal-title fw-bold">
+                        <i class="bi bi-person-plus-fill me-2 text-primary"></i>加入專案人員
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0 modal-dual-pane">
+                    <div class="row g-0 h-100">
+                        <!-- 左側：教師人才庫 -->
+                        <div class="col-md-7 pane-left d-flex flex-column">
+                            <div class="p-4 flex-shrink-0">
+                                <h6 class="fw-bold text-secondary mb-3">
+                                    <i class="bi bi-people-fill me-2"></i>教師人才庫
+                                </h6>
+
+                                <!-- 搜尋框 -->
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text bg-light border-0">
+                                        <i class="bi bi-search"></i>
+                                    </span>
+                                    <input type="text" class="form-control border-0 bg-light" id="teacherSearchInput"
+                                        placeholder="搜尋姓名或 Email..." oninput="filterTeacherList()">
+                                </div>
+
+                                <!-- 篩選器 -->
+                                <div class="d-flex gap-2 mb-3">
+                                    <select class="form-select form-select-sm bg-light border-0" id="expertiseFilter"
+                                        onchange="filterTeacherList()">
+                                        <option value="">全部專長領域</option>
+                                        <option value="國文">國文</option>
+                                        <option value="作文">作文</option>
+                                        <option value="閱讀測驗">閱讀測驗</option>
+                                    </select>
+
+                                    <select class="form-select form-select-sm bg-light border-0"
+                                        id="participationFilter" onchange="filterTeacherList()">
+                                        <option value="">全部教師</option>
+                                        <option value="participated">曾參與專案</option>
+                                        <option value="new">未參與過任何專案</option>
+                                    </select>
+                                </div>
+
+                                <!-- 全選/清除 -->
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <small class="text-muted" id="teacherCountInfo">共 10 位教師</small>
+                                    <div class="btn-group btn-group-sm">
+                                        <button type="button" class="btn btn-outline-secondary btn-sm"
+                                            onclick="selectAllTeachers()">
+                                            <i class="bi bi-check-all"></i> 全選
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm"
+                                            onclick="clearAllTeachers()">
+                                            <i class="bi bi-x"></i> 清除
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 教師列表 (可滾動) -->
+                            <div class="flex-grow-1 px-4 pb-4 pane-scroll">
+                                <div class="border rounded-3 bg-light p-2 custom-scrollbar" id="teacherListContainer">
+                                    <!-- Populated by JS -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 右側：已選取教師 -->
+                        <div class="col-md-5 pane-right d-flex flex-column">
+                            <div class="p-4 flex-shrink-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="fw-bold text-secondary mb-0">
+                                        <i class="bi bi-person-check-fill me-2"></i>已選取
+                                        <span class="badge bg-primary rounded-pill" id="selectedCountBadge">0</span>
+                                    </h6>
+                                    <button type="button" class="btn btn-sm btn-outline-danger"
+                                        onclick="clearAllSelectedTeachers()">
+                                        <i class="bi bi-trash"></i> 全部移除
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- 已選教師列表 (可滾動) -->
+                            <div class="flex-grow-1 px-4 pb-4 pane-scroll">
+                                <div class="custom-scrollbar" id="selectedTeachersContainer">
+                                    <!-- Empty State -->
+                                    <div class="text-center py-5" id="emptySelectedState">
+                                        <div class="text-secondary mb-2 fs-1">
+                                            <i class="bi bi-person-plus"></i>
+                                        </div>
+                                        <p class="text-muted small mb-0">從左側選擇教師加入專案</p>
+                                    </div>
+                                    <!-- Populated by JS -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top bg-white">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">
+                        取消
+                    </button>
+                    <button type="button" class="btn btn-primary fw-bold px-4" onclick="saveProjectMembers()">
+                        <i class="bi bi-check-lg me-1"></i>
+                        加入專案 (<span id="confirmCountBadge">0</span>)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="app.js"></script>
+    <script>
+        // 假資料：模擬後端資料庫
+        const mockUsers = [
+            {
+                name: "李文華",
+                email: "wenhua.li@test.com",
+                avatar: "李",
+                color: "primary",
+            },
+            {
+                name: "林志豪",
+                email: "lin.zhihao@test.com",
+                avatar: "林",
+                color: "warning",
+            },
+            {
+                name: "陳秀蘭",
+                email: "xiulan.chen@test.com",
+                avatar: "陳",
+                color: "danger",
+            },
+            {
+                name: "王偉",
+                email: "wang.wei@test.com",
+                avatar: "王",
+                color: "info",
+            },
+            {
+                name: "李大華",
+                email: "dahua.li@test.com",
+                avatar: "李",
+                color: "secondary",
+            },
+        ];
+
+        // 專案資料庫 (包含成員關聯)
+        let projectsData = [
+            {
+                id: 1,
+                year: 2024,
+                name: "進行中梯次範例一",
+                status: "active",
+                startDate: "2024-01-01",
+                endDate: "2024-12-31",
+                members: [
+                    { userId: 0, roles: ["teacher"], status: "active", joinedDate: "2024/01/15" },
+                    { userId: 1, roles: ["teacher", "reviewer"], status: "active", joinedDate: "2024/01/18" },
+                    { userId: 2, roles: ["reviewer"], status: "active", joinedDate: "2024/02/01" },
+                    { userId: 3, roles: ["teacher"], status: "pending", joinedDate: "2024/02/05" },
+                    { userId: 4, roles: ["teacher"], status: "suspended", joinedDate: "2024/01/10" },
+                ],
+            },
+            {
+                id: 2,
+                year: 2024,
+                name: "進行中梯次範例二",
+                status: "active",
+                startDate: "2024-03-01",
+                endDate: "2024-11-15",
+                members: [
+                    { userId: 2, roles: ["teacher"], status: "active", joinedDate: "2024/03/05" },
+                ],
+            },
+            {
+                id: 3,
+                year: 2024,
+                name: "進行中梯次範例三",
+                status: "active",
+                startDate: "2024-06-01",
+                endDate: "2025-01-20",
+                members: [],
+            },
+            {
+                id: 4,
+                year: 2023,
+                name: "已結束梯次範例一",
+                status: "closed",
+                startDate: "2023-01-01",
+                endDate: "2023-12-31",
+                members: [],
+            },
+            {
+                id: 5,
+                year: 2023,
+                name: "已結束梯次範例二",
+                status: "closed",
+                startDate: "2023-03-01",
+                endDate: "2023-06-30",
+                members: [],
+            },
+            {
+                id: 6,
+                year: 2023,
+                name: "已結束梯次範例三",
+                status: "closed",
+                startDate: "2023-09-01",
+                endDate: "2023-12-31",
+                members: [],
+            },
+            {
+                id: 7,
+                year: 2022,
+                name: "已結束梯次範例四",
+                status: "closed",
+                startDate: "2022-01-01",
+                endDate: "2022-12-31",
+                members: [],
+            },
+            {
+                id: 8,
+                year: 2022,
+                name: "已結束梯次範例五",
+                status: "closed",
+                startDate: "2022-01-01",
+                endDate: "2022-12-31",
+                members: [],
+            }
+        ];
+
+        // 教師人才庫 Mock Data (擴充版)
+        const mockTeacherPool = [
+            { id: 101, name: "張慧文", email: "chang@test.com", avatar: "張", color: "success", expertise: "國文", participatedProjects: [1, 4], status: "active" },
+            { id: 102, name: "陳立新", email: "chen.prof@test.com", avatar: "陳", color: "info", expertise: "作文", participatedProjects: [1, 2], status: "active" },
+            { id: 103, name: "王建國", email: "wang.dr@test.com", avatar: "王", color: "warning", expertise: "閱讀測驗", participatedProjects: [], status: "active" },
+            { id: 104, name: "林雅婷", email: "lin.lec@test.com", avatar: "林", color: "primary", expertise: "國文", participatedProjects: [2, 3], status: "active" },
+            { id: 105, name: "黃志明", email: "huang@test.com", avatar: "黃", color: "danger", expertise: "作文", participatedProjects: [4, 5], status: "active" },
+            { id: 106, name: "劉美玲", email: "liu@test.com", avatar: "劉", color: "secondary", expertise: "閱讀測驗", participatedProjects: [1], status: "active" },
+            { id: 107, name: "吳俊傑", email: "wu@test.com", avatar: "吳", color: "success", expertise: "國文", participatedProjects: [3, 4], status: "active" },
+            { id: 108, name: "鄭淑芬", email: "zheng@test.com", avatar: "鄭", color: "info", expertise: "作文", participatedProjects: [], status: "active" },
+            { id: 109, name: "蔡明宏", email: "cai@test.com", avatar: "蔡", color: "warning", expertise: "閱讀測驗", participatedProjects: [2], status: "inactive" },
+            { id: 110, name: "許惠珍", email: "xu@test.com", avatar: "許", color: "primary", expertise: "國文", participatedProjects: [5, 6], status: "active" },
+        ];
+
+        // 當前選中的專案 ID
+        let currentProjectId = 1;
+        let selectedRoleFilters = [];
+
+        // 初始化
+        document.addEventListener("DOMContentLoaded", () => {
+            initYearSelect(); // For Modal Year Select
+            renderProjectList();
+            renderProjectDetail();
+            initMemberModal();
+        });
+
+        // 1. 渲染左側專案列表
+        function renderProjectList() {
+            const container = document.getElementById("projectListContainer");
+            const statusFilter = document.getElementById("statusFilter").value;
+
+            container.innerHTML = ""; // 清空
+
+            // 篩選與排序
+            const filteredProjects = projectsData.filter((p) => {
+                if (statusFilter === 'all') return true;
+                // 雖然我們只設了 active, closed, 但為了防呆若有人手動改
+                return p.status === statusFilter;
+            });
+
+            filteredProjects.forEach((p) => {
+                const isActive = p.id === currentProjectId;
+                const activeClass = isActive
+                    ? "active border-primary"
+                    : "border-transparent";
+                const badgeClass =
+                    p.status === "active"
+                        ? "bg-success text-success bg-opacity-10"
+                        : "bg-secondary text-secondary bg-opacity-10";
+                const badgeText = p.status === "active" ? "進行中" : "已結案";
+
+                // 如果是 Active 狀態，文字顏色要調整
+                const badgeRender = isActive
+                    ? `<span class="badge bg-white text-primary rounded-pill">${badgeText}</span>`
+                    : `<span class="badge ${badgeClass} rounded-pill">${badgeText}</span>`;
+
+                const textMutedClass = isActive ? "text-white-50" : "text-muted";
+                const textTitleClass = isActive ? "text-white" : "text-dark";
+
+                const html = `
+            <a href="javascript:void(0)" onclick="switchProject(${p.id})" 
+               class="list-group-item list-group-item-action py-3 border-start border-4 rounded-0 ${activeClass}">
+                <div class="d-flex w-100 justify-content-between mb-1">
+                    <small class="${textMutedClass}">${p.year} 年度</small>
+                    ${badgeRender}
+                </div>
+                <h6 class="mb-1 fw-bold ${textTitleClass}">${p.name}</h6>
+                <small class="${isActive ? "text-white-50" : "text-secondary"}">
+                    <i class="bi bi-people-fill me-1"></i>成員：${p.members.length
+                    } 人
+                </small>
+            </a>
+        `;
+                container.innerHTML += html;
+            });
+            container.innerHTML += '<div style="height: 1px;"></div>';
+        }
+
+        // 2. 切換專案
+        function switchProject(id) {
+            currentProjectId = id;
+            renderProjectList(); // 重新渲染列表以更新 Active 樣式
+            renderProjectDetail(); // 更新右側內容
+        }
+
+        // 3. 渲染右側詳細內容
+        function renderProjectDetail() {
+            const project = projectsData.find((p) => p.id === currentProjectId);
+            const detailCard = document.getElementById("projectDetailCard");
+
+            // 如果找不到專案 (可能被刪除了)
+            if (!project) {
+                document
+                    .querySelector("#projectDetailCard .card-header")
+                    .classList.add("d-none");
+                document
+                    .querySelector("#projectDetailCard .card-body table")
+                    .classList.add("d-none");
+                document.getElementById("emptyState").classList.remove("d-none");
+                return;
+            }
+
+            // 恢復顯示
+            document
+                .querySelector("#projectDetailCard .card-header")
+                .classList.remove("d-none");
+            document
+                .querySelector("#projectDetailCard .card-body table")
+                .classList.remove("d-none");
+            document.getElementById("emptyState").classList.add("d-none");
+
+            // 填入基本資訊
+            document.getElementById("detailYearBadge").innerText = project.year;
+            document.getElementById("detailProjectName").innerText = project.name;
+            document.getElementById(
+                "detailDateRange"
+            ).innerText = `${project.startDate} ~ ${project.endDate}`;
+
+            const statusBadge = document.getElementById("detailStatusBadge");
+            if (project.status === "active") {
+                statusBadge.className =
+                    "badge bg-success bg-opacity-10 text-success rounded-pill ms-2";
+                statusBadge.innerText = "進行中";
+            } else {
+                statusBadge.className =
+                    "badge bg-secondary bg-opacity-10 text-secondary rounded-pill ms-2";
+                statusBadge.innerText = "已結案";
+            }
+
+            // 渲染成員統計
+            renderMemberStats(project);
+
+            // 渲染成員列表表格
+            const tbody = document.getElementById("memberListContainer");
+            tbody.innerHTML = "";
+
+            if (project.members.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-secondary">尚無成員</td></tr>`;
+                return;
+            }
+
+
+
+            // 篩選成員邏輯：AND (且)
+            // 如果 selectedRoleFilters 為空，顯示全部
+            // 如果不為空，成員必須擁有所有選中的角色
+            const filteredMembers = project.members.filter(m => {
+                if (selectedRoleFilters.length === 0) return true;
+                return selectedRoleFilters.every(role => m.roles.includes(role));
+            });
+
+            if (filteredMembers.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-secondary">尚無符合條件的成員</td></tr>`;
+                return;
+            }
+
+            filteredMembers.forEach((memberData) => {
+                // 嘗試從 mockUsers 找 (舊資料) 或 mockTeacherPool 找 (新資料)
+                // 為了相容，我們先用 mockUsers 作為主要來源，簡單合併一下
+                let user = mockUsers[memberData.userId];
+                if (!user) {
+                    // 假設新加的是從 TeacherPool
+                    user = mockTeacherPool.find(t => t.id === memberData.userId);
+                }
+                if (!user) user = { name: "未知", email: "--", avatar: "?", color: "secondary" };
+
+                // ... rest of row generation ...
+                // 產生角色標籤 HTML
+                let rolesHtml = "";
+                memberData.roles.forEach((r) => {
+                    if (r === "teacher")
+                        rolesHtml += `<span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-10 me-1">命題教師</span>`;
+                    if (r === "reviewer")
+                        rolesHtml += `<span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-10 me-1">審題委員</span>`;
+                    if (r === "admin")
+                        rolesHtml += `<span class="badge bg-dark me-1">管理員</span>`;
+                });
+
+                // 產生狀態標籤 HTML
+                let statusHtml = "";
+                switch (memberData.status) {
+                    case "active":
+                        statusHtml = `<span class="badge bg-success bg-opacity-10 text-success rounded-pill">啟用中</span>`;
+                        break;
+                    case "pending":
+                        statusHtml = `<span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill">未開通</span>`;
+                        break;
+                    case "suspended":
+                        statusHtml = `<span class="badge bg-danger bg-opacity-10 text-danger rounded-pill">已停權</span>`;
+                        break;
+                }
+
+                const row = `
+            <tr>
+                <td class="ps-4">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-${user.color} bg-opacity-10 text-${user.color} rounded-circle d-flex justify-content-center align-items-center me-3 fw-bold" style="width: 36px; height: 36px">${user.avatar}</div>
+                        <div>
+                            <div class="fw-bold text-dark">${user.name}</div>
+                            <div class="small text-muted font-monospace">${user.email}</div>
+                        </div>
+                    </div>
+                </td>
+                <td>${rolesHtml}</td>
+                <td>${statusHtml}</td>
+                <td class="text-end pe-4">
+                    <button class="btn btn-sm btn-light text-secondary"><i class="bi bi-three-dots-vertical"></i></button>
+                </td>
+            </tr>
+        `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        function renderMemberStats(project) {
+            const statsContainer = document.getElementById("memberStatsFilter");
+            const total = project.members.length;
+            const teachers = project.members.filter((m) => m.roles.includes("teacher")).length;
+            const reviewers = project.members.filter((m) => m.roles.includes("reviewer")).length;
+
+            // Helper to check if active
+            const isTeacherActive = selectedRoleFilters.includes('teacher');
+            const isReviewerActive = selectedRoleFilters.includes('reviewer');
+
+            // Styles
+            const teacherClass = isTeacherActive ? "bg-primary text-white" : "bg-light text-secondary";
+            const reviewerClass = isReviewerActive ? "bg-info text-white" : "bg-light text-secondary";
+
+            // 全部成員按鈕
+            const isAllActive = selectedRoleFilters.length === 0;
+            const allClass = isAllActive ? "bg-dark text-white" : "bg-light text-secondary";
+
+            statsContainer.innerHTML = `
+        <li class="nav-item d-flex align-items-center me-2 small text-muted">
+            共 ${total} 人
+        </li>
+        <li class="nav-item">
+            <button 
+                class="btn btn-sm rounded-pill px-3 border-0 fw-bold ${allClass}" 
+                onclick="clearRoleFilters()">
+                全部成員
+            </button>
+        </li>
+        <li class="nav-item">
+            <button 
+                class="btn btn-sm rounded-pill px-3 border-0 fw-bold ${teacherClass}" 
+                onclick="toggleRoleFilter('teacher')">
+                命題教師 (${teachers})
+                ${isTeacherActive ? '<i class="bi bi-check"></i>' : ''}
+            </button>
+        </li>
+        <li class="nav-item">
+            <button 
+                class="btn btn-sm rounded-pill px-3 border-0 fw-bold ${reviewerClass}" 
+                onclick="toggleRoleFilter('reviewer')">
+                審題委員 (${reviewers})
+                ${isReviewerActive ? '<i class="bi bi-check"></i>' : ''}
+            </button>
+        </li>
+    `;
+        }
+
+        function toggleRoleFilter(role) {
+            const idx = selectedRoleFilters.indexOf(role);
+            if (idx === -1) {
+                selectedRoleFilters.push(role);
+            } else {
+                selectedRoleFilters.splice(idx, 1);
+            }
+            renderProjectDetail(); // 重新渲染列表
+        }
+
+        function clearRoleFilters() {
+            selectedRoleFilters = [];
+            renderProjectDetail();
+        }
+
+        // 4. 新增/編輯 專案邏輯
+        const projectModal = new bootstrap.Modal(
+            document.getElementById("projectFormModal")
+        );
+        let isEditMode = false;
+
+        function openProjectModal(mode) {
+            const modalTitle = document.getElementById("projectModalTitle");
+            const formFields = {
+                id: document.getElementById("projId"),
+                year: document.getElementById("projYear"),
+                name: document.getElementById("projName"),
+                status: document.getElementById("projStatus"),
+                start: document.getElementById("projStart"),
+                end: document.getElementById("projEnd"),
+            };
+
+            if (mode === "add") {
+                isEditMode = false;
+                modalTitle.innerText = "新增命題專案";
+                // 清空表單
+                formFields.id.value = "";
+                formFields.name.value = "";
+                formFields.start.value = "";
+                formFields.end.value = "";
+                formFields.status.value = "active";
+            } else {
+                isEditMode = true;
+                modalTitle.innerText = "編輯專案內容";
+                // 填入現有資料
+                const p = projectsData.find((x) => x.id === currentProjectId);
+                formFields.id.value = p.id;
+                formFields.year.value = p.year;
+                formFields.name.value = p.name;
+                formFields.status.value = p.status;
+                formFields.start.value = p.startDate;
+                formFields.end.value = p.endDate;
+            }
+            projectModal.show();
+        }
+
+        function editCurrentProject() {
+            openProjectModal("edit");
+        }
+
+        function saveProject() {
+            const idField = document.getElementById("projId").value;
+            const newData = {
+                year: parseInt(document.getElementById("projYear").value),
+                name: document.getElementById("projName").value,
+                status: document.getElementById("projStatus").value,
+                startDate: document.getElementById("projStart").value,
+                endDate: document.getElementById("projEnd").value,
+            };
+
+            if (!newData.name) {
+                alert("請輸入專案名稱");
+                return;
+            }
+
+            if (isEditMode) {
+                // 更新模式
+                const idx = projectsData.findIndex((p) => p.id == idField);
+                if (idx !== -1) {
+                    // 保留原本的 members
+                    projectsData[idx] = { ...projectsData[idx], ...newData };
+                }
+            } else {
+                // 新增模式
+                const newId = Math.max(...projectsData.map((p) => p.id)) + 1;
+                projectsData.unshift({
+                    // 加到最前面
+                    id: newId,
+                    ...newData,
+                    members: [], // 新專案預設沒人
+                });
+                currentProjectId = newId; // 切換到新專案
+            }
+
+            projectModal.hide();
+            renderProjectList();
+            renderProjectDetail();
+        }
+
+        // 5. 刪除專案
+        function deleteCurrentProject() {
+            if (confirm("確定要刪除此專案嗎？此操作無法復原。")) {
+                projectsData = projectsData.filter((p) => p.id !== currentProjectId);
+
+                // 刪除後，如果還有專案，選第一個；如果沒了，設為 null
+                if (projectsData.length > 0) {
+                    currentProjectId = projectsData[0].id;
+                } else {
+                    currentProjectId = null;
+                }
+
+                renderProjectList();
+                renderProjectDetail();
+            }
+        }
+
+        // 6. 年份篩選
+        function initYearSelect() {
+            const select = document.getElementById("projYear");
+            const currentYear = new Date().getFullYear(); // 抓取現在年份
+
+            select.innerHTML = ""; // 清空現有選項
+
+            // 設定範圍：顯示從 [前5年] 到 [後4年] (共 10 個選項)
+            for (let i = -5; i < 5; i++) {
+                const year = currentYear + i;
+                const option = document.createElement("option");
+                option.value = year;
+                option.text = `${year} 年度`;
+                select.appendChild(option);
+            }
+        }
+
+        // ==========================================
+        // Member Modal Logic (Redesigned)
+        // ==========================================
+        const addMemberModal = new bootstrap.Modal(document.getElementById("addMemberModal"));
+
+        // State management for selected teachers
+        let selectedTeachers = {}; // { teacherId: { teacher: {...}, roles: [] } }
+
+        function initMemberModal() {
+            // Initialize on first load - just render the list
+            // No need to populate old select element
+        }
+
+        function openAddMemberModal() {
+            // Reset state
+            selectedTeachers = {};
+
+            // Reset filters
+            document.getElementById("teacherSearchInput").value = "";
+            document.getElementById("expertiseFilter").value = "";
+            document.getElementById("participationFilter").value = "";
+
+            // Render initial list
+            renderTeacherList();
+            updateSelectedPanel();
+
+            addMemberModal.show();
+        }
+
+        // Filter and render teacher list
+        function filterTeacherList() {
+            renderTeacherList();
+        }
+
+        function renderTeacherList() {
+            const container = document.getElementById("teacherListContainer");
+            const searchTerm = document.getElementById("teacherSearchInput").value.toLowerCase();
+            const expertiseFilter = document.getElementById("expertiseFilter").value;
+            const participationFilter = document.getElementById("participationFilter").value;
+
+            // Filter teachers
+            const filtered = mockTeacherPool.filter(teacher => {
+                // Status filter: only show active teachers
+                if (teacher.status !== 'active') return false;
+
+                // Search filter
+                if (searchTerm && !teacher.name.toLowerCase().includes(searchTerm) &&
+                    !teacher.email.toLowerCase().includes(searchTerm)) {
+                    return false;
+                }
+
+                // Expertise filter
+                if (expertiseFilter && teacher.expertise !== expertiseFilter) {
+                    return false;
+                }
+
+                // Participation filter
+                if (participationFilter === 'participated' && teacher.participatedProjects.length === 0) {
+                    return false;
+                }
+                if (participationFilter === 'new' && teacher.participatedProjects.length > 0) {
+                    return false;
+                }
+
+                // Don't show if already in current project
+                const project = projectsData.find(p => p.id === currentProjectId);
+                if (project && project.members.find(m => m.userId === teacher.id)) {
+                    return false;
+                }
+
+                return true;
+            });
+
+            // Update count
+            document.getElementById("teacherCountInfo").textContent = `共 ${filtered.length} 位教師`;
+
+            // Render list
+            container.innerHTML = '';
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-5 text-secondary">
+                        <i class="bi bi-search fs-1 mb-3 d-block"></i>
+                        <p class="mb-0">沒有符合條件的教師</p>
+                        <p class="small text-muted mb-0">請調整篩選條件或搜尋關鍵字</p>
+                    </div>
+                `;
+                return;
+            }
+
+            filtered.forEach(teacher => {
+                const isSelected = selectedTeachers[teacher.id] !== undefined;
+                const card = document.createElement('div');
+                card.className = `card mb-2 border ${isSelected ? 'border-primary bg-primary bg-opacity-10' : ''}`;
+                card.style.cursor = 'pointer';
+                card.onclick = () => toggleTeacherSelection(teacher.id);
+
+                card.innerHTML = `
+                    <div class="card-body p-2">
+                        <div class="d-flex align-items-center">
+                            <div class="form-check me-2">
+                                <input class="form-check-input" type="checkbox" ${isSelected ? 'checked' : ''} 
+                                       onclick="event.stopPropagation(); toggleTeacherSelection(${teacher.id})">
+                            </div>
+                            <div class="bg-${teacher.color} bg-opacity-10 text-${teacher.color} rounded-circle d-flex justify-content-center align-items-center me-2 fw-bold" 
+                                 style="width: 32px; height: 32px; min-width: 32px;">${teacher.avatar}</div>
+                            <div class="flex-grow-1" style="min-width: 0;">
+                                <div class="fw-bold small text-truncate">${teacher.name}</div>
+                                <div class="text-muted" style="font-size: 0.7rem;">${teacher.email}</div>
+                            </div>
+                            <div class="text-end ms-2">
+                                <span class="badge bg-secondary bg-opacity-10 text-secondary" style="font-size: 0.65rem;">${teacher.expertise}</span>
+                                ${teacher.participatedProjects.length > 0 ?
+                        `<div class="text-muted" style="font-size: 0.65rem;"><i class="bi bi-star-fill"></i> ${teacher.participatedProjects.length}次</div>`
+                        : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        // Toggle teacher selection
+        function toggleTeacherSelection(teacherId) {
+            const teacher = mockTeacherPool.find(t => t.id === teacherId);
+            if (!teacher) return;
+
+            if (selectedTeachers[teacherId]) {
+                // Deselect
+                delete selectedTeachers[teacherId];
+            } else {
+                // Select with default roles
+                selectedTeachers[teacherId] = {
+                    teacher: teacher,
+                    roles: ['teacher'] // Default to teacher role
+                };
+            }
+
+            renderTeacherList();
+            updateSelectedPanel();
+        }
+
+        // Select all visible teachers
+        function selectAllTeachers() {
+            const container = document.getElementById("teacherListContainer");
+            const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(cb => {
+                const card = cb.closest('.card');
+                if (card && !cb.checked) {
+                    card.click();
+                }
+            });
+        }
+
+        // Clear all selections
+        function clearAllTeachers() {
+            const container = document.getElementById("teacherListContainer");
+            const checkboxes = container.querySelectorAll('input[type="checkbox"]:checked');
+            checkboxes.forEach(cb => {
+                const card = cb.closest('.card');
+                if (card) {
+                    card.click();
+                }
+            });
+        }
+
+        // Clear all selected teachers
+        function clearAllSelectedTeachers() {
+            selectedTeachers = {};
+            renderTeacherList();
+            updateSelectedPanel();
+        }
+
+        // Update the selected panel on the right
+        function updateSelectedPanel() {
+            const container = document.getElementById("selectedTeachersContainer");
+            const emptyState = document.getElementById("emptySelectedState");
+            const count = Object.keys(selectedTeachers).length;
+
+            // Update badges
+            document.getElementById("selectedCountBadge").textContent = count;
+            document.getElementById("confirmCountBadge").textContent = count;
+
+            if (count === 0) {
+                emptyState.classList.remove("d-none");
+                // Remove any existing cards
+                container.querySelectorAll('.selected-teacher-card').forEach(el => el.remove());
+                return;
+            }
+
+            emptyState.classList.add("d-none");
+
+            // Clear and rebuild
+            container.querySelectorAll('.selected-teacher-card').forEach(el => el.remove());
+
+            Object.keys(selectedTeachers).forEach(teacherId => {
+                const data = selectedTeachers[teacherId];
+                const teacher = data.teacher;
+                const roles = data.roles;
+
+                const card = document.createElement('div');
+                card.className = 'selected-teacher-card card mb-2 border mt-1 shadow-sm';
+                card.innerHTML = `
+                    <div class="card-body p-2 d-flex align-items-center">
+                        <div class="bg-${teacher.color} bg-opacity-10 text-${teacher.color} rounded-circle d-flex justify-content-center align-items-center me-2 fw-bold" 
+                             style="width: 36px; height: 36px; min-width: 36px;">${teacher.avatar}</div>
+                        <div class="flex-grow-1 lh-1 me-2" style="min-width: 0;">
+                            <div class="fw-bold text-truncate" style="font-size: 0.9rem;">${teacher.name}</div>
+                            <div class="text-muted text-truncate" style="font-size: 0.75rem;">${teacher.expertise}</div>
+                        </div>
+                        <div class="d-flex align-items-center me-2">
+                             <button type="button" class="btn btn-sm p-0 px-2 me-1 ${roles.includes('teacher') ? 'btn-primary' : 'btn-outline-secondary border-0 text-muted'}"
+                                style="font-size: 0.75rem; height: 28px;"
+                                onclick="toggleTeacherRole(${teacher.id}, 'teacher')"
+                                title="命題教師">
+                                命
+                            </button>
+                             <button type="button" class="btn btn-sm p-0 px-2 ${roles.includes('reviewer') ? 'btn-info text-white' : 'btn-outline-secondary border-0 text-muted'}"
+                                style="font-size: 0.75rem; height: 28px;"
+                                onclick="toggleTeacherRole(${teacher.id}, 'reviewer')"
+                                title="審題委員">
+                                審
+                            </button>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-light text-danger p-1" style="width: 28px; height: 28px;"
+                                onclick="removeSelectedTeacher(${teacher.id})" 
+                                title="移除">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                    ${roles.length === 0 ? '<div class="px-2 pb-1 text-danger small" style="font-size: 0.7rem;"><i class="bi bi-exclamation-triangle me-1"></i>請選擇身分</div>' : ''}
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        // Remove a selected teacher
+        function removeSelectedTeacher(teacherId) {
+            delete selectedTeachers[teacherId];
+            renderTeacherList();
+            updateSelectedPanel();
+        }
+
+        // Toggle teacher role (New compact logic)
+        function toggleTeacherRole(teacherId, role) {
+            if (!selectedTeachers[teacherId]) return;
+
+            const roles = selectedTeachers[teacherId].roles;
+            if (roles.includes(role)) {
+                const idx = roles.indexOf(role);
+                roles.splice(idx, 1);
+            } else {
+                roles.push(role);
+            }
+
+            updateSelectedPanel();
+        }
+
+        // Save all selected teachers to project (batch operation)
+        function saveProjectMembers() {
+            const count = Object.keys(selectedTeachers).length;
+
+            if (count === 0) {
+                alert("請至少選擇一位教師");
+                return;
+            }
+
+            // Validate all teachers have at least one role
+            let hasError = false;
+            Object.keys(selectedTeachers).forEach(teacherId => {
+                if (selectedTeachers[teacherId].roles.length === 0) {
+                    hasError = true;
+                }
+            });
+
+            if (hasError) {
+                alert("請為每位教師至少分配一個身分");
+                return;
+            }
+
+            // Add to current project
+            const project = projectsData.find(p => p.id === currentProjectId);
+            if (!project) return;
+
+            let addedCount = 0;
+            let updatedCount = 0;
+
+            Object.keys(selectedTeachers).forEach(teacherId => {
+                const data = selectedTeachers[teacherId];
+                const existingMember = project.members.find(m => m.userId == teacherId);
+
+                if (existingMember) {
+                    // Merge roles
+                    data.roles.forEach(r => {
+                        if (!existingMember.roles.includes(r)) {
+                            existingMember.roles.push(r);
+                        }
+                    });
+                    updatedCount++;
+                } else {
+                    // Add new member
+                    project.members.push({
+                        userId: parseInt(teacherId),
+                        roles: data.roles,
+                        status: "active",
+                        joinedDate: new Date().toISOString().split('T')[0]
+                    });
+                    addedCount++;
+                }
+            });
+
+            // Show success message
+            if (addedCount > 0 && updatedCount > 0) {
+                alert(`成功加入 ${addedCount} 位新成員，更新 ${updatedCount} 位現有成員的身分`);
+            } else if (addedCount > 0) {
+                alert(`成功加入 ${addedCount} 位成員`);
+            } else if (updatedCount > 0) {
+                alert(`已更新 ${updatedCount} 位成員的身分`);
+            }
+
+            renderProjectDetail();
+            addMemberModal.hide();
+        }
+    </script>
+</body>
+
+</html>

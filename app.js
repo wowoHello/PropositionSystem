@@ -54,9 +54,17 @@ projectItems.forEach((item) => {
     const roleText = roleMapping[projectRole];
     const roleClass = roleClassMapping[projectRole];
 
+
     currentUserRole.className = "role-badge";
     currentUserRole.classList.add(roleClass);
     currentUserRole.textContent = roleText;
+
+    // logic to hide/show role based on admin status
+    if (projectRole === "admin") {
+      currentUserRole.style.display = "inline-block";
+    } else {
+      currentUserRole.style.display = "none";
+    }
 
     projectDropdown.classList.remove("show");
     projectToggle.classList.remove("active");
