@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>系統公告設定 - CWT 命題工作平臺</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
+    <style>
+        .main-content {
+            padding: 1.5rem 0;
+            flex-grow: 1;
+        }
+
+        .content-card {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            padding: 1.25rem;
+        }
+
+        .badge-category-proposition {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge-category-review {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-category-system {
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+
+        .badge-category-other {
+            background-color: #fce7f3;
+            color: #9d174d;
+        }
+
+        .action-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .action-btn:hover {
+            background-color: #f3f4f6;
+            color: #111827;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 頂部導航列 (與其他頁面一致) -->
+    <nav class="top-navbar">
+        <div class="container-fluid px-4">
+            <div class="row align-items-center">
+                <div class="col-3">
+                    <a href="index.html" class="navbar-brand">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                        </svg>
+                        CWT 命題工作平臺
+                    </a>
+                </div>
+
+                <!-- 中間：專案切換器 -->
+                <div class="col-6 d-flex justify-content-center">
+                    <div class="project-switcher">
+                        <div class="project-display" id="projectToggle">
+                            <div class="project-info">
+                                <div class="project-year" id="currentProjectYear">
+                                    2024年度
+                                </div>
+                                <div class="project-name" id="currentProjectName">
+                                    進行中梯次範例一
+                                </div>
+                            </div>
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path
+                                    d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z" />
+                            </svg>
+                        </div>
+
+                        <div class="project-dropdown" id="projectDropdown">
+                            <div class="dropdown-header">
+                                <span>切換專案</span>
+                                <button class="close-btn" id="closeDropdown">
+                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                        <path
+                                            d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <div class="project-search">
+                                <input type="text" placeholder="搜尋專案名稱..." id="projectSearchInput" />
+                            </div>
+
+                            <div class="project-list" id="projectList">
+                                <div class="project-category">進行中 (3)</div>
+                                <div class="project-item active" data-project-id="1" data-year="2024"
+                                    data-name="進行中梯次範例一" data-role="admin">
+                                    <div class="project-item-info">
+                                        <div class="project-item-title">
+                                            <span class="status-indicator status-active"></span>
+                                            進行中梯次範例一
+                                        </div>
+                                        <div class="project-item-meta">
+                                            <span>2024年度</span>
+                                            <span>截止: 2024/12/31</span>
+                                        </div>
+                                    </div>
+                                    <span class="role-badge role-admin">系統管理員</span>
+                                </div>
+                                <!-- 其他專案項目省略，直接使用 JS 控制 -->
+                                <!-- 為保持一致性，建議複製完整的 project list，但這裡為求簡潔，僅保留一個範例，實際專案應完整複製 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右側：使用者資訊 -->
+                <div class="col-3">
+                    <div class="user-section">
+                        <div class="user-info">
+                            <div class="user-avatar">沈</div>
+                            <span class="user-name">沈雅茹</span>
+                            <span class="role-badge role-admin" id="currentUserRole">系統管理員</span>
+                        </div>
+                        <a href="index.html" class="btn btn-sm btn-light fw-bold text-primary px-3">登出</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 麵包屑導航 -->
+    <div class="breadcrumb-bar">
+        <div class="container-fluid px-4">
+            <a href="firstpage.html" class="breadcrumb-item-link">首頁</a>
+            <span class="breadcrumb-separator">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+            </span>
+            <span class="breadcrumb-current">系統公告設定</span>
+        </div>
+    </div>
+
+    <!-- 主要內容區 -->
+    <div class="main-content">
+        <div class="container-fluid px-4">
+            <!-- 標題與操作區 -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="fw-bold m-0 text-dark">系統公告管理</h4>
+                <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#announcementModal"
+                    onclick="resetModal()">
+                    <i class="bi bi-plus-lg me-1"></i> 新增公告
+                </button>
+            </div>
+
+            <!-- 篩選與列表區 -->
+            <div class="row g-4">
+                <div class="col-12">
+                    <div class="content-card">
+                        <!-- 篩選列 -->
+                        <div class="d-flex gap-3 mb-4">
+                            <div style="width: 200px">
+                                <select class="form-select" id="filterCategory">
+                                    <option value="all">所有分類</option>
+                                    <option value="命題公告">命題公告</option>
+                                    <option value="審題公告">審題公告</option>
+                                    <option value="系統公告">系統公告</option>
+                                </select>
+                            </div>
+                            <div class="flex-grow-1">
+                                <input type="text" class="form-control" placeholder="搜尋公告標題..." id="searchInput" />
+                            </div>
+                        </div>
+
+                        <!-- 列表 -->
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th class="ps-3 border-bottom-0 text-secondary small">
+                                            標題
+                                        </th>
+                                        <th class="border-bottom-0 text-secondary small">分類</th>
+                                        <th class="border-bottom-0 text-secondary small">
+                                            發布日期
+                                        </th>
+                                        <th class="border-bottom-0 text-secondary small">狀態</th>
+                                        <th class="text-end pe-3 border-bottom-0 text-secondary small">
+                                            操作
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody id="announcementTableBody">
+                                    <!-- JS Rendered Content -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新增/編輯 Modal -->
+    <div class="modal fade" id="announcementModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-light border-bottom-0">
+                    <h5 class="modal-title fw-bold" id="modalTitle">新增公告</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="announcementForm">
+                        <input type="hidden" id="editId" />
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-secondary">分類</label>
+                                <select class="form-select" id="category" required>
+                                    <option value="命題公告">命題公告</option>
+                                    <option value="審題公告">審題公告</option>
+                                    <option value="系統公告">系統公告</option>
+                                    <option value="其他">其他</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-secondary">發布日期</label>
+                                <input type="date" class="form-control" id="publishDate" required />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-secondary">狀態</label>
+                                <select class="form-select" id="status">
+                                    <option value="published">已發布</option>
+                                    <option value="draft">草稿</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold small text-secondary">公告標題</label>
+                                <input type="text" class="form-control" id="title" placeholder="請輸入標題" required />
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold small text-secondary">公告內容</label>
+                                <textarea class="form-control" id="content" rows="5" placeholder="請輸入內容..."></textarea>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-top-0 pt-0 pb-4 px-4">
+                    <button type="button" class="btn btn-light text-secondary fw-bold" data-bs-dismiss="modal">
+                        取消
+                    </button>
+                    <button type="button" class="btn btn-primary fw-bold px-4" onclick="saveAnnouncement()">
+                        儲存
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="app.js"></script>
+    <script>
+        // Mock Data Initialization
+        const defaultAnnouncements = [
+            {
+                id: 1,
+                title: "初等命題截止倒數 3 天",
+                category: "命題公告",
+                date: "2024-01-28",
+                status: "published",
+                content: "請各位老師注意，初等命題將於 3 天後截止。",
+            },
+            {
+                id: 2,
+                title: "2 梯次命題待確認",
+                category: "命題公告",
+                date: "2024-01-29",
+                status: "published",
+                content: "您有 2 個梯次的命題內容尚未確認，請盡速處理。",
+            },
+            {
+                id: 3,
+                title: "系統維護公告 (預計 1/30 進行例行維護)",
+                category: "系統公告",
+                date: "2024-01-25",
+                status: "published",
+                content:
+                    "系統將於 1/30 凌晨 2:00 - 4:00 進行例行維護，期間將無法登入。",
+            },
+        ];
+
+        // Load or Initialize Data
+        function loadAnnouncements() {
+            const stored = localStorage.getItem("cwt_announcements");
+            if (!stored) {
+                localStorage.setItem(
+                    "cwt_announcements",
+                    JSON.stringify(defaultAnnouncements)
+                );
+                return defaultAnnouncements;
+            }
+            return JSON.parse(stored);
+        }
+
+        function renderTable() {
+            const data = loadAnnouncements();
+            const tbody = document.getElementById("announcementTableBody");
+            const filterCat = document.getElementById("filterCategory").value;
+            const searchVal = document
+                .getElementById("searchInput")
+                .value.toLowerCase();
+
+            tbody.innerHTML = "";
+
+            const filteredData = data.filter((item) => {
+                const matchCat = filterCat === "all" || item.category === filterCat;
+                const matchSearch = item.title.toLowerCase().includes(searchVal);
+                return matchCat && matchSearch;
+            });
+
+            filteredData.forEach((item) => {
+                let badgeClass = "badge-category-other";
+                if (item.category === "命題公告")
+                    badgeClass = "badge-category-proposition";
+                else if (item.category === "審題公告")
+                    badgeClass = "badge-category-review";
+                else if (item.category === "系統公告")
+                    badgeClass = "badge-category-system";
+
+                const statusBadge =
+                    item.status === "published"
+                        ? '<span class="badge bg-success bg-opacity-10 text-success">已發布</span>'
+                        : '<span class="badge bg-secondary bg-opacity-10 text-secondary">草稿</span>';
+
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td class="ps-3 fw-medium text-dark">${item.title}</td>
+                    <td><span class="badge ${badgeClass} border border-0">${item.category}</span></td>
+                    <td class="text-secondary small">${item.date}</td>
+                    <td>${statusBadge}</td>
+                    <td class="text-end pe-3">
+                        <button class="btn btn-sm btn-light text-primary fw-bold" onclick="editAnnouncement(${item.id})">編輯</button>
+                        <button class="btn btn-sm btn-light text-danger fw-bold ms-1" onclick="deleteAnnouncement(${item.id})">刪除</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function resetModal() {
+            document.getElementById("announcementForm").reset();
+            document.getElementById("editId").value = "";
+            document.getElementById("modalTitle").innerText = "新增公告";
+            // Default date to today
+            document.getElementById("publishDate").valueAsDate = new Date();
+        }
+
+        function editAnnouncement(id) {
+            const data = loadAnnouncements();
+            const item = data.find((x) => x.id === id);
+            if (item) {
+                document.getElementById("editId").value = item.id;
+                document.getElementById("title").value = item.title;
+                document.getElementById("category").value = item.category;
+                document.getElementById("publishDate").value = item.date;
+                document.getElementById("status").value = item.status;
+                document.getElementById("content").value = item.content || "";
+                document.getElementById("modalTitle").innerText = "編輯公告";
+
+                const modal = new bootstrap.Modal(
+                    document.getElementById("announcementModal")
+                );
+                modal.show();
+            }
+        }
+
+        function saveAnnouncement() {
+            const title = document.getElementById("title").value;
+            const category = document.getElementById("category").value;
+            const date = document.getElementById("publishDate").value;
+            const status = document.getElementById("status").value;
+            const content = document.getElementById("content").value;
+            const editId = document.getElementById("editId").value;
+
+            if (!title || !date) {
+                alert("請填寫必填欄位");
+                return;
+            }
+
+            let data = loadAnnouncements();
+
+            if (editId) {
+                // Edit
+                const index = data.findIndex((x) => x.id == editId);
+                if (index > -1) {
+                    data[index] = {
+                        ...data[index],
+                        title,
+                        category,
+                        date,
+                        status,
+                        content,
+                    };
+                }
+            } else {
+                // Add
+                const newId =
+                    data.length > 0 ? Math.max(...data.map((x) => x.id)) + 1 : 1;
+                data.push({
+                    id: newId,
+                    title,
+                    category,
+                    date,
+                    status,
+                    content,
+                });
+            }
+
+            localStorage.setItem("cwt_announcements", JSON.stringify(data));
+
+            // Hide modal
+            const modalEl = document.getElementById('announcementModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            modal.hide();
+
+            renderTable();
+        }
+
+        function deleteAnnouncement(id) {
+            if (confirm("確定要刪除此公告嗎？")) {
+                let data = loadAnnouncements();
+                data = data.filter((x) => x.id !== id);
+                localStorage.setItem("cwt_announcements", JSON.stringify(data));
+                renderTable();
+            }
+        }
+
+        // Initial Render
+        document.addEventListener("DOMContentLoaded", () => {
+            renderTable();
+
+            // Bind filter events
+            document
+                .getElementById("filterCategory")
+                .addEventListener("change", renderTable);
+            document
+                .getElementById("searchInput")
+                .addEventListener("input", renderTable);
+        });
+    </script>
+</body>
+
+</html>

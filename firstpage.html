@@ -1,834 +1,723 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CWT 命題工作平臺</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="style.css" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <style>
-      html,
-      body {
-        height: 100%;
-        overflow-x: hidden;
-      }
 
-      body {
-        font-family: "Noto Sans TC", sans-serif;
-        background-color: #f3f4f6;
-        display: flex;
-        flex-direction: column;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CWT 命題工作平臺</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <style>
+    html,
+    body {
+      height: 100%;
+      overflow-x: hidden;
+    }
 
-      .main-content {
-        flex-grow: 1;
-        padding: 2rem 0;
-        display: flex;
-        flex-direction: column;
-      }
+    body {
+      font-family: "Noto Sans TC", sans-serif;
+      background-color: #f3f4f6;
+      display: flex;
+      flex-direction: column;
+    }
 
-      .content-container {
-        flex-grow: 1;
-        display: flex;
-        flex-direction: column;
-      }
+    .main-content {
+      flex-grow: 1;
+      padding: 2rem 0;
+      display: flex;
+      flex-direction: column;
+    }
 
-      .feature-card {
-        background: white;
-        border-top: 4px solid #2563eb;
-        border-radius: 16px;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-        overflow: hidden;
-        transition: all 0.3s ease;
-      }
+    .content-container {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+    }
 
-      .feature-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-      }
+    .feature-card {
+      background: white;
+      border-top: 4px solid #2563eb;
+      border-radius: 16px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
 
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-body-custom {
+      flex-grow: 1;
+      display: flex;
+      padding: 1.5rem;
+      align-items: center;
+    }
+
+    .layout-standard .card-icon-wrapper {
+      width: 35%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .layout-standard .card-text-wrapper {
+      width: 65%;
+      padding-left: 1rem;
+    }
+
+    .layout-vertical {
+      flex-direction: column;
+    }
+
+    .layout-vertical .card-body-custom {
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      height: 100%;
+      padding: 1.5rem;
+    }
+
+    .layout-vertical .card-icon-wrapper {
+      width: 100%;
+      height: auto;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0;
+    }
+
+    .layout-vertical .card-text-wrapper {
+      width: 100%;
+      height: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card-icon {
+      width: 100%;
+      height: 100%;
+      max-height: 100px;
+      object-fit: contain;
+    }
+
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 0.75rem;
+      line-height: 1.3;
+    }
+
+    .card-features {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .card-features li {
+      font-size: 0.95rem;
+      color: #4b5563;
+      font-weight: 500;
+      line-height: 1.8;
+    }
+
+    .layout-standard .card-features li::before {
+      content: "•";
+      color: #1f2937;
+      margin-right: 0.5rem;
+    }
+
+    .layout-vertical .card-features li {
+      display: inline-block;
+      font-size: 0.9rem;
+    }
+
+    .layout-vertical .card-features li:not(:last-child)::after {
+      content: "•";
+      margin: 0 0.5rem;
+      color: #cbd5e1;
+    }
+
+    .card-footer-action {
+      padding: 1.2rem;
+      background: white;
+      border-top: 1px solid #f3f4f6;
+    }
+
+    .btn-gradient-shine {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      color: white;
+      border: none;
+      padding: 0.875rem 2rem;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-gradient-shine::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg,
+          transparent,
+          rgba(255, 255, 255, 0.3),
+          transparent);
+      transition: left 0.5s;
+    }
+
+    .btn-gradient-shine:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
+    }
+
+    .btn-gradient-shine:hover::before {
+      left: 100%;
+    }
+
+    .reminder-card {
+      background: white;
+      border-radius: 16px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    .reminder-header {
+      background-color: #2563eb;
+      color: white;
+      padding: 1.25rem 1.5rem;
+      border-radius: 16px 16px 0 0;
+      flex-shrink: 0;
+    }
+
+    .reminder-title {
+      font-size: 1.125rem;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .reminder-body {
+      padding: 1.5rem;
+      flex-grow: 1;
+      overflow-y: auto;
+    }
+
+    .reminder-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    .reminder-item:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .reminder-item div {
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    @media (min-width: 992px) and (max-width: 1199px) {
       .card-body-custom {
-        flex-grow: 1;
-        display: flex;
-        padding: 1.5rem;
-        align-items: center;
-      }
-
-      .layout-standard .card-icon-wrapper {
-        width: 35%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-shrink: 0;
-      }
-
-      .layout-standard .card-text-wrapper {
-        width: 65%;
-        padding-left: 1rem;
-      }
-
-      .layout-vertical {
-        flex-direction: column;
-      }
-
-      .layout-vertical .card-body-custom {
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        height: 100%;
-        padding: 1.5rem;
-      }
-
-      .layout-vertical .card-icon-wrapper {
-        width: 100%;
-        height: auto;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-bottom: 1.25rem;
-        padding-bottom: 0;
-      }
-
-      .layout-vertical .card-text-wrapper {
-        width: 100%;
-        height: auto;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .card-icon {
-        width: 100%;
-        height: 100%;
-        max-height: 100px;
-        object-fit: contain;
+        padding: 1.25rem 1rem;
       }
 
       .card-title {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: #1f2937;
-        margin-bottom: 0.75rem;
-        line-height: 1.3;
-      }
-
-      .card-features {
-        list-style: none;
-        padding: 0;
-        margin: 0;
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
       }
 
       .card-features li {
-        font-size: 0.95rem;
-        color: #4b5563;
-        font-weight: 500;
-        line-height: 1.8;
+        font-size: 0.875rem;
+        line-height: 1.7;
+      }
+
+      .card-icon {
+        max-height: 80px;
+      }
+
+      .btn-gradient-shine {
+        padding: 0.75rem;
+        font-size: 0.875rem;
+      }
+
+      .card-footer-action {
+        padding: 1rem;
+      }
+    }
+
+    @media (min-width: 1200px) {
+      .card-title {
+        font-size: 1.35rem;
+      }
+
+      .card-features li {
+        font-size: 1rem;
+      }
+    }
+
+    @media (min-width: 1400px) {
+      .main-content {
+        padding: 2.5rem 0;
+      }
+
+      .card-body-custom {
+        padding: 2rem 1.5rem;
+      }
+
+      .card-title {
+        font-size: 1.5rem;
+      }
+
+      .card-features li {
+        font-size: 1.05rem;
+      }
+    }
+
+    @media (max-width: 991px) {
+      .layout-standard .card-body-custom {
+        flex-direction: column;
+        text-align: center;
+        padding: 1.5rem;
+      }
+
+      .layout-standard .card-icon-wrapper {
+        width: 100%;
+        margin-bottom: 1rem;
+      }
+
+      .layout-standard .card-text-wrapper {
+        width: 100%;
+        padding-left: 0;
+      }
+
+      .layout-standard .card-features {
+        display: inline;
+      }
+
+      .layout-standard .card-features li {
+        display: inline-block;
       }
 
       .layout-standard .card-features li::before {
-        content: "•";
-        color: #1f2937;
-        margin-right: 0.5rem;
+        content: "";
+        margin-right: 0;
       }
 
-      .layout-vertical .card-features li {
-        display: inline-block;
-        font-size: 0.9rem;
-      }
-      .layout-vertical .card-features li:not(:last-child)::after {
+      .layout-standard .card-features li:not(:last-child)::after {
         content: "•";
         margin: 0 0.5rem;
         color: #cbd5e1;
       }
+    }
+  </style>
+</head>
 
-      .card-footer-action {
-        padding: 1.2rem;
-        background: white;
-        border-top: 1px solid #f3f4f6;
-      }
+<body>
+  <nav class="top-navbar">
+    <div class="container-fluid px-4">
+      <div class="row align-items-center">
+        <div class="col-3">
+          <a href="index.html" class="navbar-brand">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+            </svg>
+            CWT 命題工作平臺
+          </a>
+        </div>
 
-      .btn-gradient-shine {
-        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-        color: white;
-        border: none;
-        padding: 0.875rem 2rem;
-        border-radius: 10px;
-        font-weight: 600;
-        font-size: 0.95rem;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        cursor: pointer;
-        position: relative;
-        overflow: hidden;
-      }
-
-      .btn-gradient-shine::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(
-          90deg,
-          transparent,
-          rgba(255, 255, 255, 0.3),
-          transparent
-        );
-        transition: left 0.5s;
-      }
-
-      .btn-gradient-shine:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
-      }
-
-      .btn-gradient-shine:hover::before {
-        left: 100%;
-      }
-
-      .reminder-card {
-        background: white;
-        border-radius: 16px;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-      }
-
-      .reminder-header {
-        background-color: #2563eb;
-        color: white;
-        padding: 1.25rem 1.5rem;
-        border-radius: 16px 16px 0 0;
-        flex-shrink: 0;
-      }
-
-      .reminder-title {
-        font-size: 1.125rem;
-        font-weight: 700;
-        margin: 0;
-      }
-
-      .reminder-body {
-        padding: 1.5rem;
-        flex-grow: 1;
-        overflow-y: auto;
-      }
-
-      .reminder-item {
-        display: flex;
-        align-items: flex-start;
-        gap: 1rem;
-        margin-bottom: 1.25rem;
-        padding-bottom: 1.25rem;
-        border-bottom: 1px solid #f3f4f6;
-      }
-
-      .reminder-item:last-child {
-        border-bottom: none;
-        margin-bottom: 0;
-        padding-bottom: 0;
-      }
-
-      .reminder-item div {
-        font-size: 0.9rem;
-        line-height: 1.6;
-      }
-
-      @media (min-width: 992px) and (max-width: 1199px) {
-        .card-body-custom {
-          padding: 1.25rem 1rem;
-        }
-        .card-title {
-          font-size: 1.1rem;
-          margin-bottom: 0.5rem;
-        }
-        .card-features li {
-          font-size: 0.875rem;
-          line-height: 1.7;
-        }
-        .card-icon {
-          max-height: 80px;
-        }
-        .btn-gradient-shine {
-          padding: 0.75rem;
-          font-size: 0.875rem;
-        }
-        .card-footer-action {
-          padding: 1rem;
-        }
-      }
-
-      @media (min-width: 1200px) {
-        .card-title {
-          font-size: 1.35rem;
-        }
-        .card-features li {
-          font-size: 1rem;
-        }
-      }
-
-      @media (min-width: 1400px) {
-        .main-content {
-          padding: 2.5rem 0;
-        }
-        .card-body-custom {
-          padding: 2rem 1.5rem;
-        }
-        .card-title {
-          font-size: 1.5rem;
-        }
-        .card-features li {
-          font-size: 1.05rem;
-        }
-      }
-
-      @media (max-width: 991px) {
-        .layout-standard .card-body-custom {
-          flex-direction: column;
-          text-align: center;
-          padding: 1.5rem;
-        }
-        .layout-standard .card-icon-wrapper {
-          width: 100%;
-          margin-bottom: 1rem;
-        }
-        .layout-standard .card-text-wrapper {
-          width: 100%;
-          padding-left: 0;
-        }
-        .layout-standard .card-features {
-          display: inline;
-        }
-        .layout-standard .card-features li {
-          display: inline-block;
-        }
-        .layout-standard .card-features li::before {
-          content: "";
-          margin-right: 0;
-        }
-        .layout-standard .card-features li:not(:last-child)::after {
-          content: "•";
-          margin: 0 0.5rem;
-          color: #cbd5e1;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <nav class="top-navbar">
-      <div class="container-fluid px-4">
-        <div class="row align-items-center">
-          <div class="col-3">
-            <a href="index.html" class="navbar-brand">
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
+        <!-- 中間：專案切換器 -->
+        <div class="col-6 d-flex justify-content-center">
+          <div class="project-switcher">
+            <div class="project-display" id="projectToggle">
+              <div class="project-info">
+                <div class="project-year" id="currentProjectYear">
+                  2024年度
+                </div>
+                <div class="project-name" id="currentProjectName">
+                  進行中梯次範例一
+                </div>
+              </div>
+              <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                 <path
-                  d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
-                />
+                  d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z" />
               </svg>
-              CWT 命題工作平臺
-            </a>
-          </div>
-
-          <!-- 中間：專案切換器 -->
-          <div class="col-6 d-flex justify-content-center">
-            <div class="project-switcher">
-              <div class="project-display" id="projectToggle">
-                <div class="project-info">
-                  <div class="project-year" id="currentProjectYear">
-                    2024年度
-                  </div>
-                  <div class="project-name" id="currentProjectName">
-                    進行中梯次範例一
-                  </div>
-                </div>
-                <svg
-                  width="16"
-                  height="16"
-                  fill="currentColor"
-                  viewBox="0 0 16 16"
-                >
-                  <path
-                    d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"
-                  />
-                </svg>
-              </div>
-
-              <div class="project-dropdown" id="projectDropdown">
-                <div class="dropdown-header">
-                  <span>切換專案</span>
-                  <button class="close-btn" id="closeDropdown">
-                    <svg
-                      width="16"
-                      height="16"
-                      fill="currentColor"
-                      viewBox="0 0 16 16"
-                    >
-                      <path
-                        d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"
-                      />
-                    </svg>
-                  </button>
-                </div>
-
-                <div class="project-search">
-                  <input
-                    type="text"
-                    placeholder="搜尋專案名稱..."
-                    id="projectSearchInput"
-                  />
-                </div>
-
-                <div class="project-list" id="projectList">
-                  <div class="project-category">進行中 (3)</div>
-
-                  <div
-                    class="project-item active"
-                    data-project-id="1"
-                    data-year="2024"
-                    data-name="進行中梯次範例一"
-                    data-role="admin"
-                  >
-                    <div class="project-item-info">
-                      <div class="project-item-title">
-                        <span class="status-indicator status-active"></span>
-                        進行中梯次範例一
-                      </div>
-                      <div class="project-item-meta">
-                        <span>2024年度</span>
-                        <span>截止: 2024/12/31</span>
-                      </div>
-                    </div>
-                    <span class="role-badge role-admin">系統管理員</span>
-                  </div>
-
-                  <div
-                    class="project-item"
-                    data-project-id="2"
-                    data-year="2024"
-                    data-name="進行中梯次範例二"
-                    data-role="reviewer"
-                  >
-                    <div class="project-item-info">
-                      <div class="project-item-title">
-                        <span class="status-indicator status-active"></span>
-                        進行中梯次範例二
-                      </div>
-                      <div class="project-item-meta">
-                        <span>2024年度</span>
-                        <span>截止: 2024/11/15</span>
-                      </div>
-                    </div>
-                    <span class="role-badge role-reviewer">審題委員</span>
-                  </div>
-
-                  <div
-                    class="project-item"
-                    data-project-id="3"
-                    data-year="2024"
-                    data-name="進行中梯次範例三"
-                    data-role="teacher"
-                  >
-                    <div class="project-item-info">
-                      <div class="project-item-title">
-                        <span class="status-indicator status-active"></span>
-                        進行中梯次範例三
-                      </div>
-                      <div class="project-item-meta">
-                        <span>2024年度</span>
-                        <span>截止: 2025/01/20</span>
-                      </div>
-                    </div>
-                    <span class="role-badge role-teacher">命題教師</span>
-                  </div>
-
-                  <div class="project-category">已結束 (5)</div>
-
-                  <div
-                    class="project-item"
-                    data-project-id="4"
-                    data-year="2023"
-                    data-name="已結束梯次範例一"
-                    data-role="admin"
-                  >
-                    <div class="project-item-info">
-                      <div class="project-item-title">
-                        <span class="status-indicator status-finished"></span>
-                        已結束梯次範例一
-                      </div>
-                      <div class="project-item-meta">
-                        <span>2023年度</span>
-                        <span>已結束</span>
-                      </div>
-                    </div>
-                    <span class="role-badge role-admin">系統管理員</span>
-                  </div>
-
-                  <div
-                    class="project-item"
-                    data-project-id="5"
-                    data-year="2023"
-                    data-name="已結束梯次範例二"
-                    data-role="teacher"
-                  >
-                    <div class="project-item-info">
-                      <div class="project-item-title">
-                        <span class="status-indicator status-finished"></span>
-                        已結束梯次範例二
-                      </div>
-                      <div class="project-item-meta">
-                        <span>2023年度</span>
-                        <span>已結束</span>
-                      </div>
-                    </div>
-                    <span class="role-badge role-teacher">命題教師</span>
-                  </div>
-
-                  <div
-                    class="project-item"
-                    data-project-id="6"
-                    data-year="2023"
-                    data-name="已結束梯次範例三"
-                    data-role="reviewer"
-                  >
-                    <div class="project-item-info">
-                      <div class="project-item-title">
-                        <span class="status-indicator status-finished"></span>
-                        已結束梯次範例三
-                      </div>
-                      <div class="project-item-meta">
-                        <span>2023年度</span>
-                        <span>已結束</span>
-                      </div>
-                    </div>
-                    <span class="role-badge role-reviewer">審題委員</span>
-                  </div>
-
-                  <div
-                    class="project-item"
-                    data-project-id="7"
-                    data-year="2022"
-                    data-name="已結束梯次範例四"
-                    data-role="teacher"
-                  >
-                    <div class="project-item-info">
-                      <div class="project-item-title">
-                        <span class="status-indicator status-finished"></span>
-                        已結束梯次範例四
-                      </div>
-                      <div class="project-item-meta">
-                        <span>2022年度</span>
-                        <span>已結束</span>
-                      </div>
-                    </div>
-                    <span class="role-badge role-teacher">命題教師</span>
-                  </div>
-
-                  <div
-                    class="project-item"
-                    data-project-id="8"
-                    data-year="2022"
-                    data-name="已結束梯次範例五"
-                    data-role="teacher"
-                  >
-                    <div class="project-item-info">
-                      <div class="project-item-title">
-                        <span class="status-indicator status-finished"></span>
-                        已結束梯次範例五
-                      </div>
-                      <div class="project-item-meta">
-                        <span>2022年度</span>
-                        <span>已結束</span>
-                      </div>
-                    </div>
-                    <span class="role-badge role-teacher">命題教師</span>
-                  </div>
-                </div>
-              </div>
             </div>
-          </div>
 
-          <!-- 右側：使用者資訊 -->
-          <div class="col-3">
-            <div class="user-section">
-              <div class="user-info">
-                <div class="user-avatar">沈</div>
-                <span class="user-name">沈雅茹</span>
-                <span class="role-badge role-admin" id="currentUserRole"
-                  >系統管理員</span
-                >
+            <div class="project-dropdown" id="projectDropdown">
+              <div class="dropdown-header">
+                <span>切換專案</span>
+                <button class="close-btn" id="closeDropdown">
+                  <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path
+                      d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z" />
+                  </svg>
+                </button>
               </div>
-              <a
-                href="index.html"
-                class="btn btn-sm btn-light fw-bold text-primary px-3"
-                >登出</a
-              >
+
+              <div class="project-search">
+                <input type="text" placeholder="搜尋專案名稱..." id="projectSearchInput" />
+              </div>
+
+              <div class="project-list" id="projectList">
+                <div class="project-category">進行中 (3)</div>
+
+                <div class="project-item active" data-project-id="1" data-year="2024" data-name="進行中梯次範例一"
+                  data-role="admin">
+                  <div class="project-item-info">
+                    <div class="project-item-title">
+                      <span class="status-indicator status-active"></span>
+                      進行中梯次範例一
+                    </div>
+                    <div class="project-item-meta">
+                      <span>2024年度</span>
+                      <span>截止: 2024/12/31</span>
+                    </div>
+                  </div>
+                  <span class="role-badge role-admin">系統管理員</span>
+                </div>
+
+                <div class="project-item" data-project-id="2" data-year="2024" data-name="進行中梯次範例二"
+                  data-role="reviewer">
+                  <div class="project-item-info">
+                    <div class="project-item-title">
+                      <span class="status-indicator status-active"></span>
+                      進行中梯次範例二
+                    </div>
+                    <div class="project-item-meta">
+                      <span>2024年度</span>
+                      <span>截止: 2024/11/15</span>
+                    </div>
+                  </div>
+                  <span class="role-badge role-reviewer">審題委員</span>
+                </div>
+
+                <div class="project-item" data-project-id="3" data-year="2024" data-name="進行中梯次範例三" data-role="teacher">
+                  <div class="project-item-info">
+                    <div class="project-item-title">
+                      <span class="status-indicator status-active"></span>
+                      進行中梯次範例三
+                    </div>
+                    <div class="project-item-meta">
+                      <span>2024年度</span>
+                      <span>截止: 2025/01/20</span>
+                    </div>
+                  </div>
+                  <span class="role-badge role-teacher">命題教師</span>
+                </div>
+
+                <div class="project-category">已結束 (5)</div>
+
+                <div class="project-item" data-project-id="4" data-year="2023" data-name="已結束梯次範例一" data-role="admin">
+                  <div class="project-item-info">
+                    <div class="project-item-title">
+                      <span class="status-indicator status-finished"></span>
+                      已結束梯次範例一
+                    </div>
+                    <div class="project-item-meta">
+                      <span>2023年度</span>
+                      <span>已結束</span>
+                    </div>
+                  </div>
+                  <span class="role-badge role-admin">系統管理員</span>
+                </div>
+
+                <div class="project-item" data-project-id="5" data-year="2023" data-name="已結束梯次範例二" data-role="teacher">
+                  <div class="project-item-info">
+                    <div class="project-item-title">
+                      <span class="status-indicator status-finished"></span>
+                      已結束梯次範例二
+                    </div>
+                    <div class="project-item-meta">
+                      <span>2023年度</span>
+                      <span>已結束</span>
+                    </div>
+                  </div>
+                  <span class="role-badge role-teacher">命題教師</span>
+                </div>
+
+                <div class="project-item" data-project-id="6" data-year="2023" data-name="已結束梯次範例三"
+                  data-role="reviewer">
+                  <div class="project-item-info">
+                    <div class="project-item-title">
+                      <span class="status-indicator status-finished"></span>
+                      已結束梯次範例三
+                    </div>
+                    <div class="project-item-meta">
+                      <span>2023年度</span>
+                      <span>已結束</span>
+                    </div>
+                  </div>
+                  <span class="role-badge role-reviewer">審題委員</span>
+                </div>
+
+                <div class="project-item" data-project-id="7" data-year="2022" data-name="已結束梯次範例四" data-role="teacher">
+                  <div class="project-item-info">
+                    <div class="project-item-title">
+                      <span class="status-indicator status-finished"></span>
+                      已結束梯次範例四
+                    </div>
+                    <div class="project-item-meta">
+                      <span>2022年度</span>
+                      <span>已結束</span>
+                    </div>
+                  </div>
+                  <span class="role-badge role-teacher">命題教師</span>
+                </div>
+
+                <div class="project-item" data-project-id="8" data-year="2022" data-name="已結束梯次範例五" data-role="teacher">
+                  <div class="project-item-info">
+                    <div class="project-item-title">
+                      <span class="status-indicator status-finished"></span>
+                      已結束梯次範例五
+                    </div>
+                    <div class="project-item-meta">
+                      <span>2022年度</span>
+                      <span>已結束</span>
+                    </div>
+                  </div>
+                  <span class="role-badge role-teacher">命題教師</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
+
+        <!-- 右側：使用者資訊 -->
+        <div class="col-3">
+          <div class="user-section">
+            <div class="user-info">
+              <div class="user-avatar">沈</div>
+              <span class="user-name">沈雅茹</span>
+              <span class="role-badge role-admin" id="currentUserRole">系統管理員</span>
+            </div>
+            <a href="index.html" class="btn btn-sm btn-light fw-bold text-primary px-3">登出</a>
+          </div>
+        </div>
       </div>
-    </nav>
+    </div>
+  </nav>
 
-    <div class="main-content">
-      <div class="container-fluid px-4 content-container">
-        <div class="row g-4 h-100">
-          <div class="col-lg-9 d-flex flex-column gap-4">
-            <div class="row g-4 flex-grow-1">
-              <div class="col-md-4">
-                <div class="feature-card layout-standard">
-                  <div class="card-body-custom">
-                    <div class="card-icon-wrapper">
-                      <img src="ICON/001.png" alt="Icon" class="card-icon" />
-                    </div>
-                    <div class="card-text-wrapper">
-                      <h3 class="card-title">命題儀錶板</h3>
-                      <ul class="card-features">
-                        <li>掌握命題進度</li>
-                        <li>題型缺口</li>
-                        <li>逾期警示</li>
-                        <li>稽核歷程</li>
-                      </ul>
-                    </div>
+  <div class="main-content">
+    <div class="container-fluid px-4 content-container">
+      <div class="row g-4 h-100">
+        <div class="col-lg-9 d-flex flex-column gap-4">
+          <div class="row g-4 flex-grow-1">
+            <div class="col-md-4">
+              <div class="feature-card layout-standard">
+                <div class="card-body-custom">
+                  <div class="card-icon-wrapper">
+                    <img src="ICON/001.png" alt="Icon" class="card-icon" />
                   </div>
-                  <div class="card-footer-action text-center">
-                    <a
-                      href="cwt-dashboard.html"
-                      class="btn-gradient-shine d-inline-block text-decoration-none px-5"
-                    >
-                      進入儀表板
-                    </a>
+                  <div class="card-text-wrapper">
+                    <h3 class="card-title">命題儀錶板</h3>
+                    <ul class="card-features">
+                      <li>掌握命題進度</li>
+                      <li>題型缺口</li>
+                      <li>逾期警示</li>
+                      <li>稽核歷程</li>
+                    </ul>
                   </div>
                 </div>
-              </div>
-
-              <div class="col-md-4">
-                <div class="feature-card layout-standard">
-                  <div class="card-body-custom">
-                    <div class="card-icon-wrapper">
-                      <img src="ICON/002.png" alt="Icon" class="card-icon" />
-                    </div>
-                    <div class="card-text-wrapper">
-                      <h3 class="card-title">我的命題任務</h3>
-                      <ul class="card-features">
-                        <li>命製試題</li>
-                        <li>修正試題</li>
-                        <li>截止提醒</li>
-                      </ul>
-                    </div>
-                  </div>
-                  <div class="card-footer-action text-center">
-                    <a
-                      href="cwt-list.html"
-                      class="btn-gradient-shine d-inline-block text-decoration-none px-5"
-                      >進入命題任務</a
-                    >
-                  </div>
-                </div>
-              </div>
-
-              <div class="col-md-4">
-                <div class="feature-card layout-standard">
-                  <div class="card-body-custom">
-                    <div class="card-icon-wrapper">
-                      <img src="ICON/003.png" alt="Icon" class="card-icon" />
-                    </div>
-                    <div class="card-text-wrapper">
-                      <h3 class="card-title">審題清單</h3>
-                      <ul class="card-features">
-                        <li>查看待審題目</li>
-                        <li>採用</li>
-                        <li>不採用</li>
-                        <li>改後採用</li>
-                      </ul>
-                    </div>
-                  </div>
-                  <div class="card-footer-action text-center">
-                    <a
-                      class="btn-gradient-shine d-inline-block text-decoration-none px-5"
-                      >進入審題</a
-                    >
-                  </div>
+                <div class="card-footer-action text-center">
+                  <a href="cwt-dashboard.html" class="btn-gradient-shine d-inline-block text-decoration-none px-5">
+                    進入儀表板
+                  </a>
                 </div>
               </div>
             </div>
 
-            <div class="row g-4 flex-grow-1">
-              <div class="col-md-4">
-                <div class="feature-card layout-standard">
-                  <div class="card-body-custom">
-                    <div class="card-icon-wrapper">
-                      <img src="ICON/004.png" alt="Icon" class="card-icon" />
-                    </div>
-                    <div class="card-text-wrapper">
-                      <h3 class="card-title">角色與權限管理</h3>
-                      <ul class="card-features">
-                        <li>帳號管理</li>
-                        <li>角色設定</li>
-                        <li>權限控管</li>
-                        <li>導頁規則設定</li>
-                      </ul>
-                    </div>
+            <div class="col-md-4">
+              <div class="feature-card layout-standard">
+                <div class="card-body-custom">
+                  <div class="card-icon-wrapper">
+                    <img src="ICON/002.png" alt="Icon" class="card-icon" />
                   </div>
-                  <div class="card-footer-action text-center">
-                    <a
-                      href="cwt-role.html"
-                      class="btn-gradient-shine d-inline-block text-decoration-none px-5"
-                      >進入管理</a
-                    >
+                  <div class="card-text-wrapper">
+                    <h3 class="card-title">我的命題任務</h3>
+                    <ul class="card-features">
+                      <li>命製試題</li>
+                      <li>修正試題</li>
+                      <li>截止提醒</li>
+                    </ul>
                   </div>
                 </div>
-              </div>
-
-              <div class="col-md-4">
-                <div class="feature-card layout-vertical">
-                  <div class="card-body-custom">
-                    <div class="card-icon-wrapper">
-                      <img src="ICON/005.png" alt="Icon" class="card-icon" />
-                    </div>
-                    <div class="card-text-wrapper">
-                      <h3 class="card-title">系統公告 / 使用說明</h3>
-                      <ul class="card-features">
-                        <li>系統公告</li>
-                        <li>操作手冊</li>
-                        <li>常見問題</li>
-                      </ul>
-                    </div>
-                  </div>
-                  <div class="card-footer-action text-center">
-                    <a
-                      class="btn-gradient-shine d-inline-block text-decoration-none px-5"
-                      >查看公告</a
-                    >
-                  </div>
-                </div>
-              </div>
-
-              <div class="col-md-4">
-                <div class="feature-card layout-standard">
-                  <div class="card-body-custom">
-                    <div class="card-icon-wrapper">
-                      <img src="ICON/006.png" alt="Icon" class="card-icon" />
-                    </div>
-                    <div class="card-text-wrapper">
-                      <h3 class="card-title">教師管理系統</h3>
-                      <ul class="card-features">
-                        <li>教師名單維護</li>
-                        <li>任教背景檢視</li>
-                        <li>命題參與歷程</li>
-                        <li>篩選與查詢</li>
-                      </ul>
-                    </div>
-                  </div>
-                  <div class="card-footer-action text-center">
-                    <a
-                      href="cwt-teacher.html"
-                      class="btn-gradient-shine d-inline-block text-decoration-none px-5"
-                      >進入教師管理</a
-                    >
-                  </div>
-                </div>
-              </div>
-
-               <div class="col-md-4">
-                <div class="feature-card layout-standard">
-                  <div class="card-body-custom">
-                    <div class="card-icon-wrapper">
-                      <img src="ICON/007.png" alt="Icon" class="card-icon" />
-                    </div>
-                    <div class="card-text-wrapper">
-                      <h3 class="card-title">命題專案管理</h3>
-                      <ul class="card-features">
-                        <li>新增/編輯專案</li>
-                        <li>梯次區間設定</li>
-                        <li>專案人員指派</li>
-                        <li>狀態與期限管理</li>
-                      </ul>
-                    </div>
-                  </div>
-                  <div class="card-footer-action text-center">
-                    <a
-                      href="cwt-prop.html"
-                      class="btn-gradient-shine d-inline-block text-decoration-none px-5"
-                      >進入專案管理</a
-                    >
-                  </div>
+                <div class="card-footer-action text-center">
+                  <a href="cwt-list.html" class="btn-gradient-shine d-inline-block text-decoration-none px-5">進入命題任務</a>
                 </div>
               </div>
             </div>
-            
 
+            <div class="col-md-4">
+              <div class="feature-card layout-standard">
+                <div class="card-body-custom">
+                  <div class="card-icon-wrapper">
+                    <img src="ICON/003.png" alt="Icon" class="card-icon" />
+                  </div>
+                  <div class="card-text-wrapper">
+                    <h3 class="card-title">審題清單</h3>
+                    <ul class="card-features">
+                      <li>查看待審題目</li>
+                      <li>採用</li>
+                      <li>不採用</li>
+                      <li>改後採用</li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="card-footer-action text-center">
+                  <a class="btn-gradient-shine d-inline-block text-decoration-none px-5">進入審題</a>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div class="col-lg-3">
-            <div class="reminder-card h-100">
-              <div class="reminder-header">
-                <h3 class="reminder-title">今日提醒</h3>
+          <div class="row g-4 flex-grow-1">
+            <div class="col-md-4">
+              <div class="feature-card layout-standard">
+                <div class="card-body-custom">
+                  <div class="card-icon-wrapper">
+                    <img src="ICON/004.png" alt="Icon" class="card-icon" />
+                  </div>
+                  <div class="card-text-wrapper">
+                    <h3 class="card-title">角色與權限管理</h3>
+                    <ul class="card-features">
+                      <li>帳號管理</li>
+                      <li>角色設定</li>
+                      <li>權限控管</li>
+                      <li>導頁規則設定</li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="card-footer-action text-center">
+                  <a href="cwt-role.html" class="btn-gradient-shine d-inline-block text-decoration-none px-5">進入管理</a>
+                </div>
               </div>
-              <div class="reminder-body">
-                <div class="reminder-item">
-                  <svg
-                    width="24"
-                    height="24"
-                    fill="#2563eb"
-                    viewBox="0 0 16 16"
-                    class="flex-shrink-0"
-                  >
-                    <path
-                      d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"
-                    />
-                    <path
-                      d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"
-                    />
-                  </svg>
-                  <div class="fw-bold text-dark">初等命題截止倒數 3 天</div>
-                </div>
+            </div>
 
-                <div class="reminder-item">
-                  <svg
-                    width="24"
-                    height="24"
-                    fill="#dc2626"
-                    viewBox="0 0 16 16"
-                    class="flex-shrink-0"
-                  >
-                    <path
-                      d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"
-                    />
-                  </svg>
-                  <div>
-                    <span class="text-danger fw-bold">2 梯次命題待確認</span>
+            <div class="col-md-4">
+              <div class="feature-card layout-vertical">
+                <div class="card-body-custom">
+                  <div class="card-icon-wrapper">
+                    <img src="ICON/005.png" alt="Icon" class="card-icon" />
+                  </div>
+                  <div class="card-text-wrapper">
+                    <h3 class="card-title">系統公告 / 使用說明</h3>
+                    <ul class="card-features">
+                      <li>系統公告</li>
+                      <li>操作手冊</li>
+                      <li>常見問題</li>
+                    </ul>
                   </div>
                 </div>
+                <div class="card-footer-action text-center">
+                  <a href="cwt-announcement.html"
+                    class="btn-gradient-shine d-inline-block text-decoration-none px-5">查看公告</a>
+                </div>
+              </div>
+            </div>
 
-                <div class="reminder-item">
-                  <img
-                    src="ICON/settings.png"
-                    alt="set"
-                    width="24px"
-                    height="24px"
-                  />
-                  <div class="fw-bold text-dark">
-                    系統維護公告 (預計 1/30 進行例行維護)
+            <div class="col-md-4">
+              <div class="feature-card layout-standard">
+                <div class="card-body-custom">
+                  <div class="card-icon-wrapper">
+                    <img src="ICON/006.png" alt="Icon" class="card-icon" />
                   </div>
+                  <div class="card-text-wrapper">
+                    <h3 class="card-title">教師管理系統</h3>
+                    <ul class="card-features">
+                      <li>教師名單維護</li>
+                      <li>任教背景檢視</li>
+                      <li>命題參與歷程</li>
+                      <li>篩選與查詢</li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="card-footer-action text-center">
+                  <a href="cwt-teacher.html"
+                    class="btn-gradient-shine d-inline-block text-decoration-none px-5">進入教師管理</a>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="feature-card layout-standard">
+                <div class="card-body-custom">
+                  <div class="card-icon-wrapper">
+                    <img src="ICON/007.png" alt="Icon" class="card-icon" />
+                  </div>
+                  <div class="card-text-wrapper">
+                    <h3 class="card-title">命題專案管理</h3>
+                    <ul class="card-features">
+                      <li>新增/編輯專案</li>
+                      <li>梯次區間設定</li>
+                      <li>專案人員指派</li>
+                      <li>狀態與期限管理</li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="card-footer-action text-center">
+                  <a href="cwt-prop.html" class="btn-gradient-shine d-inline-block text-decoration-none px-5">進入專案管理</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+        </div>
+
+        <div class="col-lg-3">
+          <div class="reminder-card h-100">
+            <div class="reminder-header">
+              <h3 class="reminder-title">今日提醒</h3>
+            </div>
+            <div class="reminder-body">
+              <div class="reminder-item">
+                <svg width="24" height="24" fill="#2563eb" viewBox="0 0 16 16" class="flex-shrink-0">
+                  <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z" />
+                  <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z" />
+                </svg>
+                <div class="fw-bold text-dark">初等命題截止倒數 3 天</div>
+              </div>
+
+              <div class="reminder-item">
+                <svg width="24" height="24" fill="#dc2626" viewBox="0 0 16 16" class="flex-shrink-0">
+                  <path
+                    d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
+                </svg>
+                <div>
+                  <span class="text-danger fw-bold">2 梯次命題待確認</span>
+                </div>
+              </div>
+
+              <div class="reminder-item">
+                <img src="ICON/settings.png" alt="set" width="24px" height="24px" />
+                <div class="fw-bold text-dark">
+                  系統維護公告 (預計 1/30 進行例行維護)
                 </div>
               </div>
             </div>
@@ -836,7 +725,9 @@
         </div>
       </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="app.js"></script>
-  </body>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="app.js"></script>
+</body>
+
 </html>
