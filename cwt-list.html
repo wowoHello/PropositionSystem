@@ -1,1008 +1,1047 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>我的命題列表 - CWT 命題工作平臺</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="style.css" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <style>
-      :root {
-        --primary-blue: #2563eb;
-        --bg-color: #f0f2f5;
-        --text-dark: #1f2937;
-        --text-gray: #6b7280;
-      }
 
-      body {
-        font-family: "Noto Sans TC", sans-serif;
-        background-color: var(--bg-color);
-        color: var(--text-dark);
-        height: 100vh;
-        display: flex;
-        flex-direction: column;
-        overflow-x: hidden;
-      }
-      /* =========================================
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>我的命題列表 - CWT 命題工作平臺</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <style>
+    :root {
+      --primary-blue: #2563eb;
+      --bg-color: #f0f2f5;
+      --text-dark: #1f2937;
+      --text-gray: #6b7280;
+    }
+
+    body {
+      font-family: "Noto Sans TC", sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-dark);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* =========================================
          原有的樣式保留 (Breadcrumb, Main Content)
          ========================================= */
 
-      /* 3. 主要內容區 */
-      .main-content {
-        padding: 2rem 0;
-        flex-grow: 1;
-      }
+    /* 3. 主要內容區 */
+    .main-content {
+      padding: 2rem 0;
+      flex-grow: 1;
+    }
 
-      .page-title {
-        font-size: 1.75rem;
-        font-weight: 700;
-        color: #111827;
-        margin-bottom: 0.25rem;
-      }
+    .page-title {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 0.25rem;
+    }
 
-      .page-desc {
-        color: var(--text-gray);
-        font-size: 0.95rem;
-        margin-bottom: 1.5rem;
-      }
+    .page-desc {
+      color: var(--text-gray);
+      font-size: 0.95rem;
+      margin-bottom: 1.5rem;
+    }
 
-      /* 通用卡片樣式 */
-      .card-box {
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-        border: 1px solid #e5e7eb;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-      }
+    /* 通用卡片樣式 */
+    .card-box {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e5e7eb;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
 
-      /* 搜尋區 */
-      .search-area .input-group-text {
-        display: flex;
-        align-items: center;
-      }
-      .search-area .form-label {
-        font-size: 0.85rem;
-        font-weight: 700;
-        color: #374151;
-        margin-bottom: 0.4rem;
-      }
+    /* 搜尋區 */
+    .search-area .input-group-text {
+      display: flex;
+      align-items: center;
+    }
 
-      .search-area .form-select,
-      .search-area .form-control {
-        background-color: #f9fafb;
-        border: 1px solid #d1d5db;
-        border-radius: 8px;
-        padding: 0.6rem 1rem;
-        font-size: 0.95rem;
-      }
+    .search-area .form-label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #374151;
+      margin-bottom: 0.4rem;
+    }
 
-      .btn-search {
-        background-color: #2563eb;
-        color: white;
-        border-radius: 8px;
-        font-weight: 600;
-        padding: 0.6rem 1.5rem;
-        border: none;
-        white-space: nowrap;
-        flex-shrink: 0;
-      }
-      .btn-search:hover {
-        background-color: #1d4ed8;
-      }
+    .search-area .form-select,
+    .search-area .form-control {
+      background-color: #f9fafb;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      padding: 0.6rem 1rem;
+      font-size: 0.95rem;
+    }
 
-      /* 統計卡片區 */
-      .stat-card {
-        background: white;
-        border-radius: 12px;
-        padding: 1.25rem;
-        border: 1px solid #e5e7eb;
-        display: flex;
-        align-items: center;
-        height: 100%;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-      }
+    .btn-search {
+      background-color: #2563eb;
+      color: white;
+      border-radius: 8px;
+      font-weight: 600;
+      padding: 0.6rem 1.5rem;
+      border: none;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
 
-      .stat-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 1rem;
-        flex-shrink: 0;
-      }
+    .btn-search:hover {
+      background-color: #1d4ed8;
+    }
 
-      .stat-info span {
-        display: block;
-        color: #6b7280;
-        font-size: 0.9rem;
-        font-weight: 600;
-        margin-bottom: 0.2rem;
-      }
+    /* 統計卡片區 */
+    .stat-card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.25rem;
+      border: 1px solid #e5e7eb;
+      display: flex;
+      align-items: center;
+      height: 100%;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
 
-      .stat-info h4 {
-        margin: 0;
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #111827;
-        line-height: 1;
-      }
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 1rem;
+      flex-shrink: 0;
+    }
 
-      /* 統計圖示顏色 */
-      .icon-gray {
-        background-color: #f3f4f6;
-        color: #6b7280;
-      }
-      .icon-orange {
-        background-color: #fff7ed;
-        color: #f97316;
-      }
-      .icon-green {
-        background-color: #f0fdf4;
-        color: #10b981;
-      }
-      .icon-blue {
-        background-color: #eff6ff;
-        color: #3b82f6;
-      }
+    .stat-info span {
+      display: block;
+      color: #6b7280;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 0.2rem;
+    }
 
-      /* 列表區 */
-      .table-toolbar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1rem;
-        padding-bottom: 1rem;
-      }
+    .stat-info h4 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #111827;
+      line-height: 1;
+    }
 
-      .btn-outline-blue {
-        border: 1px solid #2563eb;
-        color: #2563eb;
-        background: white;
-        font-weight: 600;
-        border-radius: 6px;
-        padding: 0.4rem 1rem;
-        font-size: 0.9rem;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-      }
-      .btn-outline-blue:hover {
-        background-color: #eff6ff;
-      }
+    /* 統計圖示顏色 */
+    .icon-gray {
+      background-color: #f3f4f6;
+      color: #6b7280;
+    }
 
-      .btn-toolbar-gray {
-        border: 1px solid #e5e7eb;
-        color: #9ca3af;
-        background: white;
-        font-weight: 500;
-        border-radius: 6px;
-        padding: 0.4rem 1rem;
-        font-size: 0.9rem;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-      }
+    .icon-orange {
+      background-color: #fff7ed;
+      color: #f97316;
+    }
 
-      /* 表格樣式 */
-      .custom-table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-      }
+    .icon-green {
+      background-color: #f0fdf4;
+      color: #10b981;
+    }
 
-      .custom-table th {
-        background-color: #f3f4f6;
-        color: #374151;
-        font-weight: 700;
-        padding: 1rem;
-        font-size: 0.9rem;
-        border-bottom: 2px solid #e5e7eb;
-        text-align: left;
-      }
+    .icon-blue {
+      background-color: #eff6ff;
+      color: #3b82f6;
+    }
 
-      .custom-table td {
-        padding: 1rem;
-        vertical-align: middle;
-        border-bottom: 1px solid #f3f4f6;
-        color: #4b5563;
-        font-size: 0.95rem;
-      }
+    /* 列表區 */
+    .table-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+    }
 
-      .custom-table tr:hover td {
-        background-color: #f9fafb;
-      }
+    .btn-outline-blue {
+      border: 1px solid #2563eb;
+      color: #2563eb;
+      background: white;
+      font-weight: 600;
+      border-radius: 6px;
+      padding: 0.4rem 1rem;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
 
-      /* 狀態標籤 */
-      .badge-outline {
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        border: 1px solid;
-        background: white;
-        display: inline-block;
-      }
-      .badge-draft {
-        color: #d97706;
-        border-color: #d97706;
-      }
-      .badge-confirmed {
-        color: #059669;
-        border-color: #059669;
-      }
-      .badge-sent {
-        color: #2563eb;
-        border-color: #2563eb;
-      }
+    .btn-outline-blue:hover {
+      background-color: #eff6ff;
+    }
 
-      /* 操作連結 */
-      .action-links a {
-        color: #2563eb;
-        text-decoration: none;
-        font-weight: 500;
-        font-size: 0.9rem;
-      }
-      .action-links a:hover {
-        text-decoration: underline;
-      }
-      .action-divider {
-        color: #d1d5db;
-        margin: 0 4px;
-      }
+    .btn-toolbar-gray {
+      border: 1px solid #e5e7eb;
+      color: #9ca3af;
+      background: white;
+      font-weight: 500;
+      border-radius: 6px;
+      padding: 0.4rem 1rem;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
 
-      /* Tooltip */
-      .custom-tooltip .tooltip-inner {
-        background-color: #1f2937;
-        color: white;
-        padding: 10px 15px;
-        border-radius: 6px;
-        font-size: 0.85rem;
-        max-width: 280px;
-        text-align: left;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      }
+    /* 表格樣式 */
+    .custom-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
 
-      /* 分頁 */
-      .pagination-container {
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-        margin-top: 1rem;
-        gap: 10px;
-      }
-      .page-info {
-        color: #6b7280;
-        font-size: 0.9rem;
-        font-weight: 600;
-      }
-      .page-btn {
-        width: 32px;
-        height: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 1px solid #e5e7eb;
-        border-radius: 4px;
-        color: #6b7280;
-        text-decoration: none;
-        background: white;
-        font-size: 0.9rem;
-      }
-      .page-btn.active {
-        background-color: #2563eb;
-        color: white;
-        border-color: #2563eb;
-      }
-      .page-btn:hover:not(.active) {
-        background-color: #f3f4f6;
-      }
-    </style>
-  </head>
-  <body>
-    <nav class="top-navbar">
-      <div class="container-fluid px-4">
-        <div class="row align-items-center">
-          <div class="col-3">
-            <a href="index.html" class="navbar-brand">
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
+    .custom-table th {
+      background-color: #f3f4f6;
+      color: #374151;
+      font-weight: 700;
+      padding: 1rem;
+      font-size: 0.9rem;
+      border-bottom: 2px solid #e5e7eb;
+      text-align: left;
+    }
+
+    .custom-table td {
+      padding: 1rem;
+      vertical-align: middle;
+      border-bottom: 1px solid #f3f4f6;
+      color: #4b5563;
+      font-size: 0.95rem;
+    }
+
+    .custom-table tr:hover td {
+      background-color: #f9fafb;
+    }
+
+    /* 狀態標籤 */
+    .badge-outline {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: 1px solid;
+      background: white;
+      display: inline-block;
+    }
+
+    .badge-draft {
+      color: #d97706;
+      border-color: #d97706;
+    }
+
+    .badge-confirmed {
+      color: #059669;
+      border-color: #059669;
+    }
+
+    .badge-sent {
+      color: #2563eb;
+      border-color: #2563eb;
+    }
+
+    /* 操作連結 */
+    .action-links a {
+      color: #2563eb;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+
+    .action-links a:hover {
+      text-decoration: underline;
+    }
+
+    .action-divider {
+      color: #d1d5db;
+      margin: 0 4px;
+    }
+
+    /* Tooltip */
+    .custom-tooltip .tooltip-inner {
+      background-color: #1f2937;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      max-width: 280px;
+      text-align: left;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    /* 分頁 */
+    .pagination-container {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      margin-top: 1rem;
+      gap: 10px;
+    }
+
+    .page-info {
+      color: #6b7280;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .page-btn {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #e5e7eb;
+      border-radius: 4px;
+      color: #6b7280;
+      text-decoration: none;
+      background: white;
+      font-size: 0.9rem;
+    }
+
+    .page-btn.active {
+      background-color: #2563eb;
+      color: white;
+      border-color: #2563eb;
+    }
+
+    .page-btn:hover:not(.active) {
+      background-color: #f3f4f6;
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="top-navbar">
+    <div class="container-fluid px-4">
+      <div class="row align-items-center">
+        <div class="col-3">
+          <a href="index.html" class="navbar-brand">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+            </svg>
+            CWT 命題工作平臺
+          </a>
+        </div>
+
+        <div class="col-6 d-flex justify-content-center">
+          <div class="project-switcher">
+            <div class="project-display" id="projectToggle">
+              <div class="project-info">
+                <div class="project-year" id="currentProjectYear">
+                  2024年度
+                </div>
+                <div class="project-name" id="currentProjectName">
+                  進行中梯次範例一
+                </div>
+              </div>
+              <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                 <path
-                  d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
-                />
+                  d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z" />
               </svg>
-              CWT 命題工作平臺
-            </a>
-          </div>
-
-          <div class="col-6 d-flex justify-content-center">
-            <div class="project-switcher">
-              <div class="project-display" id="projectToggle">
-                <div class="project-info">
-                  <div class="project-year" id="currentProjectYear">
-                    2024年度
-                  </div>
-                  <div class="project-name" id="currentProjectName">
-                    進行中梯次範例一
-                  </div>
-                </div>
-                <svg
-                  width="16"
-                  height="16"
-                  fill="currentColor"
-                  viewBox="0 0 16 16"
-                >
-                  <path
-                    d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"
-                  />
-                </svg>
-              </div>
-
-              <div class="project-dropdown" id="projectDropdown">
-                <div class="dropdown-header">
-                  <span>切換專案</span>
-                  <button class="close-btn" id="closeDropdown">
-                    <svg
-                      width="16"
-                      height="16"
-                      fill="currentColor"
-                      viewBox="0 0 16 16"
-                    >
-                      <path
-                        d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"
-                      />
-                    </svg>
-                  </button>
-                </div>
-
-                <div class="project-search">
-                  <input
-                    type="text"
-                    placeholder="搜尋專案名稱..."
-                    id="projectSearchInput"
-                  />
-                </div>
-
-                <div class="project-list" id="projectList">
-                  <div class="project-category">進行中 (3)</div>
-
-                  <div
-                    class="project-item active"
-                    data-project-id="1"
-                    data-year="2024"
-                    data-name="進行中梯次範例一"
-                    data-role="admin"
-                  >
-                    <div class="project-item-info">
-                      <div class="project-item-title">
-                        <span class="status-indicator status-active"></span>
-                        進行中梯次範例一
-                      </div>
-                      <div class="project-item-meta">
-                        <span>2024年度</span>
-                        <span>截止: 2024/12/31</span>
-                      </div>
-                    </div>
-                    <span class="role-badge role-admin">系統管理員</span>
-                  </div>
-
-                  <div
-                    class="project-item"
-                    data-project-id="2"
-                    data-year="2024"
-                    data-name="進行中梯次範例二"
-                    data-role="reviewer"
-                  >
-                    <div class="project-item-info">
-                      <div class="project-item-title">
-                        <span class="status-indicator status-active"></span>
-                        進行中梯次範例二
-                      </div>
-                      <div class="project-item-meta">
-                        <span>2024年度</span>
-                        <span>截止: 2024/11/15</span>
-                      </div>
-                    </div>
-                    <span class="role-badge role-reviewer">審題委員</span>
-                  </div>
-
-                  <div
-                    class="project-item"
-                    data-project-id="3"
-                    data-year="2024"
-                    data-name="進行中梯次範例三"
-                    data-role="teacher"
-                  >
-                    <div class="project-item-info">
-                      <div class="project-item-title">
-                        <span class="status-indicator status-active"></span>
-                        進行中梯次範例三
-                      </div>
-                      <div class="project-item-meta">
-                        <span>2024年度</span>
-                        <span>截止: 2025/01/20</span>
-                      </div>
-                    </div>
-                    <span class="role-badge role-teacher">命題教師</span>
-                  </div>
-
-                  <div class="project-category">已結束 (5)</div>
-
-                  <div
-                    class="project-item"
-                    data-project-id="4"
-                    data-year="2023"
-                    data-name="已結束梯次範例一"
-                    data-role="admin"
-                  >
-                    <div class="project-item-info">
-                      <div class="project-item-title">
-                        <span class="status-indicator status-finished"></span>
-                        已結束梯次範例一
-                      </div>
-                      <div class="project-item-meta">
-                        <span>2023年度</span>
-                        <span>已結束</span>
-                      </div>
-                    </div>
-                    <span class="role-badge role-admin">系統管理員</span>
-                  </div>
-
-                  <div
-                    class="project-item"
-                    data-project-id="5"
-                    data-year="2023"
-                    data-name="已結束梯次範例二"
-                    data-role="teacher"
-                  >
-                    <div class="project-item-info">
-                      <div class="project-item-title">
-                        <span class="status-indicator status-finished"></span>
-                        已結束梯次範例二
-                      </div>
-                      <div class="project-item-meta">
-                        <span>2023年度</span>
-                        <span>已結束</span>
-                      </div>
-                    </div>
-                    <span class="role-badge role-teacher">命題教師</span>
-                  </div>
-
-                  <div
-                    class="project-item"
-                    data-project-id="6"
-                    data-year="2023"
-                    data-name="已結束梯次範例三"
-                    data-role="reviewer"
-                  >
-                    <div class="project-item-info">
-                      <div class="project-item-title">
-                        <span class="status-indicator status-finished"></span>
-                        已結束梯次範例三
-                      </div>
-                      <div class="project-item-meta">
-                        <span>2023年度</span>
-                        <span>已結束</span>
-                      </div>
-                    </div>
-                    <span class="role-badge role-reviewer">審題委員</span>
-                  </div>
-
-                  <div
-                    class="project-item"
-                    data-project-id="7"
-                    data-year="2022"
-                    data-name="已結束梯次範例四"
-                    data-role="teacher"
-                  >
-                    <div class="project-item-info">
-                      <div class="project-item-title">
-                        <span class="status-indicator status-finished"></span>
-                        已結束梯次範例四
-                      </div>
-                      <div class="project-item-meta">
-                        <span>2022年度</span>
-                        <span>已結束</span>
-                      </div>
-                    </div>
-                    <span class="role-badge role-teacher">命題教師</span>
-                  </div>
-
-                  <div
-                    class="project-item"
-                    data-project-id="8"
-                    data-year="2022"
-                    data-name="已結束梯次範例五"
-                    data-role="teacher"
-                  >
-                    <div class="project-item-info">
-                      <div class="project-item-title">
-                        <span class="status-indicator status-finished"></span>
-                        已結束梯次範例五
-                      </div>
-                      <div class="project-item-meta">
-                        <span>2022年度</span>
-                        <span>已結束</span>
-                      </div>
-                    </div>
-                    <span class="role-badge role-teacher">命題教師</span>
-                  </div>
-                </div>
-              </div>
             </div>
-          </div>
 
-          <div class="col-3">
-            <div class="user-section">
-              <div class="user-info">
-                <div class="user-avatar">沈</div>
-                <span class="user-name">沈雅茹</span>
-                <span class="role-badge role-admin" id="currentUserRole"
-                  >系統管理員</span
-                >
-              </div>
-              <a
-                href="index.html"
-                class="btn btn-sm btn-light fw-bold text-primary px-3"
-              >
-                登出
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </nav>
-
-    <div class="breadcrumb-bar">
-      <div class="container-fluid px-4">
-        <a href="firstpage.html" class="breadcrumb-item-link">首頁</a>
-        <span class="breadcrumb-separator">
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="3"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
-        </span>
-        <span class="breadcrumb-current">我的命題列表</span>
-      </div>
-    </div>
-
-    <div class="main-content">
-      <div class="container px-4">
-        <h1 class="page-title">我的命題列表</h1>
-        <p class="page-desc">
-          檢視和管理您的所有命題，包括草稿、已確認和已傳送的試題。
-        </p>
-
-        <div class="card-box search-area">
-          <div class="row g-3 align-items-end">
-            <div class="col-md-3">
-              <label class="form-label">題型篩選</label>
-              <select class="form-select" id="filterType">
-                <option value="all" selected>全部題型</option>
-                <option value="單選題">單選題</option>
-                <option value="申論題">申論題</option>
-                <option value="題組題">題組題</option>
-                <option value="簡答題">簡答題</option>
-                <option value="圖形題">圖形題</option>
-              </select>
-            </div>
-            <div class="col-md-3">
-              <label class="form-label">狀態篩選</label>
-              <select class="form-select" id="filterStatus">
-                <option value="all" selected>全部狀態</option>
-                <option value="草稿">草稿</option>
-                <option value="已確認">已確認</option>
-                <option value="已傳送">已傳送</option>
-              </select>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">關鍵字搜尋</label>
-              <div class="d-flex gap-2">
-                <div class="input-group">
-                  <span
-                    class="input-group-text bg-white text-secondary border-end-0"
-                  >
-                    <svg
-                      width="16"
-                      height="16"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                      ></path>
-                    </svg>
-                  </span>
-                  <input
-                    type="text"
-                    id="searchInput"
-                    class="form-control border-start-0 ps-2"
-                    placeholder="依題目文字搜尋"
-                  />
-                </div>
-                <button class="btn btn-search" id="btnSearch">查詢</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="row g-4 mb-4">
-          <div class="col-md-3">
-            <div class="stat-card">
-              <div class="stat-icon icon-gray">
-                <svg
-                  width="24"
-                  height="24"
-                  fill="currentColor"
-                  viewBox="0 0 16 16"
-                >
-                  <path
-                    d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7Zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm-5.784 6A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216ZM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"
-                  />
-                </svg>
-              </div>
-              <div class="stat-info">
-                <span>總計</span>
-                <h4>15</h4>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-3">
-            <div class="stat-card">
-              <div class="stat-icon icon-orange">
-                <svg
-                  width="24"
-                  height="24"
-                  fill="currentColor"
-                  viewBox="0 0 16 16"
-                >
-                  <path
-                    d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0zM9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1zM4.5 9a.5.5 0 0 1 0-1h7a.5.5 0 0 1 0 1h-7zm0 2.5a.5.5 0 0 1 0-1h4a.5.5 0 0 1 0 1h-4z"
-                  />
-                </svg>
-              </div>
-              <div class="stat-info">
-                <span>草稿</span>
-                <h4>7</h4>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-3">
-            <div class="stat-card">
-              <div class="stat-icon icon-green">
-                <svg
-                  width="24"
-                  height="24"
-                  fill="currentColor"
-                  viewBox="0 0 16 16"
-                >
-                  <path
-                    d="M5.072.56C6.157.265 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.596 4.477-.787 7.795-2.465 9.99a11.775 11.775 0 0 1-2.517 2.453 7.159 7.159 0 0 1-1.048.625c-.28.132-.581.24-.829.24s-.548-.108-.829-.24a7.158 7.158 0 0 1-1.048-.625 11.777 11.777 0 0 1-2.517-2.453C1.928 10.487.545 7.169 1.141 2.692A1.54 1.54 0 0 1 2.185 1.43 62.456 62.456 0 0 1 5.072.56z"
-                  />
-                  <path
-                    fill="white"
-                    d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"
-                  />
-                </svg>
-              </div>
-              <div class="stat-info">
-                <span>已確認</span>
-                <h4>5</h4>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-3">
-            <div class="stat-card">
-              <div class="stat-icon icon-blue">
-                <svg
-                  width="22"
-                  height="22"
-                  fill="currentColor"
-                  viewBox="0 0 16 16"
-                >
-                  <path
-                    d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z"
-                  />
-                </svg>
-              </div>
-              <div class="stat-info">
-                <span>已傳送</span>
-                <h4>3</h4>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card-box p-0 overflow-hidden">
-          <div class="p-3 table-toolbar m-0">
-            <div class="d-flex align-items-center gap-3">
-              <div class="d-flex align-items-center gap-2">
-                <span class="small fw-bold text-secondary text-nowrap"
-                  >每頁顯示筆數</span
-                >
-                <select class="form-select form-select-sm">
-                  <option>10 筆</option>
-                  <option>20 筆</option>
-                </select>
-              </div>
-
-              <div style="position: relative">
-                <button
-                  class="btn-outline-blue"
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="right"
-                  data-bs-html="true"
-                  title="項目附件的支持方式 (JPG、PNG、PDF)<br>以及以傳附檔的捲動程式。"
-                >
-                  <svg
-                    width="16"
-                    height="16"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    viewBox="0 0 24 24"
-                  >
+            <div class="project-dropdown" id="projectDropdown">
+              <div class="dropdown-header">
+                <span>切換專案</span>
+                <button class="close-btn" id="closeDropdown">
+                  <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                     <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
-                    ></path>
+                      d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z" />
                   </svg>
-                  上傳附件
                 </button>
               </div>
-            </div>
 
-            <div class="d-flex gap-2">
-              <button class="btn-toolbar-gray" disabled>
-                <span
-                  style="
-                    display: inline-block;
-                    width: 12px;
-                    height: 12px;
-                    border: 1px solid #cbd5e1;
-                    border-radius: 2px;
-                    margin-right: 4px;
-                  "
-                ></span>
-                編輯操作
-              </button>
-              <button class="btn-toolbar-gray" disabled>
-                <svg
-                  width="14"
-                  height="14"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  viewBox="0 0 24 24"
-                  class="me-1"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                  ></path>
-                </svg>
-                重置操作
-              </button>
+              <div class="project-search">
+                <input type="text" placeholder="搜尋專案名稱..." id="projectSearchInput" />
+              </div>
+
+              <div class="project-list" id="projectList">
+                <div class="project-category">進行中 (3)</div>
+
+                <div class="project-item active" data-project-id="1" data-year="2024" data-name="進行中梯次範例一"
+                  data-role="admin">
+                  <div class="project-item-info">
+                    <div class="project-item-title">
+                      <span class="status-indicator status-active"></span>
+                      進行中梯次範例一
+                    </div>
+                    <div class="project-item-meta">
+                      <span>2024年度</span>
+                      <span>截止: 2024/12/31</span>
+                    </div>
+                  </div>
+                  <span class="role-badge role-admin">系統管理員</span>
+                </div>
+
+                <div class="project-item" data-project-id="2" data-year="2024" data-name="進行中梯次範例二"
+                  data-role="reviewer">
+                  <div class="project-item-info">
+                    <div class="project-item-title">
+                      <span class="status-indicator status-active"></span>
+                      進行中梯次範例二
+                    </div>
+                    <div class="project-item-meta">
+                      <span>2024年度</span>
+                      <span>截止: 2024/11/15</span>
+                    </div>
+                  </div>
+                  <span class="role-badge role-reviewer">審題委員</span>
+                </div>
+
+                <div class="project-item" data-project-id="3" data-year="2024" data-name="進行中梯次範例三" data-role="teacher">
+                  <div class="project-item-info">
+                    <div class="project-item-title">
+                      <span class="status-indicator status-active"></span>
+                      進行中梯次範例三
+                    </div>
+                    <div class="project-item-meta">
+                      <span>2024年度</span>
+                      <span>截止: 2025/01/20</span>
+                    </div>
+                  </div>
+                  <span class="role-badge role-teacher">命題教師</span>
+                </div>
+
+                <div class="project-category">已結束 (5)</div>
+
+                <div class="project-item" data-project-id="4" data-year="2023" data-name="已結束梯次範例一" data-role="admin">
+                  <div class="project-item-info">
+                    <div class="project-item-title">
+                      <span class="status-indicator status-finished"></span>
+                      已結束梯次範例一
+                    </div>
+                    <div class="project-item-meta">
+                      <span>2023年度</span>
+                      <span>已結束</span>
+                    </div>
+                  </div>
+                  <span class="role-badge role-admin">系統管理員</span>
+                </div>
+
+                <div class="project-item" data-project-id="5" data-year="2023" data-name="已結束梯次範例二" data-role="teacher">
+                  <div class="project-item-info">
+                    <div class="project-item-title">
+                      <span class="status-indicator status-finished"></span>
+                      已結束梯次範例二
+                    </div>
+                    <div class="project-item-meta">
+                      <span>2023年度</span>
+                      <span>已結束</span>
+                    </div>
+                  </div>
+                  <span class="role-badge role-teacher">命題教師</span>
+                </div>
+
+                <div class="project-item" data-project-id="6" data-year="2023" data-name="已結束梯次範例三"
+                  data-role="reviewer">
+                  <div class="project-item-info">
+                    <div class="project-item-title">
+                      <span class="status-indicator status-finished"></span>
+                      已結束梯次範例三
+                    </div>
+                    <div class="project-item-meta">
+                      <span>2023年度</span>
+                      <span>已結束</span>
+                    </div>
+                  </div>
+                  <span class="role-badge role-reviewer">審題委員</span>
+                </div>
+
+                <div class="project-item" data-project-id="7" data-year="2022" data-name="已結束梯次範例四" data-role="teacher">
+                  <div class="project-item-info">
+                    <div class="project-item-title">
+                      <span class="status-indicator status-finished"></span>
+                      已結束梯次範例四
+                    </div>
+                    <div class="project-item-meta">
+                      <span>2022年度</span>
+                      <span>已結束</span>
+                    </div>
+                  </div>
+                  <span class="role-badge role-teacher">命題教師</span>
+                </div>
+
+                <div class="project-item" data-project-id="8" data-year="2022" data-name="已結束梯次範例五" data-role="teacher">
+                  <div class="project-item-info">
+                    <div class="project-item-title">
+                      <span class="status-indicator status-finished"></span>
+                      已結束梯次範例五
+                    </div>
+                    <div class="project-item-meta">
+                      <span>2022年度</span>
+                      <span>已結束</span>
+                    </div>
+                  </div>
+                  <span class="role-badge role-teacher">命題教師</span>
+                </div>
+              </div>
             </div>
           </div>
+        </div>
 
-          <div class="px-3 pb-3">
-            <table class="custom-table">
-              <thead>
-                <tr>
-                  <th style="width: 40px">
-                    <input type="checkbox" class="form-check-input" />
-                  </th>
-                  <th style="width: 35%">題目內容摘要</th>
-                  <th>題型</th>
-                  <th>狀態</th>
-                  <th>建立時間</th>
-                  <th>最後修改時間</th>
-                  <th>操作</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr class="data-row" data-type="申論題" data-status="草稿">
-                  <td><input type="checkbox" class="form-check-input" /></td>
-                  <td class="text-dark fw-medium">
-                    關於人工智慧在教育應用的申論題...
-                  </td>
-                  <td>申論題</td>
-                  <td><span class="badge-outline badge-draft">草稿</span></td>
-                  <td>2024-05-20 10:30</td>
-                  <td>2024-05-21 14:15</td>
-                  <td class="action-links">
-                    <a href="#">檢視</a><span class="action-divider">|</span>
-                    <a href="#">編輯</a><span class="action-divider">|</span>
-                    <a href="#">刪除</a>
-                  </td>
-                </tr>
-                <tr class="data-row" data-type="單選題" data-status="已確認">
-                  <td><input type="checkbox" class="form-check-input" /></td>
-                  <td class="text-dark fw-medium">
-                    下列哪個選項不是量子力學的基本原理？
-                  </td>
-                  <td>單選題</td>
-                  <td>
-                    <span class="badge-outline badge-confirmed">已確認</span>
-                  </td>
-                  <td>2024-05-18 09:00</td>
-                  <td>2024-05-19 11:20</td>
-                  <td class="action-links">
-                    <a href="#">檢視</a>
-                  </td>
-                </tr>
-                <tr class="data-row" data-type="題組題" data-status="已傳送">
-                  <td><input type="checkbox" class="form-check-input" /></td>
-                  <td class="text-dark fw-medium">
-                    閱讀下文，回答問題 3-5：『在一個遙遠的...』
-                  </td>
-                  <td>題組題</td>
-                  <td><span class="badge-outline badge-sent">已傳送</span></td>
-                  <td>2024-05-15 16:45</td>
-                  <td>2024-05-16 10:00</td>
-                  <td class="action-links">
-                    <a href="#">檢視</a>
-                  </td>
-                </tr>
-                <tr class="data-row" data-type="簡答題" data-status="草稿">
-                  <td><input type="checkbox" class="form-check-input" /></td>
-                  <td class="text-dark fw-medium">
-                    請解釋『永續發展』的定義並舉例說明。
-                  </td>
-                  <td>簡答題</td>
-                  <td><span class="badge-outline badge-draft">草稿</span></td>
-                  <td>2024-05-21 08:30</td>
-                  <td>2024-05-21 08:30</td>
-                  <td class="action-links">
-                    <a href="#">檢視</a><span class="action-divider">|</span>
-                    <a href="#">編輯</a><span class="action-divider">|</span>
-                    <a href="#">刪除</a>
-                  </td>
-                </tr>
-                <tr class="data-row" data-type="圖形題" data-status="已確認">
-                  <td><input type="checkbox" class="form-check-input" /></td>
-                  <td class="text-dark fw-medium">
-                    圖中所示的生物屬於哪一界？
-                  </td>
-                  <td>圖形題</td>
-                  <td>
-                    <span class="badge-outline badge-confirmed">已確認</span>
-                  </td>
-                  <td>2024-05-19 13:10</td>
-                  <td>2024-05-20 09:45</td>
-                  <td class="action-links">
-                    <a href="#">檢視</a>
-                  </td>
-                </tr>
-                <tr id="noDataRow" style="display: none">
-                  <td colspan="7" class="text-center py-5 text-secondary">
-                    <div
-                      class="d-flex flex-column align-items-center opacity-50"
-                    >
-                      <h6 class="fw-bold mt-2">沒有符合的試題</h6>
-                      <p class="small">請嘗試調整搜尋條件</p>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-
-            <div class="pagination-container">
-              <span class="page-info">第 1 頁 / 共 2 頁</span>
-              <a href="#" class="page-btn disabled">&lt;</a>
-              <a href="#" class="page-btn active">1</a>
-              <a href="#" class="page-btn">2</a>
-              <a href="#" class="page-btn">&gt;</a>
+        <div class="col-3">
+          <div class="user-section">
+            <div class="user-info">
+              <div class="user-avatar">沈</div>
+              <span class="user-name">沈雅茹</span>
+              <span class="role-badge role-admin" id="currentUserRole">系統管理員</span>
             </div>
+            <a href="index.html" class="btn btn-sm btn-light fw-bold text-primary px-3">
+              登出
+            </a>
           </div>
         </div>
       </div>
     </div>
+  </nav>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        // =========================================
-        // 1. 初始化 Bootstrap Tooltips (保留這段！)
-        // =========================================
-        const tooltipTriggerList = [].slice.call(
-          document.querySelectorAll('[data-bs-toggle="tooltip"]')
-        );
-        const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-          return new bootstrap.Tooltip(tooltipTriggerEl);
-        });
+  <div class="breadcrumb-bar">
+    <div class="container-fluid px-4">
+      <a href="firstpage.html" class="breadcrumb-item-link">首頁</a>
+      <span class="breadcrumb-separator">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+          stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </span>
+      <span class="breadcrumb-current">我的命題列表</span>
+    </div>
+  </div>
 
-        // =========================================
-        // 2. 命題列表篩選功能
-        // =========================================
-        const filterType = document.getElementById("filterType");
-        const filterStatus = document.getElementById("filterStatus");
-        const searchInput = document.getElementById("searchInput");
-        const btnSearch = document.getElementById("btnSearch");
-        const rows = document.querySelectorAll(".data-row");
-        const noDataRow = document.getElementById("noDataRow");
+  <div class="main-content">
+    <div class="container px-4">
+      <h1 class="page-title">我的命題列表</h1>
+      <p class="page-desc">
+        檢視和管理您的所有命題，包括草稿、已確認和已傳送的試題。
+      </p>
 
-        function filterMyList() {
-          const typeValue = filterType.value;
-          const statusValue = filterStatus.value;
-          const keyword = searchInput.value.trim().toLowerCase();
+      <div class="card-box search-area">
+        <div class="row g-3 align-items-end">
+          <div class="col-md-3">
+            <label class="form-label">題型篩選</label>
+            <select class="form-select" id="filterType">
+              <option value="all" selected>全部題型</option>
+              <option value="單選題">單選題</option>
+              <option value="申論題">申論題</option>
+              <option value="題組題">題組題</option>
+              <option value="簡答題">簡答題</option>
+              <option value="圖形題">圖形題</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">狀態篩選</label>
+            <select class="form-select" id="filterStatus">
+              <option value="all" selected>全部狀態</option>
+              <option value="草稿">草稿</option>
+              <option value="已確認">已確認</option>
+              <option value="已傳送">已傳送</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">關鍵字搜尋</label>
+            <div class="d-flex gap-2">
+              <div class="input-group">
+                <span class="input-group-text bg-white text-secondary border-end-0">
+                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                  </svg>
+                </span>
+                <input type="text" id="searchInput" class="form-control border-start-0 ps-2" placeholder="依題目文字搜尋" />
+              </div>
+              <button class="btn btn-search" id="btnSearch">查詢</button>
+            </div>
+          </div>
+        </div>
+      </div>
 
-          let visibleCount = 0;
+      <div class="row g-4 mb-4">
+        <div class="col-md-3">
+          <div class="stat-card">
+            <div class="stat-icon icon-gray">
+              <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                <path
+                  d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7Zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm-5.784 6A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216ZM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
+              </svg>
+            </div>
+            <div class="stat-info">
+              <span>總計</span>
+              <h4>15</h4>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="stat-card">
+            <div class="stat-icon icon-orange">
+              <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                <path
+                  d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0zM9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1zM4.5 9a.5.5 0 0 1 0-1h7a.5.5 0 0 1 0 1h-7zm0 2.5a.5.5 0 0 1 0-1h4a.5.5 0 0 1 0 1h-4z" />
+              </svg>
+            </div>
+            <div class="stat-info">
+              <span>草稿</span>
+              <h4>7</h4>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="stat-card">
+            <div class="stat-icon icon-green">
+              <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                <path
+                  d="M5.072.56C6.157.265 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.596 4.477-.787 7.795-2.465 9.99a11.775 11.775 0 0 1-2.517 2.453 7.159 7.159 0 0 1-1.048.625c-.28.132-.581.24-.829.24s-.548-.108-.829-.24a7.158 7.158 0 0 1-1.048-.625 11.777 11.777 0 0 1-2.517-2.453C1.928 10.487.545 7.169 1.141 2.692A1.54 1.54 0 0 1 2.185 1.43 62.456 62.456 0 0 1 5.072.56z" />
+                <path fill="white"
+                  d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z" />
+              </svg>
+            </div>
+            <div class="stat-info">
+              <span>已確認</span>
+              <h4>5</h4>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="stat-card">
+            <div class="stat-icon icon-blue">
+              <svg width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+                <path
+                  d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z" />
+              </svg>
+            </div>
+            <div class="stat-info">
+              <span>已傳送</span>
+              <h4>3</h4>
+            </div>
+          </div>
+        </div>
+      </div>
 
-          rows.forEach((row) => {
-            const rowType = row.getAttribute("data-type");
-            const rowStatus = row.getAttribute("data-status");
-            // 取得題目內容 (第2個 td)
-            const rowTitle = row
-              .querySelector("td:nth-child(2)")
-              .textContent.toLowerCase();
+      <div class="card-box p-0 overflow-hidden">
+        <div class="p-3 table-toolbar m-0">
+          <div class="d-flex align-items-center gap-3">
+            <div class="d-flex align-items-center gap-2">
+              <span class="small fw-bold text-secondary text-nowrap">每頁顯示筆數</span>
+              <select class="form-select form-select-sm">
+                <option>10 筆</option>
+                <option>20 筆</option>
+              </select>
+            </div>
 
-            let show = true;
+            <!-- Upload button removed from here -->
+          </div>
 
-            if (typeValue !== "all" && rowType !== typeValue) show = false;
-            if (statusValue !== "all" && rowStatus !== statusValue)
-              show = false;
-            if (keyword !== "" && !rowTitle.includes(keyword)) show = false;
+          <div class="d-flex gap-2">
+            <div class="dropdown d-inline-block">
+              <button class="btn-toolbar-gray dropdown-toggle" type="button" id="batchDropdown"
+                data-bs-toggle="dropdown" aria-expanded="false">
+                <span style="
+                      display: inline-block;
+                      width: 12px;
+                      height: 12px;
+                      border: 1px solid #cbd5e1;
+                      border-radius: 2px;
+                      margin-right: 4px;
+                    "></span>
+                編輯操作
+              </button>
+              <ul class="dropdown-menu shadow border-0" aria-labelledby="batchDropdown">
+                <li><a class="dropdown-item" href="#" onclick="batchAction('草稿')">設為草稿</a></li>
+                <li><a class="dropdown-item" href="#" onclick="batchAction('已確認')">設為已確認</a></li>
+                <li><a class="dropdown-item" href="#" onclick="batchAction('已傳送')">設為已傳送</a></li>
+                <li>
+                  <hr class="dropdown-divider">
+                </li>
+                <li><a class="dropdown-item text-danger" href="#" onclick="batchAction('刪除')">批次刪除</a></li>
+              </ul>
+            </div>
+            <button class="btn-toolbar-gray" onclick="resetSelection()">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                class="me-1">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                </path>
+              </svg>
+              重置選擇
+            </button>
+          </div>
+        </div>
 
-            if (show) {
-              row.style.display = "";
-              visibleCount++;
-            } else {
-              row.style.display = "none";
-            }
-          });
+        <div class="px-3 pb-3">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th style="width: 40px">
+                  <input type="checkbox" class="form-check-input" />
+                </th>
+                <th style="width: 35%">題目內容摘要</th>
+                <th>題型</th>
+                <th>狀態</th>
+                <th>建立時間</th>
+                <th>最後修改時間</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="data-row" data-type="申論題" data-status="草稿">
+                <td><input type="checkbox" class="form-check-input" /></td>
+                <td class="text-dark fw-medium">
+                  關於人工智慧在教育應用的申論題...
+                </td>
+                <td>申論題</td>
+                <td><span class="badge-outline badge-draft">草稿</span></td>
+                <td>2024-05-20 10:30</td>
+                <td>2024-05-21 14:15</td>
+                <td class="action-links">
+                  <a href="#">檢視</a><span class="action-divider">|</span>
+                  <a href="#">編輯</a><span class="action-divider">|</span>
+                  <a href="#">刪除</a>
+                </td>
+              </tr>
+              <tr class="data-row" data-type="單選題" data-status="已確認">
+                <td><input type="checkbox" class="form-check-input" /></td>
+                <td class="text-dark fw-medium">
+                  下列哪個選項不是量子力學的基本原理？
+                </td>
+                <td>單選題</td>
+                <td>
+                  <span class="badge-outline badge-confirmed">已確認</span>
+                </td>
+                <td>2024-05-18 09:00</td>
+                <td>2024-05-19 11:20</td>
+                <td class="action-links">
+                  <a href="#">檢視</a>
+                </td>
+              </tr>
+              <tr class="data-row" data-type="題組題" data-status="已傳送">
+                <td><input type="checkbox" class="form-check-input" /></td>
+                <td class="text-dark fw-medium">
+                  閱讀下文，回答問題 3-5：『在一個遙遠的...』
+                </td>
+                <td>題組題</td>
+                <td><span class="badge-outline badge-sent">已傳送</span></td>
+                <td>2024-05-15 16:45</td>
+                <td>2024-05-16 10:00</td>
+                <td class="action-links">
+                  <a href="#">檢視</a>
+                </td>
+              </tr>
+              <tr class="data-row" data-type="簡答題" data-status="草稿">
+                <td><input type="checkbox" class="form-check-input" /></td>
+                <td class="text-dark fw-medium">
+                  請解釋『永續發展』的定義並舉例說明。
+                </td>
+                <td>簡答題</td>
+                <td><span class="badge-outline badge-draft">草稿</span></td>
+                <td>2024-05-21 08:30</td>
+                <td>2024-05-21 08:30</td>
+                <td class="action-links">
+                  <a href="#">檢視</a><span class="action-divider">|</span>
+                  <a href="#">編輯</a><span class="action-divider">|</span>
+                  <a href="#">刪除</a>
+                </td>
+              </tr>
+              <tr class="data-row" data-type="圖形題" data-status="已確認">
+                <td><input type="checkbox" class="form-check-input" /></td>
+                <td class="text-dark fw-medium">
+                  圖中所示的生物屬於哪一界？
+                </td>
+                <td>圖形題</td>
+                <td>
+                  <span class="badge-outline badge-confirmed">已確認</span>
+                </td>
+                <td>2024-05-19 13:10</td>
+                <td>2024-05-20 09:45</td>
+                <td class="action-links">
+                  <a href="#">檢視</a>
+                </td>
+              </tr>
+              <tr id="noDataRow" style="display: none">
+                <td colspan="7" class="text-center py-5 text-secondary">
+                  <div class="d-flex flex-column align-items-center opacity-50">
+                    <h6 class="fw-bold mt-2">沒有符合的試題</h6>
+                    <p class="small">請嘗試調整搜尋條件</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
 
-          // 控制查無資料列
-          if (noDataRow) {
-            if (visibleCount === 0) {
-              noDataRow.style.display = "table-row";
-            } else {
-              noDataRow.style.display = "none";
-            }
-          }
-        }
+          <div class="pagination-container">
+            <span class="page-info">第 1 頁 / 共 2 頁</span>
+            <a href="#" class="page-btn disabled">&lt;</a>
+            <a href="#" class="page-btn active">1</a>
+            <a href="#" class="page-btn">2</a>
+            <a href="#" class="page-btn">&gt;</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-        // 綁定事件
-        filterType.addEventListener("change", filterMyList);
-        filterStatus.addEventListener("change", filterMyList);
-        searchInput.addEventListener("input", filterMyList);
-        btnSearch.addEventListener("click", function (e) {
-          e.preventDefault();
-          filterMyList();
-        });
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script src="app.js"></script>
+
+  <!-- Prop Modal -->
+  <div class="modal fade" id="propModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content border-0 rounded-4 shadow">
+        <div class="modal-header border-bottom-0">
+          <h5 class="modal-title fw-bold" id="propModalTitle">編輯命題</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body pt-0">
+          <form id="propForm">
+            <input type="hidden" id="editRowFrom" value="">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label fw-bold small text-secondary">題型</label>
+                <select class="form-select" id="mType">
+                  <option value="單選題">單選題</option>
+                  <option value="申論題">申論題</option>
+                  <option value="題組題">題組題</option>
+                  <option value="簡答題">簡答題</option>
+                  <option value="圖形題">圖形題</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold small text-secondary">狀態</label>
+                <div>
+                  <span class="badge-outline badge-draft" id="mStatusBadge">草稿</span>
+                </div>
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-bold small text-secondary">題目內容</label>
+                <textarea class="form-control" id="mContent" rows="5" placeholder="請輸入題目敘述..."></textarea>
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-bold small text-secondary">選項 / 參考答案</label>
+                <textarea class="form-control" id="mAnswer" rows="3" placeholder="請輸入選項或參考答案..."></textarea>
+              </div>
+              <!-- Attachments Section -->
+              <div class="col-12">
+                <div class="p-3 border rounded bg-light">
+                  <label class="form-label fw-bold small text-secondary mb-2">附件上傳</label>
+                  <div class="d-flex align-items-center gap-3">
+                    <input type="file" class="form-control" id="mAttachment">
+                    <div class="text-muted small text-nowrap">支援 JPG, PNG, PDF</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer border-top-0">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">取消</button>
+          <button type="button" class="btn btn-outline-primary" id="btnSaveDraft" onclick="saveProp('草稿')">存為草稿</button>
+          <button type="button" class="btn btn-primary fw-bold" id="btnSaveConfirm"
+            onclick="saveProp('已確認')">儲存並確認</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    let propModal;
+
+    document.addEventListener("DOMContentLoaded", function () {
+      // Init Modal
+      propModal = new bootstrap.Modal(document.getElementById('propModal'));
+
+      // 1. 初始化 Bootstrap Tooltips
+      const tooltipTriggerList = [].slice.call(
+        document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      );
+      const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
       });
-      
-    </script>
-    <script src="app.js"></script>
-  </body>
+
+      // 2. 命題列表篩選功能
+      initFilter();
+
+      // 3. 綁定列表按鈕事件 (檢視/編輯/刪除)
+      bindRowActions();
+    });
+
+    // --- Filter Logic ---
+    function initFilter() {
+      const filterType = document.getElementById("filterType");
+      const filterStatus = document.getElementById("filterStatus");
+      const searchInput = document.getElementById("searchInput");
+      const btnSearch = document.getElementById("btnSearch");
+
+      filterType.addEventListener("change", filterMyList);
+      filterStatus.addEventListener("change", filterMyList);
+      searchInput.addEventListener("input", filterMyList);
+      btnSearch.addEventListener("click", function (e) {
+        e.preventDefault();
+        filterMyList();
+      });
+    }
+
+    function filterMyList() {
+      const filterType = document.getElementById("filterType");
+      const filterStatus = document.getElementById("filterStatus");
+      const searchInput = document.getElementById("searchInput");
+      const noDataRow = document.getElementById("noDataRow");
+      const rows = document.querySelectorAll(".data-row");
+
+      const typeValue = filterType.value;
+      const statusValue = filterStatus.value;
+      const keyword = searchInput.value.trim().toLowerCase();
+
+      let visibleCount = 0;
+
+      rows.forEach((row) => {
+        const rowType = row.getAttribute("data-type");
+        const rowStatus = row.getAttribute("data-status");
+        const rowTitle = row.querySelector("td:nth-child(2)").textContent.toLowerCase();
+
+        let show = true;
+        if (typeValue !== "all" && rowType !== typeValue) show = false;
+        if (statusValue !== "all" && rowStatus !== statusValue) show = false;
+        if (keyword !== "" && !rowTitle.includes(keyword)) show = false;
+
+        if (show) {
+          row.style.display = "";
+          visibleCount++;
+        } else {
+          row.style.display = "none";
+        }
+      });
+
+      if (noDataRow) {
+        noDataRow.style.display = visibleCount === 0 ? "table-row" : "none";
+      }
+    }
+
+    // --- Modal Logic ---
+
+    // 開啟編輯/檢視 (mode: 'edit' | 'view')
+    window.openPropModal = function (btn, mode) {
+      const row = btn.closest('tr');
+      const type = row.getAttribute('data-type');
+      const status = row.getAttribute('data-status');
+      const content = row.querySelector('td:nth-child(2)').innerText;
+
+      // 設定 Modal 標題與欄位
+      const titleMap = { 'edit': '編輯命題', 'view': '檢視命題' };
+      document.getElementById('propModalTitle').innerText = titleMap[mode];
+
+      // 填入資料
+      document.getElementById('mType').value = type;
+      document.getElementById('mContent').value = content;
+      document.getElementById('mStatusBadge').innerText = status;
+      document.getElementById('mStatusBadge').className = `badge-outline badge-${getStatusClass(status)}`;
+
+      // 判斷是否為唯讀
+      const isView = (mode === 'view');
+      document.getElementById('mType').disabled = isView;
+      document.getElementById('mContent').disabled = isView;
+      document.getElementById('mAnswer').disabled = isView;
+      document.getElementById('mAttachment').disabled = isView;
+
+      // 隱藏/顯示 Footer 按鈕
+      const footerBtns = document.querySelectorAll('.modal-footer button:not([data-bs-dismiss])');
+      footerBtns.forEach(b => b.hidden = isView);
+
+      propModal.show();
+    }
+
+    function getStatusClass(statusText) {
+      if (statusText === '草稿') return 'draft';
+      if (statusText === '已確認') return 'confirmed';
+      if (statusText === '已傳送') return 'sent';
+      return 'secondary';
+    }
+
+    window.saveProp = function (targetStatus) {
+      // 這裡模擬儲存
+      alert(`已儲存為：${targetStatus}`);
+      propModal.hide();
+      // 實際專案應更新 row data 或 reload list
+    }
+
+    window.deleteRow = function (btn) {
+      if (confirm('確定要刪除此命題嗎？此動作無法復原。')) {
+        const row = btn.closest('tr');
+        row.remove();
+        filterMyList(); // 更新筆數或顯示無資料
+      }
+    }
+
+    // --- Batch Operations ---
+    window.batchAction = function (actionType) {
+      const checks = document.querySelectorAll('.data-row input[type="checkbox"]:checked');
+      if (checks.length === 0) {
+        alert('請先勾選項目');
+        return;
+      }
+
+      if (actionType === '刪除') {
+        if (!confirm(`確定要刪除選取的 ${checks.length} 筆資料嗎？`)) return;
+        checks.forEach(c => c.closest('tr').remove());
+      } else {
+        // 變更狀態
+        checks.forEach(c => {
+          const row = c.closest('tr');
+          row.setAttribute('data-status', actionType);
+          const badge = row.querySelector('.badge-outline');
+          badge.className = `badge-outline badge-${getStatusClass(actionType)}`;
+          badge.innerText = actionType;
+        });
+        alert(`已將選取項目設為：${actionType}`);
+      }
+      resetSelection(); // 完成後重置勾選
+    }
+
+    window.resetSelection = function () {
+      document.querySelectorAll('.data-row input[type="checkbox"]').forEach(c => c.checked = false);
+      // Header check if exists
+      const headCheck = document.querySelector('thead input[type="checkbox"]');
+      if (headCheck) headCheck.checked = false;
+    }
+
+    // --- Bind Actions dynamically ---
+    function bindRowActions() {
+      // 替換原本的 <a href="#"> 為 button onclick
+      const links = document.querySelectorAll('.action-links');
+      links.forEach(td => {
+        // 簡單暴力重寫 innerHTML，綁定 openPropModal
+        // 注意：這裡假設 HTML 結構固定
+        td.innerHTML = `
+                  <button class="btn btn-link p-0 text-decoration-none small fw-bold" onclick="openPropModal(this, 'view')">檢視</button>
+                  <span class="text-muted mx-1">|</span>
+                  <button class="btn btn-link p-0 text-decoration-none small fw-bold" onclick="openPropModal(this, 'edit')">編輯</button>
+                  <span class="text-muted mx-1">|</span>
+                  <button class="btn btn-link p-0 text-decoration-none small fw-bold text-danger" onclick="deleteRow(this)">刪除</button>
+              `;
+      });
+
+      // Header checkbox select all logic
+      const headCheck = document.querySelector('thead input[type="checkbox"]');
+      if (headCheck) {
+        headCheck.addEventListener('change', function () {
+          const isChecked = this.checked;
+          document.querySelectorAll('.data-row input[type="checkbox"]').forEach(c => c.checked = isChecked);
+        });
+      }
+    }
+
+  </script>
+  <script src="app.js"></script>
+</body>
+
 </html>

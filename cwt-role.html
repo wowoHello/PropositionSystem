@@ -59,25 +59,81 @@
     /* --- 2. 權限設定卡片 --- */
     .permission-item-card {
       background-color: #fff;
-      border: 1px solid #e5e7eb;
+      border: 1px solid #e2e8f0;
       border-radius: 12px;
-      padding: 1rem 1.25rem;
+      padding: 1rem;
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      transition: all 0.2s ease;
+      /* 垂直置中 */
+      gap: 1rem;
+      /* 元件間距 */
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       cursor: pointer;
       user-select: none;
+      position: relative;
+      overflow: hidden;
     }
 
     .permission-item-card:hover {
-      border-color: #93c5fd;
+      border-color: #94a3b8;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      transform: translateY(-2px);
+    }
+
+    /* 選中(開啟)狀態 */
+    .permission-item-card.active {
+      background-color: #f0f9ff;
+      /* 淺藍背景 */
+      border-color: #3b82f6;
+      /* 藍色邊框 */
+      box-shadow: 0 0 0 1px #3b82f6 inset;
+      /* 內陰影加強邊框感 */
     }
 
     .permission-item-card.checked {
       border-color: #3b82f6;
       background-color: #eff6ff;
       box-shadow: 0 0 0 1px #3b82f6 inset;
+    }
+
+    /* 左側圖示區塊樣式 */
+    .perm-icon-box {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+      transition: all 0.2s ease;
+    }
+
+    /* 文字區塊 */
+    .perm-text {
+      flex-grow: 1;
+    }
+
+    .perm-title {
+      font-weight: 700;
+      color: #334155;
+      margin-bottom: 2px;
+      font-size: 1rem;
+    }
+
+    .perm-desc {
+      font-size: 0.85rem;
+      color: #64748b;
+      line-height: 1.4;
+    }
+
+    /* 開關樣式微調 */
+    .custom-switch-lg {
+      width: 3rem !important;
+      height: 1.5rem !important;
+      cursor: pointer;
+      margin-left: auto;
+      /* 強制靠右 */
     }
 
     .custom-switch-lg {
@@ -422,6 +478,79 @@
     #projectListContainer .list-group-item.active .badge.bg-primary {
       background-color: white !important;
       color: #2563eb !important;
+    }
+
+    /* --- 8 Permission Tags Styling --- */
+    .badge-tag-base {
+      font-weight: 500;
+      border: 1px solid;
+      padding: 0.35em 0.65em;
+      border-radius: 6px;
+      /* Slightly more rounded */
+      font-size: 0.75rem;
+      /* Or 0.8rem */
+      display: inline-flex;
+      align-items: center;
+      margin-right: 4px;
+      /* Space between tags */
+      margin-bottom: 4px;
+      white-space: nowrap;
+    }
+
+    /* 1. 今日提醒 (Reminder) - Alert/Red */
+    .tag-reminder {
+      background-color: #fef2f2;
+      color: #b91c1c;
+      border-color: #fecaca;
+    }
+
+    /* 2. 命題儀表板 (Dashboard) - Blue/Primary */
+    .tag-dashboard {
+      background-color: #eff6ff;
+      color: #1d4ed8;
+      border-color: #bfdbfe;
+    }
+
+    /* 3. 我的命題任務 (My Tasks) - Green */
+    .tag-mytask {
+      background-color: #f0fdf4;
+      color: #15803d;
+      border-color: #bbf7d0;
+    }
+
+    /* 4. 審題清單 (Review List) - Cyan/Info */
+    .tag-review {
+      background-color: #ecfeff;
+      color: #0e7490;
+      border-color: #a5f3fc;
+    }
+
+    /* 5. 系統公告/使用說明 (Announcement) - Yellow/Warning */
+    .tag-notice {
+      background-color: #fffbeb;
+      color: #b45309;
+      border-color: #fde68a;
+    }
+
+    /* 6. 教師管理系統 (people) - Teal */
+    .tag-teacher {
+      background-color: #f0fdfa;
+      color: #0f766e;
+      border-color: #99f6e4;
+    }
+
+    /* 7. 命題專案管理 (Project) - Indigo */
+    .tag-project {
+      background-color: #eef2ff;
+      color: #4338ca;
+      border-color: #c7d2fe;
+    }
+
+    /* 8. 角色與權限管理 (Role) - Purple/Gray */
+    .tag-role {
+      background-color: #faf5ff;
+      color: #7e22ce;
+      border-color: #e9d5ff;
     }
   </style>
 </head>
@@ -788,7 +917,7 @@
                         jacky_lin
                       </td>
                       <td>
-                        <div class="text-secondary small">jacky_lin@mail.csf.org.tw</div>
+                        <div class="text-secondary small">test@mail.com</div>
                       </td>
                       <td class="text-secondary small">
                         2023/11/05<br />10:00
@@ -894,74 +1023,8 @@
                 角色權限管理區塊 
                 ================== -->
         <div class="tab-pane fade" id="pills-roles" role="tabpanel">
-          <div class="row g-4">
-            <div class="col-md-6 col-lg-4">
-              <div class="role-card-v1 theme-admin">
-                <button class="action-button">編輯權限</button>
-                <div class="icon-wrapper">
-                  <i class="bi bi-gear-fill"></i>
-                </div>
-                <h3 class="role-title">系統管理員</h3>
-                <p class="role-description">
-                  負責系統設定、使用者管理、權限分配與整體平台維護工作。
-                </p>
-                <div class="stats-row">
-                  <div class="stat-item">
-                    <span class="stat-label">使用者數</span><span class="stat-value">1</span>
-                  </div>
-                  <div class="stat-item">
-                    <span class="stat-label">權限項目</span><span class="stat-value">6</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-6 col-lg-4">
-              <div class="role-card-v1 theme-teacher">
-                <button class="action-button">編輯權限</button>
-                <div class="icon-wrapper">
-                  <i class="bi bi-pencil-square"></i>
-                </div>
-                <h3 class="role-title">命題教師</h3>
-                <p class="role-description">
-                  負責試題設計、題庫管理，以及配合審題委員進行題目修正。
-                </p>
-                <div class="stats-row">
-                  <div class="stat-item">
-                    <span class="stat-label">使用者數</span><span class="stat-value">1</span>
-                  </div>
-                  <div class="stat-item">
-                    <span class="stat-label">權限項目</span><span class="stat-value">2</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-6 col-lg-4">
-              <div class="role-card-v1 theme-reviewer">
-                <button class="action-button">編輯權限</button>
-                <div class="icon-wrapper">
-                  <i class="bi bi-search"></i>
-                </div>
-                <h3 class="role-title">審題委員</h3>
-                <p class="role-description">
-                  審核題目品質、提供專業建議，確保試題符合學術標準與規範。
-                </p>
-                <div class="stats-row">
-                  <div class="stat-item">
-                    <span class="stat-label">使用者數</span><span class="stat-value">1</span>
-                  </div>
-                  <div class="stat-item">
-                    <span class="stat-label">權限項目</span><span class="stat-value">2</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-6 col-lg-4">
-              <div class="add-role-card">
-                <div class="icon-plus"><i class="bi bi-plus-lg"></i></div>
-                <h4 class="add-title">新增角色</h4>
-                <p class="add-description">自訂新的身分類別與權限配置</p>
-              </div>
-            </div>
+          <div class="row g-4" id="roleCardsContainer">
+            <!-- 角色卡片將由 JS 動態生成 -->
           </div>
         </div>
       </div>
@@ -990,66 +1053,43 @@
             <textarea class="form-control" id="newRoleDesc" rows="2" placeholder="描述此角色的職責"></textarea>
           </div>
           <div class="mb-4">
-            <label class="form-label fw-bold">選擇圖示 <span class="text-danger">*</span></label>
-            <div class="d-flex align-items-center gap-3 mb-3">
-              <div id="selectedIconPreview" class="icon-preview theme-admin">
-                <i class="bi bi-question-circle"></i>
+            <label class="form-label fw-bold">人員分類 <span class="text-danger">*</span></label>
+            <div class="d-flex gap-4">
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="newRoleType" id="roleType_internal" value="internal"
+                  checked>
+                <label class="form-check-label" for="roleType_internal">內部人員</label>
               </div>
-              <div class="flex-grow-1">
-                <p class="mb-1 text-secondary small">
-                  目前選擇：<span id="selectedIconName" class="fw-bold text-dark">未選擇</span>
-                </p>
-                <p class="mb-0 text-muted" style="font-size: 0.75rem">
-                  點選下方圖示進行選擇
-                </p>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="newRoleType" id="roleType_external" value="external">
+                <label class="form-check-label" for="roleType_external">外部人員</label>
               </div>
             </div>
-            <div class="icon-picker-container" id="iconPicker">
-              <div class="icon-option" data-icon="bi-gear-fill" data-name="設定">
-                <i class="bi bi-gear-fill"></i>
-              </div>
-              <div class="icon-option" data-icon="bi-pencil-square" data-name="編輯">
-                <i class="bi bi-pencil-square"></i>
-              </div>
-              <div class="icon-option" data-icon="bi-search" data-name="搜尋">
-                <i class="bi bi-search"></i>
-              </div>
-              <div class="icon-option" data-icon="bi-people-fill" data-name="群組">
-                <i class="bi bi-people-fill"></i>
-              </div>
-              <div class="icon-option" data-icon="bi-shield-check" data-name="安全">
-                <i class="bi bi-shield-check"></i>
-              </div>
-              <div class="icon-option" data-icon="bi-envelope-fill" data-name="信封">
-                <i class="bi bi-envelope-fill"></i>
-              </div>
-              <div class="icon-option" data-icon="bi-telephone-fill" data-name="電話">
-                <i class="bi bi-telephone-fill"></i>
-              </div>
-              <div class="icon-option" data-icon="bi-printer-fill" data-name="印表機">
-                <i class="bi bi-printer-fill"></i>
-              </div>
-              <div class="icon-option" data-icon="bi-file-earmark-text" data-name="文件">
-                <i class="bi bi-file-earmark-text"></i>
-              </div>
-            </div>
-            <input type="hidden" id="selectedIconValue" value="" />
           </div>
           <div class="mb-4">
-            <label class="form-label fw-bold">主題顏色</label>
-            <div class="d-flex gap-2">
-              <button type="button" class="btn border" style="width: 50px; height: 50px; background: #fef3c7"
-                data-theme="admin" onclick="selectTheme('admin')"></button>
-              <button type="button" class="btn border" style="width: 50px; height: 50px; background: #d1fae5"
-                data-theme="teacher" onclick="selectTheme('teacher')"></button>
-              <button type="button" class="btn border" style="width: 50px; height: 50px; background: #dbeafe"
-                data-theme="reviewer" onclick="selectTheme('reviewer')"></button>
-              <button type="button" class="btn border" style="width: 50px; height: 50px; background: #ede9fe"
-                data-theme="custom1" onclick="selectTheme('custom1')"></button>
-              <button type="button" class="btn border" style="width: 50px; height: 50px; background: #fee2e2"
-                data-theme="custom2" onclick="selectTheme('custom2')"></button>
+            <label class="form-label fw-bold">圖示預覽與主題顏色</label>
+            <div class="d-flex align-items-center gap-4">
+              <div id="selectedIconPreview" class="icon-preview theme-admin"
+                style="width: 64px; height: 64px; font-size: 1.75rem; font-weight: bold; margin-bottom: 0;">
+                ?
+              </div>
+              <div class="d-flex gap-2 flex-wrap">
+                <button type="button" class="btn border" style="width: 50px; height: 50px; background: #fef3c7"
+                  data-theme="admin" onclick="selectTheme('admin')"></button>
+                <button type="button" class="btn border" style="width: 50px; height: 50px; background: #d1fae5"
+                  data-theme="teacher" onclick="selectTheme('teacher')"></button>
+                <button type="button" class="btn border" style="width: 50px; height: 50px; background: #dbeafe"
+                  data-theme="reviewer" onclick="selectTheme('reviewer')"></button>
+                <button type="button" class="btn border" style="width: 50px; height: 50px; background: #ede9fe"
+                  data-theme="custom1" onclick="selectTheme('custom1')"></button>
+                <button type="button" class="btn border" style="width: 50px; height: 50px; background: #fee2e2"
+                  data-theme="custom2" onclick="selectTheme('custom2')"></button>
+              </div>
             </div>
             <input type="hidden" id="selectedTheme" value="admin" />
+            <div class="form-text mt-2">
+              圖示字元將自動取用「角色名稱」的第一個字。
+            </div>
           </div>
         </div>
         <div class="modal-footer bg-white border-top-0 pt-0 pb-4 pe-4">
@@ -1077,6 +1117,22 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body p-4 bg-light">
+          <div class="mb-4 p-3 bg-white border rounded">
+            <label class="form-label fw-bold mb-2">人員分類</label>
+            <div class="d-flex gap-4">
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="permRoleType" id="permType_internal"
+                  value="internal">
+                <label class="form-check-label" for="permType_internal">內部人員</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="permRoleType" id="permType_external"
+                  value="external">
+                <label class="form-check-label" for="permType_external">外部人員</label>
+              </div>
+            </div>
+          </div>
+
           <div class="mb-4">
             <h6 class="fw-bold text-secondary mb-3">可見區塊控制</h6>
             <div class="row g-3">
@@ -1158,6 +1214,82 @@
                   </div>
                 </label>
               </div>
+
+              <!-- perm_7: 系統公告/使用說明 -->
+              <div class="col-md-6">
+                <label class="permission-item-card">
+                  <div>
+                    <div class="fw-bold text-dark">系統公告/使用說明</div>
+                    <div class="text-secondary small mt-1">
+                      查看最新消息與操作手冊。
+                    </div>
+                  </div>
+                  <div class="form-check form-switch m-0">
+                    <input class="form-check-input custom-switch-lg" type="checkbox" id="perm_7" />
+                  </div>
+                </label>
+              </div>
+
+              <!-- perm_8: 命題專案管理 -->
+              <div class="col-md-6">
+                <label class="permission-item-card">
+                  <div>
+                    <div class="fw-bold text-dark">命題專案管理</div>
+                    <div class="text-secondary small mt-1">
+                      建立新梯次、指派人員與進度控管。
+                    </div>
+                  </div>
+                  <div class="form-check form-switch m-0">
+                    <input class="form-check-input custom-switch-lg" type="checkbox" id="perm_8" />
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <h6 class="fw-bold text-secondary mb-3 mt-4">進階功能權限</h6>
+            <div class="row g-3">
+              <!-- Proposition Access -->
+              <div class="col-12">
+                <div class="card border bg-white p-3">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="fw-bold text-dark">命題任務細節設定</span>
+                    <span class="badge bg-light text-secondary border">需開啟「我的命題任務」</span>
+                  </div>
+                  <div class="d-flex gap-4">
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="prop_access" id="prop_view" value="view"
+                        disabled>
+                      <label class="form-check-label" for="prop_view">僅瀏覽 (View Only)</label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="prop_access" id="prop_edit" value="edit"
+                        disabled>
+                      <label class="form-check-label" for="prop_edit">瀏覽與編輯 (Edit)</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Review Access -->
+              <div class="col-12">
+                <div class="card border bg-white p-3">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="fw-bold text-dark">審題任務細節設定</span>
+                    <span class="badge bg-light text-secondary border">需開啟「審題清單」</span>
+                  </div>
+                  <div class="d-flex gap-4">
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="review_access" id="review_view" value="view"
+                        disabled>
+                      <label class="form-check-label" for="review_view">僅瀏覽 (View Only)</label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="review_access" id="review_edit" value="edit"
+                        disabled>
+                      <label class="form-check-label" for="review_edit">瀏覽與編輯 (Edit)</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1188,112 +1320,67 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
 
-        <div class="modal-body p-0">
+        <div class="modal-body p-4">
           <input type="hidden" id="editUserId" />
 
-          <ul class="nav nav-tabs nav-justified" role="tablist">
-            <li class="nav-item" role="presentation">
-              <button class="nav-link active py-3 fw-bold" data-bs-toggle="tab" data-bs-target="#edit-basic"
-                type="button">
-                基本帳號資料
-              </button>
-            </li>
-            <li class="nav-item" role="presentation">
-              <button class="nav-link py-3 fw-bold" data-bs-toggle="tab" data-bs-target="#edit-projects" type="button">
-                參與梯次與身分
-              </button>
-            </li>
-          </ul>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-bold">使用者姓名</label>
+              <input type="text" class="form-control" id="editRealName" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">登入帳號 (Account)</label>
+              <input type="text" class="form-control" id="editAccount" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">電子信箱 (Email)</label>
+              <input type="email" class="form-control" id="editEmail" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">身分別</label>
+              <select class="form-select" id="editRole">
+                <option value="admin">網站管理員</option>
+                <option value="editor">教師資料編輯者</option>
+                <option value="viewer">一般檢視者</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">公司職稱</label>
+              <input type="text" class="form-control" id="editTitle" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">聯絡電話 / 手機</label>
+              <input type="text" class="form-control" id="editPhone" />
+            </div>
 
-          <div class="tab-content p-4">
-            <div class="tab-pane fade show active" id="edit-basic">
-              <div class="row g-3">
-                <div class="col-md-6">
-                  <label class="form-label fw-bold">真實姓名</label>
-                  <input type="text" class="form-control" id="editRealName" />
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label fw-bold">登入帳號 (Email)</label>
-                  <input type="email" class="form-control bg-light" id="editEmail" readonly />
-                  <div class="form-text">帳號建立後不可修改</div>
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label fw-bold">服務單位 / 學校</label>
-                  <input type="text" class="form-control" id="editOrg" />
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label fw-bold">職稱</label>
-                  <input type="text" class="form-control" id="editTitle" />
-                </div>
-                <div class="col-12">
-                  <label class="form-label fw-bold">聯絡電話 / 手機</label>
-                  <input type="text" class="form-control" id="editPhone" />
-                </div>
+            <hr class="my-4" />
 
-                <hr class="my-4" />
-
-                <div class="col-12">
-                  <label class="form-label fw-bold mb-2">帳號安全設定</label>
-                  <div class="d-flex justify-content-between align-items-center p-3 border rounded bg-light">
-                    <div>
-                      <div class="fw-bold">登入密碼</div>
-                      <div class="small text-muted">
-                        若使用者忘記密碼，可在此協助重設
-                      </div>
-                    </div>
-                    <button class="btn btn-outline-secondary btn-sm bg-white">
-                      發送重設密碼信
-                    </button>
+            <div class="col-12">
+              <label class="form-label fw-bold mb-2">帳號安全設定</label>
+              <div class="d-flex justify-content-between align-items-center p-3 border rounded bg-light">
+                <div>
+                  <div class="fw-bold">登入密碼</div>
+                  <div class="small text-muted">
+                    若使用者忘記密碼，可在此協助重設
                   </div>
                 </div>
-
-                <div class="col-12 mt-3">
-                  <div class="form-check form-switch p-3 border rounded bg-white">
-                    <input class="form-check-input ms-0 me-3" type="checkbox" id="accountStatus"
-                      style="transform: scale(1.2)" />
-                    <div class="d-inline-block align-middle">
-                      <label class="form-check-label fw-bold" for="accountStatus">啟用此帳號</label>
-                      <div class="text-muted small">
-                        關閉後，使用者將無法登入系統
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <button class="btn btn-outline-secondary btn-sm">
+                  發送重設密碼信
+                </button>
               </div>
             </div>
 
-            <div class="tab-pane fade" id="edit-projects">
-              <div class="card bg-light border-0 mb-4">
-                <div class="card-body">
-                  <h6 class="fw-bold mb-3 text-dark">
-                    <i class="bi bi-plus-circle-fill text-primary me-2"></i>指派至新梯次
-                  </h6>
-                  <div class="row g-2 align-items-end">
-                    <div class="col-md-5">
-                      <label class="small text-muted mb-1">選擇梯次專案</label>
-                      <select class="form-select form-select-sm" id="assignProjectSelect">
-                        <option selected disabled>請選擇梯次...</option>
-                      </select>
-                    </div>
-                    <div class="col-md-4">
-                      <label class="small text-muted mb-1">擔任身分</label>
-                      <select class="form-select form-select-sm" id="assignRoleSelect">
-                        <option value="teacher">命題教師</option>
-                        <option value="reviewer">審題委員</option>
-                      </select>
-                    </div>
-                    <div class="col-md-3">
-                      <button class="btn btn-primary btn-sm w-100 fw-bold" onclick="addProjectRoleMock()">
-                        新增指派
-                      </button>
-                    </div>
+            <div class="col-12 mt-3">
+              <div class="form-check form-switch p-3 border rounded bg-white">
+                <input class="form-check-input ms-0 me-3" type="checkbox" id="accountStatus"
+                  style="transform: scale(1.2)" />
+                <div class="d-inline-block align-middle">
+                  <label class="form-check-label fw-bold" for="accountStatus">啟用此帳號</label>
+                  <div class="text-muted small">
+                    關閉後，使用者將無法登入系統
                   </div>
                 </div>
               </div>
-
-              <h6 class="fw-bold mb-3">已參與的梯次列表</h6>
-              <div class="border rounded bg-white custom-scrollbar" style="max-height: 300px; overflow-y: auto"
-                id="userProjectHistory"></div>
             </div>
           </div>
         </div>
@@ -1324,22 +1411,29 @@
             <input type="text" class="form-control" id="addUserName" placeholder="例如：王小明" />
           </div>
           <div class="mb-3">
-            <label class="form-label fw-bold">登入帳號 (Email) <span class="text-danger">*</span></label>
+            <label class="form-label fw-bold">登入帳號 <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="addUserAccount" placeholder="例如：wang_xiaoming" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold">電子信箱 <span class="text-danger">*</span></label>
             <input type="email" class="form-control" id="addUserEmail" placeholder="name@example.com" />
           </div>
-          <div class="row g-3 mb-3">
-            <div class="col-md-6">
-              <label class="form-label fw-bold">服務單位</label>
-              <input type="text" class="form-control" id="addUserOrg" placeholder="例如：臺灣大學" />
-            </div>
-            <div class="col-md-6">
-              <label class="form-label fw-bold">職稱</label>
-              <input type="text" class="form-control" id="addUserTitle" placeholder="例如：教授" />
-            </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold">身分別 <span class="text-danger">*</span></label>
+            <select class="form-select" id="addUserRole">
+              <option selected disabled>請選擇身分...</option>
+              <option value="admin">網站管理員</option>
+              <option value="editor">教師資料編輯者</option>
+              <option value="viewer">一般檢視者</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold">公司職稱</label>
+            <input type="text" class="form-control" id="addUserTitle" placeholder="例如：經理" />
           </div>
           <div class="alert alert-light border small text-secondary">
-            <i class="bi bi-info-circle me-1"></i> 預設密碼為
-            <strong>Cwt123456</strong>，使用者首次登入時須強制更改密碼。
+            <i class="bi bi-info-circle me-1"></i> 備註：預設密碼為
+            <strong>01024304</strong> 公司統編。
           </div>
         </div>
         <div class="modal-footer border-top-0 pt-0">
@@ -1354,123 +1448,6 @@
     </div>
   </div>
 
-  <div class="modal fade" id="editUserModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content border-0 shadow-lg">
-        <div class="modal-header bg-white border-bottom">
-          <div>
-            <h5 class="modal-title fw-bold text-dark">
-              編輯使用者：<span id="modalEditTitleName" class="text-primary">--</span>
-            </h5>
-            <p class="text-secondary small mb-0">
-              管理個人資料、聯絡方式與帳號狀態
-            </p>
-          </div>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-
-        <div class="modal-body p-0">
-          <input type="hidden" id="editUserId" />
-
-          <ul class="nav nav-tabs nav-justified" role="tablist">
-            <li class="nav-item" role="presentation">
-              <button class="nav-link active py-3 fw-bold" data-bs-toggle="tab" data-bs-target="#edit-basic"
-                type="button">
-                基本帳號資料
-              </button>
-            </li>
-            <li class="nav-item" role="presentation">
-              <button class="nav-link py-3 fw-bold" data-bs-toggle="tab" data-bs-target="#edit-projects" type="button">
-                參與梯次紀錄
-              </button>
-            </li>
-          </ul>
-
-          <div class="tab-content p-4">
-            <div class="tab-pane fade show active" id="edit-basic">
-              <div class="row g-3">
-                <div class="col-md-6">
-                  <label class="form-label fw-bold">真實姓名</label>
-                  <input type="text" class="form-control" id="editRealName" />
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label fw-bold">登入帳號 (Email)</label>
-                  <input type="email" class="form-control bg-light" id="editEmail" readonly />
-                  <div class="form-text">帳號建立後不可修改</div>
-                </div>
-
-                <div class="col-md-6">
-                  <label class="form-label fw-bold">服務單位 / 學校</label>
-                  <input type="text" class="form-control" id="editOrg" placeholder="例如：國立臺灣大學" />
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label fw-bold">職稱</label>
-                  <input type="text" class="form-control" id="editTitle" placeholder="例如：副教授" />
-                </div>
-
-                <div class="col-12">
-                  <label class="form-label fw-bold">聯絡電話 / 手機</label>
-                  <input type="text" class="form-control" id="editPhone" placeholder="09xx-xxx-xxx" />
-                </div>
-
-                <hr class="my-4" />
-
-                <div class="col-12">
-                  <label class="form-label fw-bold mb-2">帳號安全設定</label>
-                  <div class="d-flex justify-content-between align-items-center p-3 border rounded bg-light">
-                    <div>
-                      <div class="fw-bold">登入密碼</div>
-                      <div class="small text-muted">
-                        若使用者忘記密碼，可在此協助重設
-                      </div>
-                    </div>
-                    <button class="btn btn-outline-secondary btn-sm bg-white">
-                      發送重設密碼信
-                    </button>
-                  </div>
-                </div>
-
-                <div class="col-12 mt-3">
-                  <div class="form-check form-switch p-3 border rounded bg-white">
-                    <input class="form-check-input ms-0 me-3" type="checkbox" id="accountStatus"
-                      style="transform: scale(1.2)" />
-                    <div class="d-inline-block align-middle">
-                      <label class="form-check-label fw-bold" for="accountStatus">啟用此帳號</label>
-                      <div class="text-muted small">
-                        關閉後，使用者將無法登入系統
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="tab-pane fade" id="edit-projects">
-              <div class="alert alert-info border-0 bg-opacity-10 d-flex align-items-center mb-3">
-                <i class="bi bi-info-circle-fill text-info me-2"></i>
-                <div class="small">
-                  此處僅顯示該人員參與的歷史紀錄。<br />
-                  如需指派新梯次或調整身分，請前往
-                  <strong>[命題專案管理]</strong>。
-                </div>
-              </div>
-
-              <div class="border rounded bg-white custom-scrollbar" style="max-height: 400px; overflow-y: auto"
-                id="userProjectHistory"></div>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer bg-white pt-3 pe-4">
-          <button type="button" class="btn btn-light btn-lg px-4 fs-6" data-bs-dismiss="modal">
-            關閉
-          </button>
-          <button type="button" class="btn btn-primary btn-lg px-4 fs-6 fw-bold shadow-sm">
-            儲存變更
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="role-manager.js"></script>
   <script src="app.js"></script>

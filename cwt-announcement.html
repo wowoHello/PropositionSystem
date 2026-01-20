@@ -44,6 +44,35 @@
             color: #9d174d;
         }
 
+        /* === [修改] 需求調整顏色 === */
+        /* 系統公告 - 橘色 */
+        .badge-category-system {
+            background-color: #ffedd5;
+            color: #c2410c;
+            border: 1px solid #fed7aa !important;
+        }
+
+        /* 命題公告 - 藍色 */
+        .badge-category-proposition {
+            background-color: #dbeafe;
+            color: #1d4ed8;
+            border: 1px solid #bfdbfe !important;
+        }
+
+        /* 審題公告 - 綠色 */
+        .badge-category-review {
+            background-color: #dcfce7;
+            color: #15803d;
+            border: 1px solid #bbf7d0 !important;
+        }
+
+        /* 其他 - 灰色 */
+        .badge-category-other {
+            background-color: #f3f4f6;
+            color: #4b5563;
+            border: 1px solid #e5e7eb !important;
+        }
+
         .action-btn {
             width: 32px;
             height: 32px;
@@ -128,7 +157,6 @@
                                     <span class="role-badge role-admin">系統管理員</span>
                                 </div>
                                 <!-- 其他專案項目省略，直接使用 JS 控制 -->
-                                <!-- 為保持一致性，建議複製完整的 project list，但這裡為求簡潔，僅保留一個範例，實際專案應完整複製 -->
                             </div>
                         </div>
                     </div>
@@ -166,7 +194,6 @@
     <!-- 主要內容區 -->
     <div class="main-content">
         <div class="container-fluid px-4">
-            <!-- 標題與操作區 -->
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h4 class="fw-bold m-0 text-dark">系統公告管理</h4>
                 <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#announcementModal"
@@ -175,18 +202,17 @@
                 </button>
             </div>
 
-            <!-- 篩選與列表區 -->
             <div class="row g-4">
                 <div class="col-12">
                     <div class="content-card">
-                        <!-- 篩選列 -->
                         <div class="d-flex gap-3 mb-4">
                             <div style="width: 200px">
                                 <select class="form-select" id="filterCategory">
                                     <option value="all">所有分類</option>
+                                    <option value="系統公告">系統公告</option>
                                     <option value="命題公告">命題公告</option>
                                     <option value="審題公告">審題公告</option>
-                                    <option value="系統公告">系統公告</option>
+                                    <option value="其他">其他</option>
                                 </select>
                             </div>
                             <div class="flex-grow-1">
@@ -194,26 +220,18 @@
                             </div>
                         </div>
 
-                        <!-- 列表 -->
                         <div class="table-responsive">
                             <table class="table table-hover align-middle">
                                 <thead class="bg-light">
                                     <tr>
-                                        <th class="ps-3 border-bottom-0 text-secondary small">
-                                            標題
-                                        </th>
+                                        <th class="ps-3 border-bottom-0 text-secondary small">標題</th>
                                         <th class="border-bottom-0 text-secondary small">分類</th>
-                                        <th class="border-bottom-0 text-secondary small">
-                                            發布日期
-                                        </th>
+                                        <th class="border-bottom-0 text-secondary small">發布日期</th>
                                         <th class="border-bottom-0 text-secondary small">狀態</th>
-                                        <th class="text-end pe-3 border-bottom-0 text-secondary small">
-                                            操作
-                                        </th>
+                                        <th class="text-end pe-3 border-bottom-0 text-secondary small">操作</th>
                                     </tr>
                                 </thead>
                                 <tbody id="announcementTableBody">
-                                    <!-- JS Rendered Content -->
                                 </tbody>
                             </table>
                         </div>
@@ -223,13 +241,12 @@
         </div>
     </div>
 
-    <!-- 新增/編輯 Modal -->
     <div class="modal fade" id="announcementModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content border-0 shadow">
                 <div class="modal-header bg-light border-bottom-0">
                     <h5 class="modal-title fw-bold" id="modalTitle">新增公告</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-4">
                     <form id="announcementForm">
@@ -238,10 +255,10 @@
                             <div class="col-md-4">
                                 <label class="form-label fw-bold small text-secondary">分類</label>
                                 <select class="form-select" id="category" required>
-                                    <option value="命題公告">命題公告</option>
-                                    <option value="審題公告">審題公告</option>
-                                    <option value="系統公告">系統公告</option>
-                                    <option value="其他">其他</option>
+                                    <option value="系統公告">系統公告 (橘)</option>
+                                    <option value="命題公告">命題公告 (藍)</option>
+                                    <option value="審題公告">審題公告 (綠)</option>
+                                    <option value="其他">其他 (灰)</option>
                                 </select>
                             </div>
                             <div class="col-md-4">
@@ -255,6 +272,16 @@
                                     <option value="draft">草稿</option>
                                 </select>
                             </div>
+
+                            <div class="col-12">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="isPinned">
+                                    <label class="form-check-label fw-bold text-danger" for="isPinned">
+                                        <i class="bi bi-pin-angle-fill me-1"></i>將此公告置頂顯示
+                                    </label>
+                                </div>
+                            </div>
+
                             <div class="col-12">
                                 <label class="form-label fw-bold small text-secondary">公告標題</label>
                                 <input type="text" class="form-control" id="title" placeholder="請輸入標題" required />
@@ -267,57 +294,28 @@
                     </form>
                 </div>
                 <div class="modal-footer border-top-0 pt-0 pb-4 px-4">
-                    <button type="button" class="btn btn-light text-secondary fw-bold" data-bs-dismiss="modal">
-                        取消
-                    </button>
-                    <button type="button" class="btn btn-primary fw-bold px-4" onclick="saveAnnouncement()">
-                        儲存
-                    </button>
+                    <button type="button" class="btn btn-light text-secondary fw-bold"
+                        data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary fw-bold px-4" onclick="saveAnnouncement()">儲存</button>
                 </div>
             </div>
         </div>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="app.js"></script>
     <script>
-        // Mock Data Initialization
+        // Mock Data with 'isPinned' property
         const defaultAnnouncements = [
-            {
-                id: 1,
-                title: "初等命題截止倒數 3 天",
-                category: "命題公告",
-                date: "2024-01-28",
-                status: "published",
-                content: "請各位老師注意，初等命題將於 3 天後截止。",
-            },
-            {
-                id: 2,
-                title: "2 梯次命題待確認",
-                category: "命題公告",
-                date: "2024-01-29",
-                status: "published",
-                content: "您有 2 個梯次的命題內容尚未確認，請盡速處理。",
-            },
-            {
-                id: 3,
-                title: "系統維護公告 (預計 1/30 進行例行維護)",
-                category: "系統公告",
-                date: "2024-01-25",
-                status: "published",
-                content:
-                    "系統將於 1/30 凌晨 2:00 - 4:00 進行例行維護，期間將無法登入。",
-            },
+            { id: 1, title: "113年度 命題規範更新說明", category: "命題公告", date: "2026-01-20", status: "published", content: "...", isPinned: true }, // 置頂範例
+            { id: 2, title: "試題審查重點提示", category: "審題公告", date: "2026-01-19", status: "published", content: "...", isPinned: false },
+            { id: 3, title: "系統維護公告", category: "系統公告", date: "2026-01-15", status: "published", content: "...", isPinned: false },
+            { id: 4, title: "辦公室春節休假通知", category: "其他", date: "2026-01-10", status: "published", content: "...", isPinned: false },
         ];
 
-        // Load or Initialize Data
         function loadAnnouncements() {
             const stored = localStorage.getItem("cwt_announcements");
             if (!stored) {
-                localStorage.setItem(
-                    "cwt_announcements",
-                    JSON.stringify(defaultAnnouncements)
-                );
+                localStorage.setItem("cwt_announcements", JSON.stringify(defaultAnnouncements));
                 return defaultAnnouncements;
             }
             return JSON.parse(stored);
@@ -327,11 +325,16 @@
             const data = loadAnnouncements();
             const tbody = document.getElementById("announcementTableBody");
             const filterCat = document.getElementById("filterCategory").value;
-            const searchVal = document
-                .getElementById("searchInput")
-                .value.toLowerCase();
+            const searchVal = document.getElementById("searchInput").value.toLowerCase();
 
             tbody.innerHTML = "";
+
+            // 排序：置頂優先，再來按日期
+            data.sort((a, b) => {
+                if (a.isPinned && !b.isPinned) return -1;
+                if (!a.isPinned && b.isPinned) return 1;
+                return new Date(b.date) - new Date(a.date);
+            });
 
             const filteredData = data.filter((item) => {
                 const matchCat = filterCat === "all" || item.category === filterCat;
@@ -341,22 +344,21 @@
 
             filteredData.forEach((item) => {
                 let badgeClass = "badge-category-other";
-                if (item.category === "命題公告")
-                    badgeClass = "badge-category-proposition";
-                else if (item.category === "審題公告")
-                    badgeClass = "badge-category-review";
-                else if (item.category === "系統公告")
-                    badgeClass = "badge-category-system";
+                if (item.category === "系統公告") badgeClass = "badge-category-system";
+                else if (item.category === "命題公告") badgeClass = "badge-category-proposition";
+                else if (item.category === "審題公告") badgeClass = "badge-category-review";
 
-                const statusBadge =
-                    item.status === "published"
-                        ? '<span class="badge bg-success bg-opacity-10 text-success">已發布</span>'
-                        : '<span class="badge bg-secondary bg-opacity-10 text-secondary">草稿</span>';
+                // 置頂圖示
+                const pinIcon = item.isPinned ? '<i class="bi bi-pin-angle-fill text-danger me-2" title="置頂"></i>' : '';
+
+                const statusBadge = item.status === "published"
+                    ? '<span class="badge bg-success bg-opacity-10 text-success">已發布</span>'
+                    : '<span class="badge bg-secondary bg-opacity-10 text-secondary">草稿</span>';
 
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
-                    <td class="ps-3 fw-medium text-dark">${item.title}</td>
-                    <td><span class="badge ${badgeClass} border border-0">${item.category}</span></td>
+                    <td class="ps-3 fw-medium text-dark">${pinIcon}${item.title}</td>
+                    <td><span class="badge ${badgeClass}">${item.category}</span></td>
                     <td class="text-secondary small">${item.date}</td>
                     <td>${statusBadge}</td>
                     <td class="text-end pe-3">
@@ -372,8 +374,8 @@
             document.getElementById("announcementForm").reset();
             document.getElementById("editId").value = "";
             document.getElementById("modalTitle").innerText = "新增公告";
-            // Default date to today
             document.getElementById("publishDate").valueAsDate = new Date();
+            document.getElementById("isPinned").checked = false; // 重設
         }
 
         function editAnnouncement(id) {
@@ -386,12 +388,9 @@
                 document.getElementById("publishDate").value = item.date;
                 document.getElementById("status").value = item.status;
                 document.getElementById("content").value = item.content || "";
+                document.getElementById("isPinned").checked = item.isPinned || false; // 讀取置頂狀態
                 document.getElementById("modalTitle").innerText = "編輯公告";
-
-                const modal = new bootstrap.Modal(
-                    document.getElementById("announcementModal")
-                );
-                modal.show();
+                new bootstrap.Modal(document.getElementById("announcementModal")).show();
             }
         }
 
@@ -401,49 +400,22 @@
             const date = document.getElementById("publishDate").value;
             const status = document.getElementById("status").value;
             const content = document.getElementById("content").value;
+            const isPinned = document.getElementById("isPinned").checked; // 取得置頂狀態
             const editId = document.getElementById("editId").value;
 
-            if (!title || !date) {
-                alert("請填寫必填欄位");
-                return;
-            }
+            if (!title || !date) { alert("請填寫必填欄位"); return; }
 
             let data = loadAnnouncements();
-
             if (editId) {
-                // Edit
                 const index = data.findIndex((x) => x.id == editId);
-                if (index > -1) {
-                    data[index] = {
-                        ...data[index],
-                        title,
-                        category,
-                        date,
-                        status,
-                        content,
-                    };
-                }
+                if (index > -1) data[index] = { ...data[index], title, category, date, status, content, isPinned };
             } else {
-                // Add
-                const newId =
-                    data.length > 0 ? Math.max(...data.map((x) => x.id)) + 1 : 1;
-                data.push({
-                    id: newId,
-                    title,
-                    category,
-                    date,
-                    status,
-                    content,
-                });
+                const newId = data.length > 0 ? Math.max(...data.map((x) => x.id)) + 1 : 1;
+                data.push({ id: newId, title, category, date, status, content, isPinned });
             }
 
             localStorage.setItem("cwt_announcements", JSON.stringify(data));
-
-            // Hide modal
-            const modalEl = document.getElementById('announcementModal');
-            const modal = bootstrap.Modal.getInstance(modalEl);
-            modal.hide();
-
+            bootstrap.Modal.getInstance(document.getElementById('announcementModal')).hide();
             renderTable();
         }
 
@@ -456,17 +428,10 @@
             }
         }
 
-        // Initial Render
         document.addEventListener("DOMContentLoaded", () => {
             renderTable();
-
-            // Bind filter events
-            document
-                .getElementById("filterCategory")
-                .addEventListener("change", renderTable);
-            document
-                .getElementById("searchInput")
-                .addEventListener("input", renderTable);
+            document.getElementById("filterCategory").addEventListener("change", renderTable);
+            document.getElementById("searchInput").addEventListener("input", renderTable);
         });
     </script>
 </body>

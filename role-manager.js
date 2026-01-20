@@ -1,17 +1,82 @@
-// ==========================================
-// Role Management Page Logic (role-manager.js)
-// ==========================================
+const PERMISSION_MAP = {
+  "perm_1": { label: "今日提醒", style: "tag-reminder" },
+  "perm_2": { label: "命題儀表板", style: "tag-dashboard" },
+  "perm_3": { label: "我的命題任務", style: "tag-mytask" },
+  "perm_4": { label: "審題清單", style: "tag-review" },
+  "perm_5": { label: "教師管理系統", style: "tag-teacher" },
+  "perm_6": { label: "角色與權限管理", style: "tag-role" },
+  "perm_7": { label: "系統公告/使用說明", style: "tag-notice" },
+  "perm_8": { label: "命題專案管理", style: "tag-project" }
+};
 
-// ------------------------------------------
-// 1. Mock Data (模擬資料)
-// ------------------------------------------
+let rolesData = [
+  {
+    id: "admin",
+    name: "系統管理員",
+    description: "負責系統設定、使用者管理、權限分配與整體平台維護工作。",
+    icon: "bi-gear-fill",
+    theme: "admin",
+    type: "internal", // Added type
+    permissions: ["perm_1", "perm_2", "perm_3", "perm_4", "perm_5", "perm_6", "perm_7", "perm_8"], // All Visible
+    tags: [], // Deprecated: generated from permissions
+    details: {
+       "perm_3": "edit",
+       "perm_4": "edit" 
+    }
+  },
+  {
+    id: "teacher",
+    name: "命題教師",
+    description: "負責試題設計、題庫管理，以及配合審題委員進行題目修正。",
+    icon: "bi-pencil-square",
+    theme: "teacher",
+    type: "external", // Default external for teacher? Let's say internal for now as per user request to set it manually, or default all to internal first. 
+    // User asked to split internal/external. Let's make Teacher External for demo.
+    permissions: ["perm_1", "perm_3", "perm_7"],
+    tags: [],
+    details: {
+       "perm_3": "edit", 
+       "perm_4": "none"
+    }
+  },
+  {
+    id: "reviewer",
+    name: "審題委員",
+    description: "審核題目品質、提供專業建議，確保試題符合學術標準與規範。",
+    icon: "bi-search",
+    theme: "reviewer",
+    type: "external",
+    permissions: ["perm_1", "perm_4", "perm_7"],
+    tags: [],
+    details: {
+       "perm_3": "none",
+       "perm_4": "edit"
+    }
+  },
+  {
+    id: "assistant",
+    name: "專案助理",
+    description: "協助檢視專案進度與內容，但無編輯權限。",
+    icon: "bi-person-badge",
+    theme: "staff",
+    type: "internal",
+    permissions: ["perm_1", "perm_2", "perm_3", "perm_4", "perm_7"],
+    tags: [],
+    details: {
+       "perm_3": "view",
+       "perm_4": "view"
+    }
+  },
+];
+
 const mockUsers = [
   {
     id: "U001",
     name: "陳言綸",
     email: "test@mail.com",
-    org: "教務處",
-    title: "行政組長",
+    account: "guray_chen", // Added account
+    role: "admin",
+    title: "網維經理",
     phone: "0912-345-678",
     status: "active",
   },
@@ -46,6 +111,7 @@ function switchTab(index, targetId) {
     indicator.style.transform = "translateX(0)";
   } else if (index === 1) {
     indicator.style.transform = "translateX(100%) translateX(4px)";
+    renderRoles(); // Switch to Roles tab -> Re-render roles
   }
 
   // 更新按鈕樣式
@@ -78,6 +144,53 @@ function updateCardStyles() {
     });
 }
 
+function renderPermissions(role) {
+    // 1. Reset all checkboxes
+    document.querySelectorAll('#permissionModal input[type="checkbox"]').forEach(c => c.checked = false);
+    document.querySelectorAll('input[name="prop_access"]').forEach(r => r.disabled = true);
+    document.querySelectorAll('input[name="review_access"]').forEach(r => r.disabled = true);
+    document.getElementById("prop_view").checked = true; // reset to view only default
+    document.getElementById("review_view").checked = true; 
+
+    // 2. Set Role Type
+    const type = role.type || "internal";
+    if(document.getElementById(`permType_${type}`)) {
+        document.getElementById(`permType_${type}`).checked = true;
+    }
+
+    // 3. Set Visible Blocks (Top Section)
+    if(role.permissions) {
+        role.permissions.forEach(permId => {
+            const el = document.getElementById(permId);
+            if(el) el.checked = true;
+        });
+    }
+
+    // 4. Set Detail Permissions (Edit/View)
+    
+    // Proposition (perm_3)
+    const hasProp = document.getElementById("perm_3").checked;
+    const propRadios = document.querySelectorAll('input[name="prop_access"]');
+    propRadios.forEach(r => r.disabled = !hasProp);
+    if(hasProp && role.details && role.details["perm_3"] === "edit") {
+        document.getElementById("prop_edit").checked = true;
+    } else {
+         document.getElementById("prop_view").checked = true;
+    }
+
+    // Review (perm_4)
+    const hasReview = document.getElementById("perm_4").checked;
+    const reviewRadios = document.querySelectorAll('input[name="review_access"]');
+    reviewRadios.forEach(r => r.disabled = !hasReview);
+    if(hasReview && role.details && role.details["perm_4"] === "edit") {
+        document.getElementById("review_edit").checked = true;
+    } else {
+        document.getElementById("review_view").checked = true;
+    }
+
+    updateCardStyles();
+}
+
 function openPermissionModal(roleName) {
   const modalObj = new bootstrap.Modal(
     document.getElementById("permissionModal")
@@ -86,27 +199,78 @@ function openPermissionModal(roleName) {
   // 設定標題
   document.getElementById("modalRoleTitle").innerText = roleName;
 
-  // 重置 Checkbox
-  const allChecks = document.querySelectorAll(
-    '#permissionModal input[type="checkbox"]'
-  );
-  allChecks.forEach((c) => (c.checked = false));
-
-  // 模擬預設權限勾選
-  document.getElementById("perm_1").checked = true; // 基本登入
-
-  if (roleName === "命題教師") {
-    document.getElementById("perm_3").checked = true;
-  } else if (roleName === "審題委員") {
-    document.getElementById("perm_4").checked = true;
-  } else {
-    // 管理員或其他全開
-    allChecks.forEach((c) => (c.checked = true));
+  // Find Role Data
+  const role = rolesData.find(r => r.name === roleName);
+  if(role) {
+      currentEditingRole = role; 
+      renderPermissions(role);
   }
 
-  updateCardStyles();
   modalObj.show();
 }
+
+function setupPermissionListeners() {
+    document.getElementById("perm_3").addEventListener("change", (e) => {
+        const enabled = e.target.checked;
+        document.querySelectorAll('input[name="prop_access"]').forEach(r => r.disabled = !enabled);
+    });
+    document.getElementById("perm_4").addEventListener("change", (e) => {
+        const enabled = e.target.checked;
+        document.querySelectorAll('input[name="review_access"]').forEach(r => r.disabled = !enabled);
+    });
+    
+    // Auto-save logic could go here or on a button
+    // For this demo, we might want to attach a listener to the Save button in the modal
+    const saveBtn = document.querySelector('#permissionModal .btn-primary');
+    if(saveBtn) {
+        saveBtn.onclick = () => savePermissions();
+    }
+}
+
+function savePermissions() {
+    if(!currentEditingRole) return;
+
+    // 1. Collect Type
+    const typeEl = document.querySelector('input[name="permRoleType"]:checked');
+    if(typeEl) {
+        currentEditingRole.type = typeEl.value;
+    }
+
+    // 2. Collect Visible Blocks
+    const newPermissions = [];
+    for(let i=1; i<=8; i++) {
+        const pid = `perm_${i}`;
+        const el = document.getElementById(pid);
+        if(el && el.checked) {
+            newPermissions.push(pid);
+        }
+    }
+    
+    // 3. Collect Details
+    const details = {};
+    if(newPermissions.includes("perm_3")) {
+        details["perm_3"] = document.getElementById("prop_edit").checked ? "edit" : "view";
+    } else {
+        details["perm_3"] = "none";
+    }
+    
+    if(newPermissions.includes("perm_4")) {
+        details["perm_4"] = document.getElementById("review_edit").checked ? "edit" : "view";
+    } else {
+        details["perm_4"] = "none";
+    }
+    
+    // 4. Update Data
+    currentEditingRole.permissions = newPermissions;
+    currentEditingRole.details = details;
+
+    // 5. Update UI & Close
+    renderRoles();
+    bootstrap.Modal.getInstance(document.getElementById("permissionModal")).hide();
+    alert(`權限已儲存：${currentEditingRole.name}`);
+}
+
+let currentEditingRole = null; 
 
 function openAddRoleModal() {
   const modal = new bootstrap.Modal(document.getElementById("addRoleModal"));
@@ -114,19 +278,16 @@ function openAddRoleModal() {
   // 重置表單
   document.getElementById("newRoleName").value = "";
   document.getElementById("newRoleDesc").value = "";
-  document.getElementById("selectedIconValue").value = "";
-  document.getElementById("selectedIconName").textContent = "未選擇";
-  document.getElementById("selectedIconPreview").innerHTML =
-    '<i class="bi bi-question-circle"></i>';
   
-  document
-    .querySelectorAll(".icon-option")
-    .forEach((opt) => opt.classList.remove("selected"));
-    
-  // 重置全域變數 (若有的話)
-  if (typeof selectedIcon !== 'undefined') selectedIcon = null; // 防禦性寫法
+  // Reset Preview
+  document.getElementById("selectedIconPreview").innerText = "?";
   
-  selectTheme('admin'); // 重置為預設主題
+  // Reset Type
+  document.getElementById("roleType_internal").checked = true;
+
+  if (typeof selectedIcon !== 'undefined') selectedIcon = null; 
+  
+  selectTheme('admin'); 
   modal.show();
 }
 
@@ -137,14 +298,33 @@ function openAddRoleModal() {
 // 開啟新增使用者 Modal
 function openAddUserModal() {
   const modal = new bootstrap.Modal(document.getElementById("addUserModal"));
-  
-  // 清空欄位
+  // ... (clearing fields) ...
   document.getElementById("addUserName").value = "";
+  document.getElementById("addUserAccount").value = ""; 
   document.getElementById("addUserEmail").value = "";
-  // 其他欄位若有 ID 也可以在此清空
+  if(document.getElementById("addUserTitle")) document.getElementById("addUserTitle").value = "";
+
+  populateRoleSelects();
   
   modal.show();
 }
+
+function populateRoleSelects() {
+    const addSelect = document.getElementById("addUserRole");
+    const editSelect = document.getElementById("editRole");
+    
+    // Generate Options HTML - Filter INTERNAL only
+    let options = '<option selected disabled>請選擇身分...</option>';
+    rolesData
+        .filter(r => r.type === "internal" || !r.type) // Default internal if undefined
+        .forEach(role => {
+            options += `<option value="${role.id}">${role.name}</option>`;
+        });
+
+    if(addSelect) addSelect.innerHTML = options;
+    if(editSelect) editSelect.innerHTML = options;
+}
+
 
 // 開啟編輯使用者 Modal (核心邏輯)
 function openEditUserModal(index) {
@@ -157,19 +337,25 @@ function openEditUserModal(index) {
   const modal = new bootstrap.Modal(document.getElementById("editUserModal"));
 
   // 填入 [基本帳號資料]
-  // 注意：這裡假設 HTML 中有對應的 ID。若 HTML ID 不同需同步修改。
-  // 原本 cwt-role.html 中有 editRealName, editEmail 等
+  // Ensure options are populated
+  populateRoleSelects();
+
   if(document.getElementById("editUserId")) document.getElementById("editUserId").value = user.id;
   if(document.getElementById("editRealName")) document.getElementById("editRealName").value = user.name;
+  
+  // Split Account and Email
+  if(document.getElementById("editAccount")) document.getElementById("editAccount").value = user.account || "";
   if(document.getElementById("editEmail")) document.getElementById("editEmail").value = user.email;
-  if(document.getElementById("editOrg")) document.getElementById("editOrg").value = user.org;
+  
+  if(document.getElementById("editRole")) document.getElementById("editRole").value = user.role || "admin";
   if(document.getElementById("editTitle")) document.getElementById("editTitle").value = user.title;
   if(document.getElementById("editPhone")) document.getElementById("editPhone").value = user.phone;
   
-  // 標題名字
-  // HTML 中似乎沒有 modalEditTitleName，但 edituser.js 有用到。
-  // 我們檢查一下 HTML 結構... (cwt-role.html 並沒有 modalEditTitleName ID，那是 edituser.js 假設的)
-  // 為了相容，我們略過不存在的元素，或者補上。
+  // Set Modal Title Name
+  const titleNameEl = document.getElementById("modalEditTitleName");
+  if (titleNameEl) {
+      titleNameEl.innerText = user.name;
+  }
 
   if(document.getElementById("accountStatus")) {
       document.getElementById("accountStatus").checked = (user.status === "active");
@@ -295,54 +481,128 @@ function selectTheme(theme) {
 
 function saveNewRole() {
     const roleName = document.getElementById("newRoleName").value.trim();
-    const iconClass = document.getElementById("selectedIconValue").value;
     if (!roleName) {
       alert("請輸入角色名稱");
       return;
     }
-    if (!iconClass) {
-      alert("請選擇圖示");
-      return;
-    }
+
     alert(`角色「${roleName}」已新增成功！`);
+    
+    // Capture Type
+    const typeEl = document.querySelector('input[name="newRoleType"]:checked');
+    const roleType = typeEl ? typeEl.value : "internal";
+
+    // Mock Update: Add to rolesData
+    rolesData.push({
+        id: "custom_" + Date.now(),
+        name: roleName,
+        description: document.getElementById("newRoleDesc").value,
+        icon: "", // Deprecated, using name char
+        theme: document.getElementById("selectedTheme").value || "admin",
+        type: roleType, 
+        permissions: ["perm_1", "perm_7"], // Default to something basic
+        tags: [],
+        details: {}
+    });
+    renderRoles(); // Refresh List
+
     bootstrap.Modal.getInstance(document.getElementById("addRoleModal")).hide();
 }
 
 
 // ------------------------------------------
-// 6. Initialization (初始化事件綁定)
+// 7. Render Role Cards (Dynamic)
 // ------------------------------------------
-document.addEventListener("DOMContentLoaded", () => {
-    
-  // A. 權限卡片樣式初始化
-  updateCardStyles();
-  document.querySelectorAll('.permission-item-card input[type="checkbox"]').forEach((input) => {
-      input.addEventListener("change", updateCardStyles);
-  });
+// ... (Render logic is updated above, this just comments)
 
-  // B. Icon Picker 點擊事件
-  const iconOptions = document.querySelectorAll(".icon-option");
-  const preview = document.getElementById("selectedIconPreview");
-  const iconName = document.getElementById("selectedIconName");
-  const iconValue = document.getElementById("selectedIconValue");
-  
-  if(iconOptions.length > 0) {
-      iconOptions.forEach((option) => {
-        option.addEventListener("click", function () {
-          iconOptions.forEach((opt) => opt.classList.remove("selected"));
-          this.classList.add("selected");
-          
-          const iconClass = this.dataset.icon;
-          const name = this.dataset.name;
-          
-          preview.innerHTML = `<i class="${iconClass}"></i>`;
-          iconName.textContent = name;
-          iconValue.value = iconClass;
+// ...
+
+function renderRoles() {
+  const container = document.getElementById("roleCardsContainer");
+  if (!container) return;
+
+  const getCardHtml = (role) => {
+    // Generate Tags HTML
+    const tagsHtml = (role.permissions || [])
+      .map((pid) => {
+        const p = PERMISSION_MAP[pid];
+        if (!p) return "";
+
+        let suffix = "";
+        // Special logic for perm_3 (Proposition) and perm_4 (Review) to show View/Edit icons
+        if ((pid === "perm_3" || pid === "perm_4") && role.details) {
+            const access = role.details[pid];
+            if (access === "edit") {
+                suffix = '<i class="bi bi-pencil-square ms-1" style="font-size: 0.8em; opacity: 0.8;" title="可編輯"></i>';
+            } else if (access === "view") {
+                suffix = '<i class="bi bi-eye-fill ms-1" style="font-size: 0.8em; opacity: 0.8;" title="僅檢視"></i>';
+            }
+        }
+        
+        return `<span class="badge-tag-base ${p.style}">${p.label}${suffix}</span>`;
+      })
+      .join("");
+
+    return `
+        <div class="col-md-6 col-lg-4">
+          <div class="role-card-v1 theme-${role.theme}">
+            <button class="action-button">編輯權限</button>
+            <div class="icon-wrapper">
+              <span class="h2 mb-0 fw-bold">${role.name.charAt(0)}</span>
+            </div>
+            <h3 class="role-title">${role.name}</h3>
+            <p class="role-description">${role.description}</p>
+            <div class="stats-row">
+              <div class="stat-item flex-grow-1">
+                <span class="stat-label">權限標籤</span>
+                <div class="multi-role-badges mt-1">
+                    ${tagsHtml}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        `;
+    };
+
+    const internalRoles = rolesData.filter(r => r.type === "internal" || !r.type);
+    const externalRoles = rolesData.filter(r => r.type === "external");
+
+    let html = "";
+
+    // 1. Global Action: Add Role Card
+    html += `
+    <div class="col-md-6 col-lg-4">
+      <div class="add-role-card">
+        <div class="icon-plus"><i class="bi bi-plus-lg"></i></div>
+        <h4 class="add-title">新增角色</h4>
+        <p class="add-description">自訂新的身分類別與權限配置</p>
+      </div>
+    </div>
+    `;
+
+    // 2. Section: Internal
+    html += `<div class="col-12 mt-3"><h5 class="fw-bold text-primary border-start border-4 border-primary ps-2 mb-2">內部人員 (Internal)</h5></div>`;
+    internalRoles.forEach(role => {
+        html += getCardHtml(role);
+    });
+
+    // 3. Section: External
+    if(externalRoles.length > 0) {
+        html += `<div class="col-12 mt-4"><h5 class="fw-bold text-success border-start border-4 border-success ps-2 mb-2">外部人員 (External)</h5></div>`;
+        externalRoles.forEach(role => {
+            html += getCardHtml(role);
         });
-      });
-  }
+    }
 
-  // C. 角色卡片點擊 (開啟權限設定)
+    container.innerHTML = html;
+
+    // Re-bind click events
+    bindRoleCardEvents();
+}
+
+function bindRoleCardEvents() {
+    // C. 角色卡片點擊 (開啟權限設定)
   document.querySelectorAll(".role-card-v1").forEach((card) => {
     card.addEventListener("click", function (e) {
       if (e.target.closest(".action-button")) return; 
@@ -367,4 +627,48 @@ document.addEventListener("DOMContentLoaded", () => {
         openAddRoleModal();
       });
   }
+}
+
+function toggleCard(cardElement) {
+      // 找到卡片內的 checkbox
+      const checkbox = cardElement.querySelector('input[type="checkbox"]');
+      
+      // 因為我們把 onclick 加在 label 上，瀏覽器會自動切換 checkbox 狀態
+      // 我們只需要根據 checkbox 的最終狀態來切換 CSS class
+      
+      // 使用 setTimeout 確保在瀏覽器完成 checkbox 狀態切換後才執行樣式判斷
+      setTimeout(() => {
+        if (checkbox.checked) {
+          cardElement.classList.add('active');
+        } else {
+          cardElement.classList.remove('active');
+        }
+      }, 0);
+    }
+
+// ------------------------------------------
+// 6. Initialization (初始化事件綁定)
+// ------------------------------------------
+document.addEventListener("DOMContentLoaded", () => {
+    
+  // A. 權限卡片樣式初始化
+  updateCardStyles();
+  document.querySelectorAll('.permission-item-card input[type="checkbox"]').forEach((input) => {
+      input.addEventListener("change", updateCardStyles);
+  });
+
+  // B. Icon Picker 點擊事件
+  // B. Icon Picker Logic - Replaced with Name Input Listener
+  const newRoleNameInput = document.getElementById("newRoleName");
+  if(newRoleNameInput) {
+      newRoleNameInput.addEventListener("input", function() {
+          const val = this.value.trim();
+          const char = val ? val.charAt(0) : "?";
+          document.getElementById("selectedIconPreview").innerText = char;
+      });
+  }
+
+  // C & D moved to bindRoleCardEvents called by renderRoles
+  renderRoles(); // Initial Render
+  setupPermissionListeners();
 });
