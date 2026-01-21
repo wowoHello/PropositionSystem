@@ -217,6 +217,7 @@
 
                             <div class="project-list" id="projectList">
                                 <div class="project-category">進行中 (3)</div>
+
                                 <div class="project-item active" data-project-id="1" data-year="2024"
                                     data-name="進行中梯次範例一" data-role="admin">
                                     <div class="project-item-info">
@@ -231,7 +232,113 @@
                                     </div>
                                     <span class="role-badge role-admin">系統管理員</span>
                                 </div>
-                                <!-- 其他專案項目省略，直接使用 JS 控制 -->
+
+                                <div class="project-item" data-project-id="2" data-year="2024" data-name="進行中梯次範例二"
+                                    data-role="reviewer">
+                                    <div class="project-item-info">
+                                        <div class="project-item-title">
+                                            <span class="status-indicator status-active"></span>
+                                            進行中梯次範例二
+                                        </div>
+                                        <div class="project-item-meta">
+                                            <span>2024年度</span>
+                                            <span>截止: 2024/11/15</span>
+                                        </div>
+                                    </div>
+                                    <span class="role-badge role-reviewer">審題委員</span>
+                                </div>
+
+                                <div class="project-item" data-project-id="3" data-year="2024" data-name="進行中梯次範例三"
+                                    data-role="teacher">
+                                    <div class="project-item-info">
+                                        <div class="project-item-title">
+                                            <span class="status-indicator status-active"></span>
+                                            進行中梯次範例三
+                                        </div>
+                                        <div class="project-item-meta">
+                                            <span>2024年度</span>
+                                            <span>截止: 2025/01/20</span>
+                                        </div>
+                                    </div>
+                                    <span class="role-badge role-teacher">命題教師</span>
+                                </div>
+
+                                <div class="project-category">已結束 (5)</div>
+
+                                <div class="project-item" data-project-id="4" data-year="2023" data-name="已結束梯次範例一"
+                                    data-role="admin">
+                                    <div class="project-item-info">
+                                        <div class="project-item-title">
+                                            <span class="status-indicator status-finished"></span>
+                                            已結束梯次範例一
+                                        </div>
+                                        <div class="project-item-meta">
+                                            <span>2023年度</span>
+                                            <span>已結束</span>
+                                        </div>
+                                    </div>
+                                    <span class="role-badge role-admin">系統管理員</span>
+                                </div>
+
+                                <div class="project-item" data-project-id="5" data-year="2023" data-name="已結束梯次範例二"
+                                    data-role="teacher">
+                                    <div class="project-item-info">
+                                        <div class="project-item-title">
+                                            <span class="status-indicator status-finished"></span>
+                                            已結束梯次範例二
+                                        </div>
+                                        <div class="project-item-meta">
+                                            <span>2023年度</span>
+                                            <span>已結束</span>
+                                        </div>
+                                    </div>
+                                    <span class="role-badge role-teacher">命題教師</span>
+                                </div>
+
+                                <div class="project-item" data-project-id="6" data-year="2023" data-name="已結束梯次範例三"
+                                    data-role="reviewer">
+                                    <div class="project-item-info">
+                                        <div class="project-item-title">
+                                            <span class="status-indicator status-finished"></span>
+                                            已結束梯次範例三
+                                        </div>
+                                        <div class="project-item-meta">
+                                            <span>2023年度</span>
+                                            <span>已結束</span>
+                                        </div>
+                                    </div>
+                                    <span class="role-badge role-reviewer">審題委員</span>
+                                </div>
+
+                                <div class="project-item" data-project-id="7" data-year="2022" data-name="已結束梯次範例四"
+                                    data-role="teacher">
+                                    <div class="project-item-info">
+                                        <div class="project-item-title">
+                                            <span class="status-indicator status-finished"></span>
+                                            已結束梯次範例四
+                                        </div>
+                                        <div class="project-item-meta">
+                                            <span>2022年度</span>
+                                            <span>已結束</span>
+                                        </div>
+                                    </div>
+                                    <span class="role-badge role-teacher">命題教師</span>
+                                </div>
+
+                                <div class="project-item" data-project-id="8" data-year="2022" data-name="已結束梯次範例五"
+                                    data-role="teacher">
+                                    <div class="project-item-info">
+                                        <div class="project-item-title">
+                                            <span class="status-indicator status-finished"></span>
+                                            已結束梯次範例五
+                                        </div>
+                                        <div class="project-item-meta">
+                                            <span>2022年度</span>
+                                            <span>已結束</span>
+                                        </div>
+                                    </div>
+                                    <span class="role-badge role-teacher">命題教師</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -564,11 +671,11 @@
                 [{ 'header': [1, 2, 3, 4, 5, 6, false] }],      // 標題
                 [{
                     'font': [false, // 預設字體
-                        'microsoft-jhenghei',
-                        'kaiu',
-                        'times-new-roman',
-                        'arial',
-                        'comic-sans-ms'
+                        'microsoft-jhenghei',   //微軟正黑體
+                        'kaiu',                 //標楷體
+                        'times-new-roman',      //Times New Roman
+                        'arial',                //Arial
+                        'comic-sans-ms'         //Comic Sans
                     ]
                 }],                                 // 字體
                 [{ 'color': [] }, { 'background': [] }],          // 文字顏色、背景顏色
