@@ -1,944 +1,797 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>各校梯次管理儀表板 - CWT 命題工作平臺</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="style.css" />
 
-    <link
-      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <style>
-      :root {
-        --primary-blue: #2563eb;
-        --bg-color: #f3f4f6;
-        --text-dark: #1f2937;
-        --text-gray: #6b7280;
-        --border-color: #e5e7eb;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>各校梯次管理儀表板 - CWT 命題工作平臺</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
 
-      body {
-        font-family: "Noto Sans TC", sans-serif;
-        background-color: var(--bg-color);
-        color: var(--text-dark);
-        height: 100vh;
-        display: flex;
-        flex-direction: column;
-        overflow-x: hidden;
-      }
-      /* =========================================
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <style>
+    :root {
+      --primary-blue: #2563eb;
+      --bg-color: #f3f4f6;
+      --text-dark: #1f2937;
+      --text-gray: #6b7280;
+      --border-color: #e5e7eb;
+    }
+
+    body {
+      font-family: "Noto Sans TC", sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-dark);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* =========================================
          儀錶板內容樣式
          ========================================= */
-      .main-content {
-        padding: 1.5rem 0;
-        flex-grow: 1;
-      }
-      .dashboard-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #111827;
-        margin-bottom: 1rem;
-      }
+    .main-content {
+      padding: 1.5rem 0;
+      flex-grow: 1;
+    }
 
-      .info-strip {
-        background: white;
-        border-radius: 10px;
-        padding: 0.75rem 1.5rem;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-        border: 1px solid var(--border-color);
-        margin-bottom: 1.5rem;
-        flex-wrap: wrap;
-        gap: 1rem;
-      }
-      .info-items {
-        display: flex;
-        gap: 2rem;
-        flex-wrap: wrap;
-        font-size: 0.95rem;
-        font-weight: 600;
-        color: #374151;
-      }
-      .info-label {
-        color: #6b7280;
-        margin-right: 0.25rem;
-      }
-      .status-tag-large {
-        background-color: #2563eb;
-        color: white;
-        padding: 0.4rem 1.25rem;
-        border-radius: 6px;
-        font-weight: 600;
-      }
+    .dashboard-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 1rem;
+    }
 
-      .dash-card {
-        background: white;
-        border-radius: 12px;
-        padding: 1.25rem;
-        height: 100%;
-        border: 1px solid var(--border-color);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
-        display: flex;
-        flex-direction: column;
-      }
-      .dash-card-header {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        margin-bottom: 1rem;
-        color: #374151;
-        font-weight: 700;
-        font-size: 1.05rem;
-      }
-      .dash-card-header svg {
-        color: #2563eb;
-      }
-      .card-alert-warning {
-        background-color: #fff7ed;
-        border: 1px solid #fdba74;
-      }
-      .card-alert-warning .dash-card-header svg {
-        color: #c2410c;
-      }
-      .warning-text {
-        color: #ea580c;
-        font-weight: 700;
-        font-size: 1.5rem;
-      }
+    .info-strip {
+      background: white;
+      border-radius: 10px;
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      border: 1px solid var(--border-color);
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
 
-      /* [修改] 圓餅圖容器樣式 - 適配 Chart.js */
-      .progress-donut-container {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 1rem;
-        margin-top: 0.5rem;
-      }
+    .info-items {
+      display: flex;
+      gap: 2rem;
+      flex-wrap: wrap;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #374151;
+    }
 
-      /* Chart.js 專用 wrapper，用來控制大小 */
-      .chart-wrapper {
-        position: relative;
-        width: 80px;
-        height: 80px;
-      }
+    .info-label {
+      color: #6b7280;
+      margin-right: 0.25rem;
+    }
 
-      /* 絕對定位中間的文字 */
-      .chart-center-text {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-weight: 700;
-        color: #111827;
-        font-size: 1.1rem;
-        pointer-events: none; /* 讓滑鼠事件穿透文字，才能顯示圖表的 tooltip */
-      }
+    .status-tag-large {
+      background-color: #2563eb;
+      color: white;
+      padding: 0.4rem 1.25rem;
+      border-radius: 6px;
+      font-weight: 600;
+    }
 
-      .progress-text-side {
-        text-align: left;
-      }
-      .progress-big-num {
-        font-size: 1.75rem;
-        font-weight: 700;
-        color: #111827;
-        line-height: 1;
-      }
-      .progress-sub-text {
-        font-size: 0.85rem;
-        color: #6b7280;
-      }
+    .dash-card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.25rem;
+      height: 100%;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+      display: flex;
+      flex-direction: column;
+    }
 
-      .stat-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem 1rem;
-      }
-      .stat-list li {
-        width: 45%;
-        font-size: 0.9rem;
-        color: #4b5563;
-        font-weight: 500;
-        margin-bottom: 0.25rem;
-      }
-      .stat-list.single-col li {
-        width: 100%;
-        margin-bottom: 0.5rem;
-      }
-      .risk-text {
-        color: #dc2626;
-        font-weight: 500;
-        font-size: 0.9rem;
-        line-height: 1.5;
-      }
+    .dash-card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      color: #374151;
+      font-weight: 700;
+      font-size: 1.05rem;
+    }
 
-      .section-header {
-        font-weight: 700;
-        font-size: 1.1rem;
-        color: #111827;
-        margin-bottom: 0.75rem;
-        margin-top: 0.5rem;
-      }
-      .custom-table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-      }
-      .custom-table th {
-        background-color: #f3f4f6;
-        color: #4b5563;
-        font-weight: 600;
-        font-size: 0.9rem;
-        padding: 0.75rem 1rem;
-        border-bottom: 2px solid #e5e7eb;
-      }
-      .custom-table td {
-        padding: 0.75rem 1rem;
-        vertical-align: middle;
-        border-bottom: 1px solid #f3f4f6;
-        color: #374151;
-        font-size: 0.95rem;
-      }
+    .dash-card-header svg {
+      color: #2563eb;
+    }
 
-      .icon-check {
-        color: #10b981;
-      }
-      .icon-cross {
-        color: #ef4444;
-      }
-      .text-gap-negative {
-        color: #ef4444;
-        font-weight: 600;
-      }
-      .link-blue {
-        color: #2563eb;
-        text-decoration: none;
-        font-weight: 500;
-      }
+    .card-alert-warning {
+      background-color: #fff7ed;
+      border: 1px solid #fdba74;
+    }
 
-      .badge-event {
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-size: 0.8rem;
-        font-weight: 600;
-      }
-      .badge-event-blue {
-        background: #eff6ff;
-        color: #1e40af;
-      }
-      .badge-event-purple {
-        background: #f3e8ff;
-        color: #6b21a8;
-      }
-      .badge-event-gray {
-        background: #f3f4f6;
-        color: #4b5563;
-      }
-    </style>
-  </head>
-  <body>
-    <nav class="top-navbar">
-      <div class="container-fluid px-4">
-        <div class="row align-items-center">
-          <div class="col-3">
-            <a href="index.html" class="navbar-brand">
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
+    .card-alert-warning .dash-card-header svg {
+      color: #c2410c;
+    }
+
+    .warning-text {
+      color: #ea580c;
+      font-weight: 700;
+      font-size: 1.5rem;
+    }
+
+    /* [修改] 圓餅圖容器樣式 - 適配 Chart.js */
+    .progress-donut-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 0.5rem;
+    }
+
+    /* Chart.js 專用 wrapper，用來控制大小 */
+    .chart-wrapper {
+      position: relative;
+      width: 80px;
+      height: 80px;
+    }
+
+    /* 絕對定位中間的文字 */
+    .chart-center-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-weight: 700;
+      color: #111827;
+      font-size: 1.1rem;
+      pointer-events: none;
+      /* 讓滑鼠事件穿透文字，才能顯示圖表的 tooltip */
+    }
+
+    .progress-text-side {
+      text-align: left;
+    }
+
+    .progress-big-num {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #111827;
+      line-height: 1;
+    }
+
+    .progress-sub-text {
+      font-size: 0.85rem;
+      color: #6b7280;
+    }
+
+    .stat-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1rem;
+    }
+
+    .stat-list li {
+      width: 45%;
+      font-size: 0.9rem;
+      color: #4b5563;
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-list.single-col li {
+      width: 100%;
+      margin-bottom: 0.5rem;
+    }
+
+    .risk-text {
+      color: #dc2626;
+      font-weight: 500;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .section-header {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: #111827;
+      margin-bottom: 0.75rem;
+      margin-top: 0.5rem;
+    }
+
+    .custom-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+
+    .custom-table th {
+      background-color: #f3f4f6;
+      color: #4b5563;
+      font-weight: 600;
+      font-size: 0.9rem;
+      padding: 0.75rem 1rem;
+      border-bottom: 2px solid #e5e7eb;
+    }
+
+    .custom-table td {
+      padding: 0.75rem 1rem;
+      vertical-align: middle;
+      border-bottom: 1px solid #f3f4f6;
+      color: #374151;
+      font-size: 0.95rem;
+    }
+
+    .icon-check {
+      color: #10b981;
+    }
+
+    .icon-cross {
+      color: #ef4444;
+    }
+
+    .text-gap-negative {
+      color: #ef4444;
+      font-weight: 600;
+    }
+
+    .link-blue {
+      color: #2563eb;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .badge-event {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .badge-event-blue {
+      background: #eff6ff;
+      color: #1e40af;
+    }
+
+    .badge-event-purple {
+      background: #f3e8ff;
+      color: #6b21a8;
+    }
+
+    .badge-event-gray {
+      background: #f3f4f6;
+      color: #4b5563;
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="top-navbar">
+    <div class="container-fluid px-4">
+      <div class="row align-items-center">
+        <div class="col-3">
+          <a href="firstpage.html" class="navbar-brand">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+            </svg>
+            CWT 命題工作平臺
+          </a>
+        </div>
+
+        <!-- 中間：專案切換器 -->
+        <div class="col-6 d-flex justify-content-center">
+          <div class="project-switcher">
+            <div class="project-display" id="projectToggle">
+              <div class="project-info">
+                <div class="project-year" id="currentProjectYear">
+                  2024年度
+                </div>
+                <div class="project-name" id="currentProjectName">
+                  進行中梯次範例一
+                </div>
+              </div>
+              <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                 <path
-                  d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
-                />
+                  d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z" />
               </svg>
-              CWT 命題工作平臺
-            </a>
-          </div>
+            </div>
 
-          <!-- 中間：專案切換器 -->
-          <div class="col-6 d-flex justify-content-center">
-            <div class="project-switcher">
-              <div class="project-display" id="projectToggle">
-                <div class="project-info">
-                  <div class="project-year" id="currentProjectYear">
-                    2024年度
-                  </div>
-                  <div class="project-name" id="currentProjectName">
-                    進行中梯次範例一
-                  </div>
-                </div>
-                <svg
-                  width="16"
-                  height="16"
-                  fill="currentColor"
-                  viewBox="0 0 16 16"
-                >
-                  <path
-                    d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"
-                  />
-                </svg>
+            <div class="project-dropdown" id="projectDropdown">
+              <div class="dropdown-header">
+                <span>切換專案</span>
+                <button class="close-btn" id="closeDropdown">
+                  <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path
+                      d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z" />
+                  </svg>
+                </button>
               </div>
 
-              <div class="project-dropdown" id="projectDropdown">
-                <div class="dropdown-header">
-                  <span>切換專案</span>
-                  <button class="close-btn" id="closeDropdown">
-                    <svg
-                      width="16"
-                      height="16"
-                      fill="currentColor"
-                      viewBox="0 0 16 16"
-                    >
-                      <path
-                        d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"
-                      />
-                    </svg>
-                  </button>
+              <div class="project-search">
+                <input type="text" placeholder="搜尋專案名稱..." id="projectSearchInput" />
+              </div>
+
+              <div class="project-list" id="projectList">
+                <div class="project-category">進行中 (3)</div>
+
+                <div class="project-item active" data-project-id="1" data-year="2024" data-name="進行中梯次範例一"
+                  data-role="admin">
+                  <div class="project-item-info">
+                    <div class="project-item-title">
+                      <span class="status-indicator status-active"></span>
+                      進行中梯次範例一
+                    </div>
+                    <div class="project-item-meta">
+                      <span>2024年度</span>
+                      <span>截止: 2024/12/31</span>
+                    </div>
+                  </div>
+                  <span class="role-badge role-admin">系統管理員</span>
                 </div>
 
-                <div class="project-search">
-                  <input
-                    type="text"
-                    placeholder="搜尋專案名稱..."
-                    id="projectSearchInput"
-                  />
+                <div class="project-item" data-project-id="2" data-year="2024" data-name="進行中梯次範例二"
+                  data-role="reviewer">
+                  <div class="project-item-info">
+                    <div class="project-item-title">
+                      <span class="status-indicator status-active"></span>
+                      進行中梯次範例二
+                    </div>
+                    <div class="project-item-meta">
+                      <span>2024年度</span>
+                      <span>截止: 2024/11/15</span>
+                    </div>
+                  </div>
+                  <span class="role-badge role-reviewer">審題委員</span>
                 </div>
 
-                <div class="project-list" id="projectList">
-                  <div class="project-category">進行中 (3)</div>
-
-                  <div
-                    class="project-item active"
-                    data-project-id="1"
-                    data-year="2024"
-                    data-name="進行中梯次範例一"
-                    data-role="admin"
-                  >
-                    <div class="project-item-info">
-                      <div class="project-item-title">
-                        <span class="status-indicator status-active"></span>
-                        進行中梯次範例一
-                      </div>
-                      <div class="project-item-meta">
-                        <span>2024年度</span>
-                        <span>截止: 2024/12/31</span>
-                      </div>
+                <div class="project-item" data-project-id="3" data-year="2024" data-name="進行中梯次範例三" data-role="teacher">
+                  <div class="project-item-info">
+                    <div class="project-item-title">
+                      <span class="status-indicator status-active"></span>
+                      進行中梯次範例三
                     </div>
-                    <span class="role-badge role-admin">系統管理員</span>
-                  </div>
-
-                  <div
-                    class="project-item"
-                    data-project-id="2"
-                    data-year="2024"
-                    data-name="進行中梯次範例二"
-                    data-role="reviewer"
-                  >
-                    <div class="project-item-info">
-                      <div class="project-item-title">
-                        <span class="status-indicator status-active"></span>
-                        進行中梯次範例二
-                      </div>
-                      <div class="project-item-meta">
-                        <span>2024年度</span>
-                        <span>截止: 2024/11/15</span>
-                      </div>
+                    <div class="project-item-meta">
+                      <span>2024年度</span>
+                      <span>截止: 2025/01/20</span>
                     </div>
-                    <span class="role-badge role-reviewer">審題委員</span>
                   </div>
-
-                  <div
-                    class="project-item"
-                    data-project-id="3"
-                    data-year="2024"
-                    data-name="進行中梯次範例三"
-                    data-role="teacher"
-                  >
-                    <div class="project-item-info">
-                      <div class="project-item-title">
-                        <span class="status-indicator status-active"></span>
-                        進行中梯次範例三
-                      </div>
-                      <div class="project-item-meta">
-                        <span>2024年度</span>
-                        <span>截止: 2025/01/20</span>
-                      </div>
-                    </div>
-                    <span class="role-badge role-teacher">命題教師</span>
-                  </div>
-
-                  <div class="project-category">已結束 (5)</div>
-
-                  <div
-                    class="project-item"
-                    data-project-id="4"
-                    data-year="2023"
-                    data-name="已結束梯次範例一"
-                    data-role="admin"
-                  >
-                    <div class="project-item-info">
-                      <div class="project-item-title">
-                        <span class="status-indicator status-finished"></span>
-                        已結束梯次範例一
-                      </div>
-                      <div class="project-item-meta">
-                        <span>2023年度</span>
-                        <span>已結束</span>
-                      </div>
-                    </div>
-                    <span class="role-badge role-admin">系統管理員</span>
-                  </div>
-
-                  <div
-                    class="project-item"
-                    data-project-id="5"
-                    data-year="2023"
-                    data-name="已結束梯次範例二"
-                    data-role="teacher"
-                  >
-                    <div class="project-item-info">
-                      <div class="project-item-title">
-                        <span class="status-indicator status-finished"></span>
-                        已結束梯次範例二
-                      </div>
-                      <div class="project-item-meta">
-                        <span>2023年度</span>
-                        <span>已結束</span>
-                      </div>
-                    </div>
-                    <span class="role-badge role-teacher">命題教師</span>
-                  </div>
-
-                  <div
-                    class="project-item"
-                    data-project-id="6"
-                    data-year="2023"
-                    data-name="已結束梯次範例三"
-                    data-role="reviewer"
-                  >
-                    <div class="project-item-info">
-                      <div class="project-item-title">
-                        <span class="status-indicator status-finished"></span>
-                        已結束梯次範例三
-                      </div>
-                      <div class="project-item-meta">
-                        <span>2023年度</span>
-                        <span>已結束</span>
-                      </div>
-                    </div>
-                    <span class="role-badge role-reviewer">審題委員</span>
-                  </div>
-
-                  <div
-                    class="project-item"
-                    data-project-id="7"
-                    data-year="2022"
-                    data-name="已結束梯次範例四"
-                    data-role="teacher"
-                  >
-                    <div class="project-item-info">
-                      <div class="project-item-title">
-                        <span class="status-indicator status-finished"></span>
-                        已結束梯次範例四
-                      </div>
-                      <div class="project-item-meta">
-                        <span>2022年度</span>
-                        <span>已結束</span>
-                      </div>
-                    </div>
-                    <span class="role-badge role-teacher">命題教師</span>
-                  </div>
-
-                  <div
-                    class="project-item"
-                    data-project-id="8"
-                    data-year="2022"
-                    data-name="已結束梯次範例五"
-                    data-role="teacher"
-                  >
-                    <div class="project-item-info">
-                      <div class="project-item-title">
-                        <span class="status-indicator status-finished"></span>
-                        已結束梯次範例五
-                      </div>
-                      <div class="project-item-meta">
-                        <span>2022年度</span>
-                        <span>已結束</span>
-                      </div>
-                    </div>
-                    <span class="role-badge role-teacher">命題教師</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 右側：使用者資訊 -->
-          <div class="col-3">
-            <div class="user-section">
-              <div class="user-info">
-                <div class="user-avatar">沈</div>
-                <span class="user-name">沈雅茹</span>
-                <span class="role-badge role-admin" id="currentUserRole"
-                  >系統管理員</span
-                >
-              </div>
-              <a
-                href="index.html"
-                class="btn btn-sm btn-light fw-bold text-primary px-3"
-                >登出</a
-              >
-            </div>
-          </div>
-        </div>
-      </div>
-    </nav>
-
-    <div class="breadcrumb-bar">
-      <div class="container-fluid px-4">
-        <a href="firstpage.html" class="breadcrumb-item-link">首頁</a>
-        <span class="breadcrumb-separator">
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="3"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
-        </span>
-        <span class="breadcrumb-current">命題儀錶板</span>
-      </div>
-    </div>
-
-    <div class="main-content">
-      <div class="container-fluid px-4">
-        <h1 class="dashboard-title">CWT 命題系統—梯次管理儀表板</h1>
-
-        <div class="info-strip">
-          <div class="info-items">
-            <div><span class="info-label">年度：</span>2024</div>
-            <div>
-              <span class="info-label">梯次名稱：</span>進行中梯次範例一
-            </div>
-            <div><span class="info-label">梯次代碼：</span>CWT-2024</div>
-          </div>
-          <div class="status-tag-large">命題中</div>
-        </div>
-
-        <div class="row g-3 mb-4">
-          <div class="col-lg-3 col-xl-2 col-md-6">
-            <div class="dash-card">
-              <div class="dash-card-header">
-                <svg
-                  width="20"
-                  height="20"
-                  fill="currentColor"
-                  viewBox="0 0 16 16"
-                >
-                  <path
-                    d="M4 11a1 1 0 1 1 2 0v1a1 1 0 1 1-2 0v-1zm6-4a1 1 0 1 1 2 0v5a1 1 0 1 1-2 0V7zM7 9a1 1 0 0 1 2 0v3a1 1 0 1 1-2 0V9z"
-                  />
-                  <path
-                    d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"
-                  />
-                  <path
-                    d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"
-                  />
-                </svg>
-                命題進度
-              </div>
-              <div class="text-secondary small mb-2">
-                已完成題數 / 應繳題數 : 130 / 200
-              </div>
-
-              <div class="progress-donut-container">
-                <div class="chart-wrapper">
-                  <canvas id="progressDonut"></canvas>
-                  <div class="chart-center-text">65%</div>
+                  <span class="role-badge role-teacher">命題教師</span>
                 </div>
 
-                <div class="progress-text-side">
-                  <div class="progress-big-num">65%</div>
-                  <div class="progress-sub-text">完成率</div>
+                <div class="project-category">已結束 (5)</div>
+
+                <div class="project-item" data-project-id="4" data-year="2023" data-name="已結束梯次範例一" data-role="admin">
+                  <div class="project-item-info">
+                    <div class="project-item-title">
+                      <span class="status-indicator status-finished"></span>
+                      已結束梯次範例一
+                    </div>
+                    <div class="project-item-meta">
+                      <span>2023年度</span>
+                      <span>已結束</span>
+                    </div>
+                  </div>
+                  <span class="role-badge role-admin">系統管理員</span>
                 </div>
-              </div>
-            </div>
-          </div>
 
-          <div class="col-lg-3 col-xl-2 col-md-6">
-            <div class="dash-card">
-              <div class="dash-card-header">
-                <svg
-                  width="20"
-                  height="20"
-                  fill="currentColor"
-                  viewBox="0 0 16 16"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M2 12.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm0-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm0-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"
-                  />
-                </svg>
-                題型概況
-              </div>
-              <ul class="stat-list">
-                <li>一般題：80</li>
-                <li>短文題：15</li>
-                <li>閱讀題：30</li>
-                <li>長文寫作：5</li>
-                <li>短文寫作：15</li>
-              </ul>
-            </div>
-          </div>
-
-          <div class="col-lg-3 col-xl-2 col-md-6">
-            <div class="dash-card card-alert-warning">
-              <div class="dash-card-header">
-                <svg
-                  width="20"
-                  height="20"
-                  fill="currentColor"
-                  viewBox="0 0 16 16"
-                >
-                  <path
-                    d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"
-                  />
-                </svg>
-                逾期警示
-              </div>
-              <div class="mt-2 mb-3">
-                <div style="font-size: 0.9rem; color: #9a3412">
-                  距離截止剩餘天數：
+                <div class="project-item" data-project-id="5" data-year="2023" data-name="已結束梯次範例二" data-role="teacher">
+                  <div class="project-item-info">
+                    <div class="project-item-title">
+                      <span class="status-indicator status-finished"></span>
+                      已結束梯次範例二
+                    </div>
+                    <div class="project-item-meta">
+                      <span>2023年度</span>
+                      <span>已結束</span>
+                    </div>
+                  </div>
+                  <span class="role-badge role-teacher">命題教師</span>
                 </div>
-                <div class="warning-text" style="font-size: 1.5rem">15 天</div>
-              </div>
-              <div style="font-size: 0.85rem; color: #9a3412">
-                截止日：2024-05-15
-              </div>
-            </div>
-          </div>
 
-          <div class="col-lg-3 col-xl-2 col-md-6">
-            <div class="dash-card">
-              <div class="dash-card-header">
-                <svg
-                  width="20"
-                  height="20"
-                  fill="currentColor"
-                  viewBox="0 0 16 16"
-                >
-                  <path
-                    d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0z"
-                  />
-                  <path
-                    d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"
-                  />
-                  <path
-                    d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"
-                  />
-                </svg>
-                審題情形
-              </div>
-              <ul class="stat-list single-col">
-                <li>採用：100</li>
-                <li>不採用：10</li>
-                <li>改後採用：20</li>
-              </ul>
-            </div>
-          </div>
-
-          <div class="col-lg-12 col-xl-4 col-md-12">
-            <div class="dash-card">
-              <div class="dash-card-header">
-                <svg width="20" height="20" fill="#2563eb" viewBox="0 0 16 16">
-                  <path
-                    d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"
-                  />
-                </svg>
-                風險警示
-              </div>
-              <div class="risk-text">題型缺口提醒：長文寫作仍缺 20 題</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="row g-3 mb-4">
-          <div class="col-lg-8">
-            <div class="dash-card p-0 overflow-hidden">
-              <div class="p-3 bg-white border-bottom">
-                <h5 class="section-header m-0">命題題數對照表</h5>
-              </div>
-              <div class="table-responsive">
-                <table class="custom-table">
-                  <thead>
-                    <tr>
-                      <th>題型別</th>
-                      <th>應繳題數</th>
-                      <th>Min / Max 規範</th>
-                      <th>完成進度</th>
-                      <th>缺口 (扣分顯示)</th>
-                      <th class="text-center">狀態</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>一般題</td>
-                      <td>100</td>
-                      <td>90-110</td>
-                      <td>
-                        <div class="d-flex align-items-center">
-                          <span style="width: 60px; font-size: 0.9rem"
-                            >80/100</span
-                          >
-                          <div
-                            class="progress flex-grow-1"
-                            style="
-                              height: 10px;
-                              max-width: 120px;
-                              background-color: #eff6ff;
-                            "
-                          >
-                            <div
-                              class="progress-bar bg-primary"
-                              role="progressbar"
-                              style="width: 80%"
-                            ></div>
-                          </div>
-                          <span class="ms-2 text-primary small fw-bold"
-                            >80%</span
-                          >
-                        </div>
-                      </td>
-                      <td class="text-gap-negative">-20</td>
-                      <td class="text-center">
-                        <svg
-                          class="icon-check"
-                          width="20"
-                          height="20"
-                          fill="currentColor"
-                          viewBox="0 0 16 16"
-                        >
-                          <path
-                            d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z"
-                          />
-                        </svg>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>閱讀題</td>
-                      <td>50</td>
-                      <td>45-55</td>
-                      <td>
-                        <div class="d-flex align-items-center">
-                          <span style="width: 60px; font-size: 0.9rem"
-                            >30/50</span
-                          >
-                          <div
-                            class="progress flex-grow-1"
-                            style="
-                              height: 10px;
-                              max-width: 120px;
-                              background-color: #eff6ff;
-                            "
-                          >
-                            <div
-                              class="progress-bar bg-primary"
-                              role="progressbar"
-                              style="width: 60%"
-                            ></div>
-                          </div>
-                          <span class="ms-2 text-primary small fw-bold"
-                            >60%</span
-                          >
-                        </div>
-                      </td>
-                      <td class="text-gap-negative">-20</td>
-                      <td class="text-center">
-                        <svg
-                          class="icon-check"
-                          width="20"
-                          height="20"
-                          fill="currentColor"
-                          viewBox="0 0 16 16"
-                        >
-                          <path
-                            d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z"
-                          />
-                        </svg>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>長文寫作</td>
-                      <td>25</td>
-                      <td>20-30</td>
-                      <td>
-                        <div class="d-flex align-items-center">
-                          <span style="width: 60px; font-size: 0.9rem"
-                            >5/25</span
-                          >
-                          <div
-                            class="progress flex-grow-1"
-                            style="
-                              height: 10px;
-                              max-width: 120px;
-                              background-color: #eff6ff;
-                            "
-                          >
-                            <div
-                              class="progress-bar bg-primary"
-                              role="progressbar"
-                              style="width: 20%"
-                            ></div>
-                          </div>
-                          <span class="ms-2 text-primary small fw-bold"
-                            >20%</span
-                          >
-                        </div>
-                      </td>
-                      <td class="text-gap-negative">-20</td>
-                      <td class="text-center">
-                        <svg
-                          class="icon-cross"
-                          width="20"
-                          height="20"
-                          fill="currentColor"
-                          viewBox="0 0 16 16"
-                        >
-                          <path
-                            d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"
-                          />
-                        </svg>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-lg-4">
-            <div class="dash-card">
-              <h5 class="section-header">異常與例外紀錄</h5>
-              <div class="mt-2">
-                <div class="mb-3">
-                  <span class="fw-bold text-dark">延期原因：</span>
-                  <span class="text-secondary">命題老師身體不適</span>
-                  <a href="#" class="link-blue ms-1">(查看詳情)</a>
+                <div class="project-item" data-project-id="6" data-year="2023" data-name="已結束梯次範例三"
+                  data-role="reviewer">
+                  <div class="project-item-info">
+                    <div class="project-item-title">
+                      <span class="status-indicator status-finished"></span>
+                      已結束梯次範例三
+                    </div>
+                    <div class="project-item-meta">
+                      <span>2023年度</span>
+                      <span>已結束</span>
+                    </div>
+                  </div>
+                  <span class="role-badge role-reviewer">審題委員</span>
                 </div>
-                <div class="p-3 bg-light rounded-3 border">
-                  已核准的例外放行項目：<br />
-                  <span class="fw-bold text-dark"
-                    >2 件閱讀題延期申請已核准</span
-                  >
+
+                <div class="project-item" data-project-id="7" data-year="2022" data-name="已結束梯次範例四" data-role="teacher">
+                  <div class="project-item-info">
+                    <div class="project-item-title">
+                      <span class="status-indicator status-finished"></span>
+                      已結束梯次範例四
+                    </div>
+                    <div class="project-item-meta">
+                      <span>2022年度</span>
+                      <span>已結束</span>
+                    </div>
+                  </div>
+                  <span class="role-badge role-teacher">命題教師</span>
+                </div>
+
+                <div class="project-item" data-project-id="8" data-year="2022" data-name="已結束梯次範例五" data-role="teacher">
+                  <div class="project-item-info">
+                    <div class="project-item-title">
+                      <span class="status-indicator status-finished"></span>
+                      已結束梯次範例五
+                    </div>
+                    <div class="project-item-meta">
+                      <span>2022年度</span>
+                      <span>已結束</span>
+                    </div>
+                  </div>
+                  <span class="role-badge role-teacher">命題教師</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="dash-card p-0 overflow-hidden mb-4">
-          <div class="p-3 bg-white border-bottom">
-            <h5 class="section-header m-0">稽核歷程</h5>
-          </div>
-          <div class="table-responsive">
-            <table class="custom-table table-hover">
-              <thead>
-                <tr>
-                  <th style="width: 15%">事件類型</th>
-                  <th style="width: 15%">操作者</th>
-                  <th style="width: 20%">操作時間</th>
-                  <th>變更摘要</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>
-                    <span class="badge-event badge-event-blue">題數異動</span>
-                  </td>
-                  <td>王小明</td>
-                  <td>2024-04-25 10:30</td>
-                  <td>更新一般題題數設定</td>
-                </tr>
-                <tr>
-                  <td>
-                    <span class="badge-event badge-event-purple">角色調整</span>
-                  </td>
-                  <td>李大華</td>
-                  <td>2024-04-25 11:15</td>
-                  <td>調整審題委員權限</td>
-                </tr>
-                <tr>
-                  <td>
-                    <span class="badge-event badge-event-gray">狀態變更</span>
-                  </td>
-                  <td>沈雅茹</td>
-                  <td>2024-04-26 00:00</td>
-                  <td>梯次狀態變更為命題中</td>
-                </tr>
-              </tbody>
-            </table>
+        <!-- 右側：使用者資訊 -->
+        <div class="col-3">
+          <div class="user-section">
+            <div class="user-info">
+              <div class="user-avatar">沈</div>
+              <span class="user-name">沈雅茹</span>
+              <span class="role-badge role-admin" id="currentUserRole">系統管理員</span>
+            </div>
+            <a href="index.html" class="btn btn-sm btn-light fw-bold text-primary px-3">登出</a>
           </div>
         </div>
       </div>
     </div>
+  </nav>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-      // 初始化 Chart.js 圓環圖
-      document.addEventListener("DOMContentLoaded", function () {
-        const ctx = document.getElementById("progressDonut").getContext("2d");
-        new Chart(ctx, {
-          type: "doughnut",
-          data: {
-            labels: ["已完成", "未完成"],
-            datasets: [
-              {
-                data: [130, 70], // 130 + 70 = 200
-                backgroundColor: [
-                  "#3b82f6", // 藍色 (已完成)
-                  "#e5e7eb", // 灰色 (未完成)
-                ],
-                borderWidth: 0,
-                hoverOffset: 4,
-              },
-            ],
-          },
-          options: {
-            cutout: "75%", // 設定圓環的粗細，數值越大越細
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                display: false, // 隱藏圖例，因為 UI 上已經有文字說明
-              },
-              tooltip: {
-                enabled: true, // 保留 tooltip 功能
-              },
+  <div class="breadcrumb-bar">
+    <div class="container-fluid px-4">
+      <a href="firstpage.html" class="breadcrumb-item-link">首頁</a>
+      <span class="breadcrumb-separator">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+          stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </span>
+      <span class="breadcrumb-current">命題儀錶板</span>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <div class="container-fluid px-4">
+      <h1 class="dashboard-title">CWT 命題系統—梯次管理儀表板</h1>
+
+      <div class="info-strip">
+        <div class="info-items">
+          <div><span class="info-label">年度：</span>2024</div>
+          <div>
+            <span class="info-label">梯次名稱：</span>進行中梯次範例一
+          </div>
+          <div><span class="info-label">梯次代碼：</span>CWT-2024</div>
+        </div>
+        <div class="status-tag-large">命題中</div>
+      </div>
+
+      <div class="row g-3 mb-4">
+        <div class="col-lg-3 col-xl-2 col-md-6">
+          <div class="dash-card">
+            <div class="dash-card-header">
+              <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                <path
+                  d="M4 11a1 1 0 1 1 2 0v1a1 1 0 1 1-2 0v-1zm6-4a1 1 0 1 1 2 0v5a1 1 0 1 1-2 0V7zM7 9a1 1 0 0 1 2 0v3a1 1 0 1 1-2 0V9z" />
+                <path
+                  d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z" />
+                <path
+                  d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z" />
+              </svg>
+              命題進度
+            </div>
+            <div class="text-secondary small mb-2">
+              已完成題數 / 應繳題數 : 130 / 200
+            </div>
+
+            <div class="progress-donut-container">
+              <div class="chart-wrapper">
+                <canvas id="progressDonut"></canvas>
+                <div class="chart-center-text">65%</div>
+              </div>
+
+              <div class="progress-text-side">
+                <div class="progress-big-num">65%</div>
+                <div class="progress-sub-text">完成率</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-xl-2 col-md-6">
+          <div class="dash-card">
+            <div class="dash-card-header">
+              <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                <path fill-rule="evenodd"
+                  d="M2 12.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm0-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm0-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z" />
+              </svg>
+              題型概況
+            </div>
+            <ul class="stat-list">
+              <li>一般題：80</li>
+              <li>短文題：15</li>
+              <li>閱讀題：30</li>
+              <li>長文寫作：5</li>
+              <li>短文寫作：15</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-xl-2 col-md-6">
+          <div class="dash-card card-alert-warning">
+            <div class="dash-card-header">
+              <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                <path
+                  d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
+              </svg>
+              逾期警示
+            </div>
+            <div class="mt-2 mb-3">
+              <div style="font-size: 0.9rem; color: #9a3412">
+                距離截止剩餘天數：
+              </div>
+              <div class="warning-text" style="font-size: 1.5rem">15 天</div>
+            </div>
+            <div style="font-size: 0.85rem; color: #9a3412">
+              截止日：2024-05-15
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-xl-2 col-md-6">
+          <div class="dash-card">
+            <div class="dash-card-header">
+              <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                <path
+                  d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0z" />
+                <path
+                  d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z" />
+                <path
+                  d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z" />
+              </svg>
+              審題情形
+            </div>
+            <ul class="stat-list single-col">
+              <li>採用：100</li>
+              <li>不採用：10</li>
+              <li>改後採用：20</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="col-lg-12 col-xl-4 col-md-12">
+          <div class="dash-card">
+            <div class="dash-card-header">
+              <svg width="20" height="20" fill="#2563eb" viewBox="0 0 16 16">
+                <path
+                  d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
+              </svg>
+              風險警示
+            </div>
+            <div class="risk-text">題型缺口提醒：長文寫作仍缺 20 題</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-3 mb-4">
+        <div class="col-lg-8">
+          <div class="dash-card p-0 overflow-hidden">
+            <div class="p-3 bg-white border-bottom">
+              <h5 class="section-header m-0">命題題數對照表</h5>
+            </div>
+            <div class="table-responsive">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>題型別</th>
+                    <th>應繳題數</th>
+                    <th>Min / Max 規範</th>
+                    <th>完成進度</th>
+                    <th>缺口 (扣分顯示)</th>
+                    <th class="text-center">狀態</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>一般題</td>
+                    <td>100</td>
+                    <td>90-110</td>
+                    <td>
+                      <div class="d-flex align-items-center">
+                        <span style="width: 60px; font-size: 0.9rem">80/100</span>
+                        <div class="progress flex-grow-1" style="
+                              height: 10px;
+                              max-width: 120px;
+                              background-color: #eff6ff;
+                            ">
+                          <div class="progress-bar bg-primary" role="progressbar" style="width: 80%"></div>
+                        </div>
+                        <span class="ms-2 text-primary small fw-bold">80%</span>
+                      </div>
+                    </td>
+                    <td class="text-gap-negative">-20</td>
+                    <td class="text-center">
+                      <svg class="icon-check" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                        <path
+                          d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z" />
+                      </svg>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>閱讀題</td>
+                    <td>50</td>
+                    <td>45-55</td>
+                    <td>
+                      <div class="d-flex align-items-center">
+                        <span style="width: 60px; font-size: 0.9rem">30/50</span>
+                        <div class="progress flex-grow-1" style="
+                              height: 10px;
+                              max-width: 120px;
+                              background-color: #eff6ff;
+                            ">
+                          <div class="progress-bar bg-primary" role="progressbar" style="width: 60%"></div>
+                        </div>
+                        <span class="ms-2 text-primary small fw-bold">60%</span>
+                      </div>
+                    </td>
+                    <td class="text-gap-negative">-20</td>
+                    <td class="text-center">
+                      <svg class="icon-check" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                        <path
+                          d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z" />
+                      </svg>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>長文寫作</td>
+                    <td>25</td>
+                    <td>20-30</td>
+                    <td>
+                      <div class="d-flex align-items-center">
+                        <span style="width: 60px; font-size: 0.9rem">5/25</span>
+                        <div class="progress flex-grow-1" style="
+                              height: 10px;
+                              max-width: 120px;
+                              background-color: #eff6ff;
+                            ">
+                          <div class="progress-bar bg-primary" role="progressbar" style="width: 20%"></div>
+                        </div>
+                        <span class="ms-2 text-primary small fw-bold">20%</span>
+                      </div>
+                    </td>
+                    <td class="text-gap-negative">-20</td>
+                    <td class="text-center">
+                      <svg class="icon-cross" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                        <path
+                          d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z" />
+                      </svg>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-4">
+          <div class="dash-card">
+            <h5 class="section-header">異常與例外紀錄</h5>
+            <div class="mt-2">
+              <div class="mb-3">
+                <span class="fw-bold text-dark">延期原因：</span>
+                <span class="text-secondary">命題老師身體不適</span>
+                <a href="#" class="link-blue ms-1">(查看詳情)</a>
+              </div>
+              <div class="p-3 bg-light rounded-3 border">
+                已核准的例外放行項目：<br />
+                <span class="fw-bold text-dark">2 件閱讀題延期申請已核准</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-card p-0 overflow-hidden mb-4">
+        <div class="p-3 bg-white border-bottom">
+          <h5 class="section-header m-0">稽核歷程</h5>
+        </div>
+        <div class="table-responsive">
+          <table class="custom-table table-hover">
+            <thead>
+              <tr>
+                <th style="width: 15%">事件類型</th>
+                <th style="width: 15%">操作者</th>
+                <th style="width: 20%">操作時間</th>
+                <th>變更摘要</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <span class="badge-event badge-event-blue">題數異動</span>
+                </td>
+                <td>王小明</td>
+                <td>2024-04-25 10:30</td>
+                <td>更新一般題題數設定</td>
+              </tr>
+              <tr>
+                <td>
+                  <span class="badge-event badge-event-purple">角色調整</span>
+                </td>
+                <td>李大華</td>
+                <td>2024-04-25 11:15</td>
+                <td>調整審題委員權限</td>
+              </tr>
+              <tr>
+                <td>
+                  <span class="badge-event badge-event-gray">狀態變更</span>
+                </td>
+                <td>沈雅茹</td>
+                <td>2024-04-26 00:00</td>
+                <td>梯次狀態變更為命題中</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // 初始化 Chart.js 圓環圖
+    document.addEventListener("DOMContentLoaded", function () {
+      const ctx = document.getElementById("progressDonut").getContext("2d");
+      new Chart(ctx, {
+        type: "doughnut",
+        data: {
+          labels: ["已完成", "未完成"],
+          datasets: [
+            {
+              data: [130, 70], // 130 + 70 = 200
+              backgroundColor: [
+                "#3b82f6", // 藍色 (已完成)
+                "#e5e7eb", // 灰色 (未完成)
+              ],
+              borderWidth: 0,
+              hoverOffset: 4,
+            },
+          ],
+        },
+        options: {
+          cutout: "75%", // 設定圓環的粗細，數值越大越細
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false, // 隱藏圖例，因為 UI 上已經有文字說明
+            },
+            tooltip: {
+              enabled: true, // 保留 tooltip 功能
             },
           },
-        });
+        },
       });
-      
-    </script>
-    <script src="app.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  </body>
+    });
+
+  </script>
+  <script src="js/app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
+
 </html>
