@@ -6,8 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CWT 命題工作平臺</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="quill.snow.css">
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/quill.snow.css">
+  <link rel="stylesheet" href="css/sweetalert2.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
     rel="stylesheet" />
@@ -874,14 +875,22 @@
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body p-4">
-          <div
-            class="bg-light bg-opacity-50 p-3 rounded-3 mb-4 d-flex justify-content-between align-items-center border border-light">
-            <span class="badge bg-primary bg-gradient shadow-sm fs-6 fw-normal" id="viewModalCategory">
-              <i class="bi bi-tag-fill me-1"></i>分類 </span>
+          <div id="viewModalMetaBox"
+            class="p-3 rounded-3 mb-4 d-flex justify-content-between align-items-center shadow-sm"
+            style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-left: 5px solid #64748b;">
 
-            <div class="text-secondary small fw-medium">
-              <i class="bi bi-calendar3 me-1"></i>
-              <span id="viewModalDate">2026-01-20</span>
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge bg-danger shadow-sm fs-6 fw-normal d-none" id="viewModalPinned">
+                <i class="bi bi-pin-angle-fill me-1"></i>置頂
+              </span>
+              <span class="badge shadow-sm fs-6 fw-normal" id="viewModalCategory" style="background-color: #64748b;">
+                <i class="bi bi-tag-fill me-1"></i>分類
+              </span>
+            </div>
+
+            <div class="d-flex align-items-center text-secondary small fw-bold bg-white px-3 py-1 rounded-pill border">
+              <i class="bi bi-calendar3 me-2 text-primary"></i>
+              <span id="viewModalDate" style="letter-spacing: 0.5px;">2026-01-20</span>
             </div>
           </div>
 
@@ -898,6 +907,7 @@
   </div>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
+  <script src="js/sweetalert2.min.js"></script>
   <script src="js/app.js"></script>
   <script>
     const styleConfig = {
@@ -980,7 +990,15 @@
       scrollContainer.innerHTML = '';
 
       // 1. 取得並整理資料
-      const storedAnnouncements = JSON.parse(localStorage.getItem("cwt_announcements") || "[]");
+      let storedAnnouncements = [];
+      const stored = localStorage.getItem("cwt_announcements");
+
+      if (stored) {
+        storedAnnouncements = JSON.parse(stored);
+      } else {
+        // If no localStorage, try to use mockAnnouncements from app.js
+        storedAnnouncements = (typeof mockAnnouncements !== 'undefined') ? mockAnnouncements : [];
+      }
 
       // [新增] 綁定梯次過濾邏輯
       // 如果沒有傳入 projectId，嘗試從 localStorage 獲取
@@ -997,9 +1015,12 @@
           // 1. 如果公告是 'all' (全站通用)，則保留
           // 2. 如果公告指定的 boundProject 等於當前選中的 projectId，則保留
           // 注意：localStorage 存的可能是字串或數字，統一轉字串比對
-          if (a.boundProject && a.boundProject !== 'all') {
-            if (!projectId) return false; // 如果當前沒選專案，只顯示通用
-            return String(a.boundProject) === String(projectId);
+          let currentProjId = projectId ? String(projectId) : "";
+          let itemBound = a.boundProject ? String(a.boundProject) : "all";
+
+          if (itemBound !== 'all') {
+            if (!currentProjId) return false; // 如果當前沒選專案，只顯示通用
+            return itemBound === currentProjId;
           }
 
           return true; // default (all)
@@ -1051,7 +1072,15 @@
         scrollContainer.appendChild(spacer);
 
       } else {
-        scrollContainer.innerHTML = '<div class="text-center text-muted py-4">沒有更多公告</div>';
+        scrollContainer.innerHTML = `
+            <div class="d-flex flex-column align-items-center justify-content-center py-5 h-100 text-center opacity-75">
+                <div class="mb-3 position-relative">
+                    <div class="position-absolute top-50 start-50 translate-middle bg-secondary bg-opacity-10 rounded-circle" style="width: 60px; height: 60px;"></div>
+                    <i class="bi bi-bell-slash text-secondary position-relative" style="font-size: 2rem;"></i>
+                </div>
+                <h6 class="fw-bold text-secondary mb-1">目前沒有新公告</h6>
+            </div>
+        `;
       }
     }
 
@@ -1064,9 +1093,31 @@
       header.style.backgroundColor = style.color;
 
       const badge = document.getElementById('viewModalCategory');
-      badge.textContent = style.label;
+      badge.innerHTML = `<i class="bi ${style.icon} me-1"></i>${style.label}`;
       badge.style.backgroundColor = style.color;
       badge.style.color = '#fff';
+
+      // Pinned Badge Logic
+      const pinnedBadge = document.getElementById('viewModalPinned');
+      if (pinnedBadge) {
+        if (item.isPinned) {
+          pinnedBadge.classList.remove('d-none');
+        } else {
+          pinnedBadge.classList.add('d-none');
+        }
+      }
+
+      // [New] Dynamic Meta Box Styling
+      const metaBox = document.getElementById('viewModalMetaBox');
+      if (metaBox) {
+        // Set accent border color
+        metaBox.style.borderLeftColor = style.color;
+        // Optional: Set a very subtle tinted background
+        // Hex to RGBA conversion for 5% opacity background
+        // Simple way: stick to nice gray, just color the border.
+        // Or if you really want dynamic background:
+        // metaBox.style.backgroundColor = style.color + '0D'; // approx 5% alpha if hex
+      }
 
       new bootstrap.Modal(document.getElementById('viewAnnouncementModal')).show();
     }

@@ -50,6 +50,7 @@ window.optionToolbar = [
     [{ 'font': [false, 'microsoft-jhenghei', 'kaiu', 'times-new-roman', 'arial', 'comic-sans-ms'] }],
     [{ 'color': [] }, { 'background': [] }],          // 顏色 (重要！選項常需要標紅字)
     ['bold', 'italic', 'underline', 'strike'],
+    ['link', 'image'],
     [{ 'script': 'sub' }, { 'script': 'super' }],
     ['clean']
 ];
@@ -64,6 +65,14 @@ const mockProjects = [
     { id: 6, name: "已結束梯次範例三", year: 2023, role: "reviewer" },
     { id: 7, name: "已結束梯次範例四", year: 2022, role: "teacher" },
     { id: 8, name: "已結束梯次範例五", year: 2022, role: "teacher" },
+];
+
+// 模擬公告資料
+const mockAnnouncements = [
+    { id: 1, title: "113年度 命題規範更新說明", category: "命題公告", startDate: "2026-01-20", endDate: "", boundProject: "all", status: "published", content: "...", isPinned: true },
+    { id: 2, title: "試題審查重點提示", category: "審題公告", startDate: "2026-01-19", endDate: "2026-02-19", boundProject: "all", status: "published", content: "...", isPinned: false },
+    { id: 3, title: "系統維護公告", category: "系統公告", startDate: "2026-01-15", endDate: "2026-01-16", boundProject: "all", status: "offshelf", content: "...", isPinned: false },
+    { id: 4, title: "辦公室春節休假通知", category: "其他", startDate: "2026-01-10", endDate: "", boundProject: 1, status: "published", content: "...", isPinned: false },
 ];
 
 // 角色對照表
@@ -112,6 +121,7 @@ document.addEventListener("DOMContentLoaded", function () {
     initCheckboxLogic();    // 表格全選/反選
     initFilter();           // 表格篩選功能
     initTypeSwitcher();     // Modal 內的題型切換顯示
+    updateStats();          // [新增] 初始化統計數字
 });
 
 // ==========================================
@@ -306,7 +316,11 @@ window.saveProp = function (targetStatus) {
     const handler = TypeHandlers[type];
 
     if (!handler) {
-        alert('此題型尚未實作儲存邏輯');
+        Swal.fire({
+            icon: 'info',
+            title: '提示',
+            text: '此題型尚未實作儲存邏輯'
+        });
         return;
     }
 
@@ -329,55 +343,77 @@ window.saveProp = function (targetStatus) {
 
 // 刪除單行
 window.deleteRow = function (btn) {
-    if (confirm('確定要刪除此試題嗎？')) {
-        const row = btn.closest('tr');
-        row.remove();
-        checkEmptyState();
-        showToast('已刪除試題', 'error');
-    }
+    Swal.fire({
+        title: '確定要刪除此試題嗎？',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: '刪除',
+        cancelButtonText: '取消'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const row = btn.closest('tr');
+            row.remove();
+            checkEmptyState();
+            showToast('已刪除試題', 'error');
+        }
+    });
 }
 
 // 批次操作
 window.batchAction = function (action) {
     const checkedRows = document.querySelectorAll('tbody .data-row input[type="checkbox"]:checked');
     if (checkedRows.length === 0) {
-        alert('請先勾選試題');
+        Swal.fire({
+            icon: 'warning',
+            title: '提示',
+            text: '請先勾選試題'
+        });
         return;
     }
 
-    if (confirm(`確定要對選取的 ${checkedRows.length} 筆資料執行「${action}」嗎？`)) {
-        checkedRows.forEach(cb => {
-            const row = cb.closest('tr');
-            if (action === '刪除') {
-                row.remove();
-            } else {
-                // 更新狀態顯示
-                const badgeClass = getStatusClass(action);
-                // 注意：如果表格欄位有變動，這裡的 cells index 可能要確認一下
-                // 假設狀態欄位是第 5 欄 (Index 4)
-                if (row.cells[4]) {
-                    row.cells[4].innerHTML = `<span class="badge-outline badge-${badgeClass}">${action}</span>`;
+    Swal.fire({
+        title: `確定要對選取的 ${checkedRows.length} 筆資料執行「${action}」嗎？`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: '確定',
+        cancelButtonText: '取消'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            checkedRows.forEach(cb => {
+                const row = cb.closest('tr');
+                if (action === '刪除') {
+                    row.remove();
+                } else {
+                    // 更新狀態顯示
+                    const badgeClass = getStatusClass(action);
+                    // 注意：如果表格欄位有變動，這裡的 cells index 可能要確認一下
+                    // 假設狀態欄位是第 5 欄 (Index 4)
+                    if (row.cells[4]) {
+                        row.cells[4].innerHTML = `<span class="badge-outline badge-${badgeClass}">${action}</span>`;
+                    }
+                    row.setAttribute('data-status', action);
+
+                    // 更新隱藏的 JSON 資料
+                    let jsonData = JSON.parse(row.getAttribute('data-json') || '{}');
+                    jsonData.status = action;
+                    row.setAttribute('data-json', JSON.stringify(jsonData));
+
+                    // 刷新操作按鈕 (例如變成已傳送後，不能再編輯)
+                    updateRowActionButtons(row, action);
                 }
-                row.setAttribute('data-status', action);
+            });
 
-                // 更新隱藏的 JSON 資料
-                let jsonData = JSON.parse(row.getAttribute('data-json') || '{}');
-                jsonData.status = action;
-                row.setAttribute('data-json', JSON.stringify(jsonData));
-
-                // 刷新操作按鈕 (例如變成已傳送後，不能再編輯)
-                updateRowActionButtons(row, action);
+            if (typeof resetSelection === 'function') {
+                resetSelection();
+            } else {
+                // 如果還沒把 resetSelection 加進去，這段是後備代碼
+                document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
             }
-        });
-
-        if (typeof resetSelection === 'function') {
-            resetSelection();
-        } else {
-            // 如果還沒把 resetSelection 加進去，這段是後備代碼
-            document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+            showToast(`批次${action}完成`, 'success');
         }
-        showToast(`批次${action}完成`, 'success');
-    }
+    });
 }
 
 // ==========================================
@@ -465,6 +501,35 @@ function checkEmptyState() {
     if (noDataRow) {
         noDataRow.style.display = visibleRows.length === 0 ? 'table-row' : 'none';
     }
+
+    // 更新統計數字
+    updateStats();
+}
+
+function updateStats() {
+    // 只計算實際存在的資料列 (不包含 noDataRow)
+    const rows = document.querySelectorAll('.data-row');
+    const total = rows.length;
+    let draft = 0;
+    let confirmed = 0;
+    let sent = 0;
+
+    rows.forEach(row => {
+        const status = row.getAttribute('data-status');
+        if (status === '草稿') draft++;
+        else if (status === '已確認') confirmed++;
+        else if (status === '已傳送') sent++;
+    });
+
+    const elTotal = document.getElementById('stat-total');
+    const elDraft = document.getElementById('stat-draft');
+    const elConfirmed = document.getElementById('stat-confirmed');
+    const elSent = document.getElementById('stat-sent');
+
+    if (elTotal) elTotal.innerText = total;
+    if (elDraft) elDraft.innerText = draft;
+    if (elConfirmed) elConfirmed.innerText = confirmed;
+    if (elSent) elSent.innerText = sent;
 }
 
 // ==========================================

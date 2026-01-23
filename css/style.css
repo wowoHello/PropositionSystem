@@ -193,6 +193,9 @@ body {
     font-weight: 600;
     font-size: 0.95rem;
     white-space: nowrap;
+    overflow: hidden;    /* 隱藏超出部分 */
+    text-overflow: ellipsis; /* 超出顯示 ... */
+    max-width: 100%;     /* 限制最大寬度 */
 }
 
 .project-display:hover {
@@ -214,10 +217,8 @@ body {
 }
 
 .project-info {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    line-height: 1.3;
+    min-width: 0; /* 關鍵：讓 Flex 子元素可以縮小到比內容還小 */
+    flex: 1;      /* 佔滿剩餘空間 */
 }
 
 .project-year {
@@ -226,8 +227,9 @@ body {
 }
 
 .project-name {
-    font-size: 0.95rem;
-    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* =========================================

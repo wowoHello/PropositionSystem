@@ -77,9 +77,23 @@ const ReadingHandler = (function () {
                 if (!genre) err.push("請選擇文體");
                 if (mainText.length === 0) err.push("請輸入文章");
                 if (subKeys.length === 0) err.push("至少要有一題子題");
-                if (err.length > 0) { alert(err.join('\n')); return null; }
+                if (err.length > 0) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: '錯誤',
+                        html: err.join('<br>')
+                    });
+                    return null;
+                }
             } else {
-                if (mainText.length === 0 && !genre) { alert("請輸入內容"); return null; }
+                if (mainText.length === 0 && !genre) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: '提示',
+                        text: '請輸入內容'
+                    });
+                    return null;
+                }
             }
 
             // 收集子題
@@ -214,20 +228,30 @@ const ReadingHandler = (function () {
         },
 
         removeSubQuestion: function (uid) {
-            if (confirm('確定要移除此子題嗎？')) {
-                const card = document.getElementById(`card-${uid}`);
-                if (card) card.remove();
-                delete quills.subs[uid];
+            Swal.fire({
+                title: '確定要移除此子題嗎？',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: '刪除',
+                cancelButtonText: '取消'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const card = document.getElementById(`card-${uid}`);
+                    if (card) card.remove();
+                    delete quills.subs[uid];
 
-                // 檢查空狀態
-                const container = document.getElementById('sub-questions-container');
-                if (container && container.children.length === 0) {
-                    document.getElementById('sub-questions-empty').classList.remove('d-none');
-                } else {
-                    // 移除後重新排序流水號 (1, 2, 3...)
-                    this.reindexSubQuestions();
+                    // 檢查空狀態
+                    const container = document.getElementById('sub-questions-container');
+                    if (container && container.children.length === 0) {
+                        document.getElementById('sub-questions-empty').classList.remove('d-none');
+                    } else {
+                        // 移除後重新排序流水號 (1, 2, 3...)
+                        this.reindexSubQuestions();
+                    }
                 }
-            }
+            });
         },
 
         reindexSubQuestions: function () {
