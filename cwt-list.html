@@ -7,9 +7,109 @@
   <title>我的命題列表 - CWT 命題工作平臺</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="quill.snow.css">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
     rel="stylesheet" />
   <style>
+    /* === QUILL 設定 === */
+    /* Quill 編輯器高度設定 */
+    .ql-container {
+      font-family: "Noto Sans TC", sans-serif;
+      font-size: 1rem;
+    }
+
+    /* 題目敘述的高度 */
+    #q-editor-content {
+      height: 200px;
+    }
+
+    /* 選項的高度 (比較矮) */
+    .option-editor {
+      height: 80px;
+    }
+
+    /* 調整選項區塊的標頭 */
+    .option-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+      background-color: #f8f9fa;
+      padding: 5px 10px;
+      border-radius: 4px;
+      border: 1px solid #dee2e6;
+    }
+
+    .ql-editor.ql-blank:focus::before {
+      opacity: 0;
+    }
+
+    /* 1. 定義編輯器內的字體樣式 */
+    .ql-font-microsoft-jhenghei {
+      font-family: "Microsoft JhengHei", "微軟正黑體", sans-serif;
+    }
+
+    .ql-font-kaiu {
+      font-family: "DFKai-SB", "標楷體", serif;
+    }
+
+    .ql-font-times-new-roman {
+      font-family: "Times New Roman", serif;
+    }
+
+    .ql-font-arial {
+      font-family: "Arial", sans-serif;
+    }
+
+    .ql-font-comic-sans-ms {
+      font-family: "Comic Sans MS", cursive;
+    }
+
+    /* 2. 設定下拉選單的「標籤名稱」 (這是給人看的) */
+    /* === 修正 Quill 字體選單寬度不足的問題 === */
+    .ql-snow .ql-picker.ql-font {
+      width: 160px !important;
+    }
+
+    /* 如果選單展開後的選項也太窄，可以一併調整 (通常上面那行就夠了) */
+    .ql-snow .ql-picker.ql-font .ql-picker-label,
+    .ql-snow .ql-picker.ql-font .ql-picker-item {
+      padding-right: 20px;
+    }
+
+    /* 讓選單裡面的選項顯示中文，如果不加這些，它只會顯示空白或預設樣式 */
+    /* 選單標題 (選中時) */
+    .ql-snow .ql-picker.ql-font .ql-picker-label[data-value="microsoft-jhenghei"]::before,
+    .ql-snow .ql-picker.ql-font .ql-picker-item[data-value="microsoft-jhenghei"]::before {
+      content: "微軟正黑體";
+      font-family: "Microsoft JhengHei";
+    }
+
+    .ql-snow .ql-picker.ql-font .ql-picker-label[data-value="kaiu"]::before,
+    .ql-snow .ql-picker.ql-font .ql-picker-item[data-value="kaiu"]::before {
+      content: "標楷體";
+      font-family: "DFKai-SB";
+    }
+
+    .ql-snow .ql-picker.ql-font .ql-picker-label[data-value="times-new-roman"]::before,
+    .ql-snow .ql-picker.ql-font .ql-picker-item[data-value="times-new-roman"]::before {
+      content: "Times New Roman";
+      font-family: "Times New Roman";
+    }
+
+    .ql-snow .ql-picker.ql-font .ql-picker-label[data-value="arial"]::before,
+    .ql-snow .ql-picker.ql-font .ql-picker-item[data-value="arial"]::before {
+      content: "Arial";
+      font-family: "Arial";
+    }
+
+    .ql-snow .ql-picker.ql-font .ql-picker-label[data-value="comic-sans-ms"]::before,
+    .ql-snow .ql-picker.ql-font .ql-picker-item[data-value="comic-sans-ms"]::before {
+      content: "Comic Sans";
+      font-family: "Comic Sans MS";
+    }
+
+    /* === QUILL 設定結束 === */
     :root {
       --primary-blue: #2563eb;
       --bg-color: #f0f2f5;
@@ -183,17 +283,52 @@
       background-color: #eff6ff;
     }
 
-    .btn-toolbar-gray {
-      border: 1px solid #e5e7eb;
-      color: #9ca3af;
+    /* 新的工具列按鈕樣式：取代原本的 btn-toolbar-gray */
+    .btn-tool {
       background: white;
-      font-weight: 500;
+      border: 1px solid #d1d5db;
+      /* 邊框深灰色，比較有實體感 */
+      color: #374151;
+      /* 文字改為深灰色，看起來是「可用」的 */
+      font-weight: 600;
       border-radius: 6px;
       padding: 0.4rem 1rem;
       font-size: 0.9rem;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
+      /* 增加一點圖示跟文字的間距 */
+      transition: all 0.2s ease;
+      /* 加入平滑過渡動畫 */
+    }
+
+    /* 滑鼠移上去的效果 (Hover) */
+    .btn-tool:hover,
+    .btn-tool:focus,
+    .btn-tool[aria-expanded="true"] {
+      /* 下拉選單打開時也保持藍色 */
+      border-color: #2563eb;
+      color: #2563eb;
+      background-color: #eff6ff;
+      /* 非常淡的藍色背景 */
+      box-shadow: 0 2px 4px rgba(37, 99, 235, 0.1);
+      /* 輕微的藍色陰影 */
+    }
+
+    /* 按鈕內的假 Checkbox 方塊樣式優化 */
+    .icon-checkbox {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid #9ca3af;
+      /* 預設邊框 */
+      border-radius: 3px;
+      transition: all 0.2s;
+    }
+
+    /* 當按鈕 Hover 時，那個小方塊也要變色 */
+    .btn-tool:hover .icon-checkbox {
+      border-color: #2563eb;
     }
 
     /* 表格樣式 */
@@ -318,6 +453,48 @@
     .page-btn:hover:not(.active) {
       background-color: #f3f4f6;
     }
+
+    .hover-effect:active {
+      transform: scale(0.9);
+      /* 點擊時稍微縮小 */
+    }
+
+    /* =========== */
+    /* 一般題型樣式 */
+    /* =========== */
+    /* 必填星號 */
+    .required-star::after {
+      content: " *";
+      color: #dc3545;
+    }
+
+    /* 選項輸入框優化 */
+    .question-form-group .input-group-text {
+      border-color: #dee2e6;
+    }
+
+    .question-form-group .form-control:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.15);
+    }
+
+    /* 當 Radio 被選中時，外框變色提示 */
+    .input-group:has(input[type="radio"]:checked) .form-control {
+      border-color: #10b981;
+      /* 綠色代表正確答案 */
+      background-color: #f0fdf4;
+    }
+
+    .input-group:has(input[type="radio"]:checked) .input-group-text {
+      border-color: #10b981;
+      background-color: #f0fdf4;
+      color: #059669 !important;
+    }
+
+    /* 選項收合速度 */
+    .collapsing {
+      transition: height 0.6s ease;
+    }
   </style>
 </head>
 
@@ -336,7 +513,11 @@
 
         <div class="col-6 d-flex justify-content-center">
           <div class="project-switcher">
-            <div class="project-display" id="projectToggle">
+            <div class="project-display glass-enhanced" id="projectToggle">
+              <div class="glass-icon">
+                <img src="ICON/calendar.svg" alt="Calendar" style="width: 24px; height: 24px;">
+              </div>
+
               <div class="project-info">
                 <div class="project-year" id="currentProjectYear">
                   2024年度
@@ -507,39 +688,81 @@
   </nav>
 
   <div class="breadcrumb-bar">
-    <div class="container-fluid px-4">
-      <a href="firstpage.html" class="breadcrumb-item-link">首頁</a>
-      <span class="breadcrumb-separator">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
-          stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="9 18 15 12 9 6"></polyline>
-        </svg>
-      </span>
-      <span class="breadcrumb-current">我的命題列表</span>
+    <div class="container-fluid px-4 d-flex justify-content-between align-items-center">
+      <div class="d-flex align-items-center">
+        <a href="firstpage.html" class="breadcrumb-item-link">首頁</a>
+        <span class="breadcrumb-separator">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+            stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </span>
+        <span class="breadcrumb-current">我的命題任務</span>
+      </div>
+
+      <div class="bg-white rounded-pill px-2 py-1 border d-flex align-items-center shadow-sm"
+        style="width: fit-content;">
+
+        <span class="text-muted d-flex align-items-center me-2 border-end pe-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-type"
+            viewBox="0 0 16 16">
+            <path
+              d="m2.244 13.081.943-2.803H6.66l.944 2.803H8.86L5.54 3.75H4.322L1 13.081zm2.7-7.923L6.34 9.314H3.51l1.4-4.156zm9.146 7.027h.035v.896h1.128V8.125c0-1.51-1.114-2.345-2.646-2.345-1.736 0-2.59.916-2.666 2.174h1.108c.068-.718.595-1.19 1.517-1.19.971 0 1.518.52 1.518 1.464v.731H12.19c-1.647.007-2.522.8-2.522 2.058 0 1.319.957 2.18 2.345 2.18 1.06 0 1.716-.43 2.078-1.011zm-1.763.035c-.752 0-1.456-.397-1.456-1.244 0-.65.424-1.115 1.408-1.115h1.805v.834c0 .896-.752 1.525-1.757 1.525" />
+          </svg>
+        </span>
+
+        <button
+          class="btn btn-sm bg-transparent border-0 p-0 rounded-circle d-flex align-items-center justify-content-center hover-effect"
+          style="width: 32px; height: 32px; transition: transform 0.1s;" onclick="changeFontSize(-1)" title="縮小">
+          <img src="ICON/minus.png" alt="縮小" style="width: 26px; height: auto;">
+        </button>
+
+        <span class="small fw-bold text-secondary mx-2 user-select-none"
+          style="cursor: pointer; min-width: 45px; text-align: center; transition: color 0.3s;"
+          onclick="resetFontSize()" id="fontSizeDisplay" title="點擊還原預設值">
+          100%
+        </span>
+
+        <button
+          class="btn btn-sm bg-transparent border-0 p-0 rounded-circle d-flex align-items-center justify-content-center hover-effect"
+          style="width: 32px; height: 32px; transition: transform 0.1s;" onclick="changeFontSize(1)" title="放大">
+          <img src="ICON/add.png" alt="放大" style="width: 28px; height: auto;">
+        </button>
+      </div>
     </div>
   </div>
 
   <div class="main-content">
     <div class="container px-4">
-      <h1 class="page-title">我的命題列表</h1>
+      <h1 class="page-title">我的命題任務</h1>
       <p class="page-desc">
         檢視和管理您的所有命題，包括草稿、已確認和已傳送的試題。
       </p>
 
       <div class="card-box search-area">
         <div class="row g-3 align-items-end">
-          <div class="col-md-3">
+          <div class="col-md-2">
             <label class="form-label">題型篩選</label>
             <select class="form-select" id="filterType">
               <option value="all" selected>全部題型</option>
-              <option value="單選題">單選題</option>
-              <option value="申論題">申論題</option>
-              <option value="題組題">題組題</option>
-              <option value="簡答題">簡答題</option>
-              <option value="圖形題">圖形題</option>
+              <option value="一般題目">一般題目</option>
+              <option value="精選題目">精選題目</option>
+              <option value="閱讀題組">閱讀題組</option>
+              <option value="短文題組">短文題組</option>
+              <option value="長文題組">長文題組</option>
+              <option value="聽力題目">聽力題目</option>
+              <option value="聽力題組">聽力題組</option>
             </select>
           </div>
-          <div class="col-md-3">
+
+          <div class="col-md-2">
+            <label class="form-label">等級篩選</label>
+            <select class="form-select" id="filterLevel">
+              <option value="all" selected>全部等級</option>
+            </select>
+          </div>
+
+          <div class="col-md-2">
             <label class="form-label">狀態篩選</label>
             <select class="form-select" id="filterStatus">
               <option value="all" selected>全部狀態</option>
@@ -548,6 +771,7 @@
               <option value="已傳送">已傳送</option>
             </select>
           </div>
+
           <div class="col-md-6">
             <label class="form-label">關鍵字搜尋</label>
             <div class="d-flex gap-2">
@@ -560,7 +784,6 @@
                 </span>
                 <input type="text" id="searchInput" class="form-control border-start-0 ps-2" placeholder="依題目文字搜尋" />
               </div>
-              <button class="btn btn-search" id="btnSearch">查詢</button>
             </div>
           </div>
         </div>
@@ -570,14 +793,11 @@
         <div class="col-md-3">
           <div class="stat-card">
             <div class="stat-icon icon-gray">
-              <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
-                <path
-                  d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7Zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm-5.784 6A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216ZM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
-              </svg>
+              <img src="ICON/folder.svg" alt="Calendar" style="width: 24px; height: 24px;">
             </div>
             <div class="stat-info">
               <span>總計</span>
-              <h4>15</h4>
+              <h4>3</h4>
             </div>
           </div>
         </div>
@@ -591,7 +811,7 @@
             </div>
             <div class="stat-info">
               <span>草稿</span>
-              <h4>7</h4>
+              <h4>1</h4>
             </div>
           </div>
         </div>
@@ -607,7 +827,7 @@
             </div>
             <div class="stat-info">
               <span>已確認</span>
-              <h4>5</h4>
+              <h4>1</h4>
             </div>
           </div>
         </div>
@@ -621,7 +841,7 @@
             </div>
             <div class="stat-info">
               <span>已傳送</span>
-              <h4>3</h4>
+              <h4>1</h4>
             </div>
           </div>
         </div>
@@ -637,22 +857,13 @@
                 <option>20 筆</option>
               </select>
             </div>
-
-            <!-- Upload button removed from here -->
           </div>
 
           <div class="d-flex gap-2">
             <div class="dropdown d-inline-block">
-              <button class="btn-toolbar-gray dropdown-toggle" type="button" id="batchDropdown"
-                data-bs-toggle="dropdown" aria-expanded="false">
-                <span style="
-                      display: inline-block;
-                      width: 12px;
-                      height: 12px;
-                      border: 1px solid #cbd5e1;
-                      border-radius: 2px;
-                      margin-right: 4px;
-                    "></span>
+              <button class="btn-tool dropdown-toggle" type="button" id="batchDropdown" data-bs-toggle="dropdown"
+                aria-expanded="false">
+                <span class="icon-checkbox"></span>
                 編輯操作
               </button>
               <ul class="dropdown-menu shadow border-0" aria-labelledby="batchDropdown">
@@ -665,14 +876,21 @@
                 <li><a class="dropdown-item text-danger" href="#" onclick="batchAction('刪除')">批次刪除</a></li>
               </ul>
             </div>
-            <button class="btn-toolbar-gray" onclick="resetSelection()">
-              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
-                class="me-1">
+
+            <button class="btn-tool" onclick="resetSelection()">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round"
                   d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
                 </path>
               </svg>
               重置選擇
+            </button>
+            <button class="btn btn-primary d-flex align-items-center gap-2 shadow-sm"
+              onclick="openPropModal(null, 'create')">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
+              </svg>
+              <span class="fw-bold">新增試題</span>
             </button>
           </div>
         </div>
@@ -685,6 +903,7 @@
                   <input type="checkbox" class="form-check-input" />
                 </th>
                 <th style="width: 35%">題目內容摘要</th>
+                <th>等級</th>
                 <th>題型</th>
                 <th>狀態</th>
                 <th>建立時間</th>
@@ -693,79 +912,71 @@
               </tr>
             </thead>
             <tbody>
-              <tr class="data-row" data-type="申論題" data-status="草稿">
+              <tr class="data-row" data-type="一般題目" data-status="草稿" data-level="中級"
+                data-json='{"level":"中級","mainCat":"語體文","content":"%3Cp%3E%E9%80%99%E6%98%AF%E4%B8%80%E7%AF%87%E7%AF%84%E4%BE%8B%E6%96%87%E7%AB%A0...%3C%2Fp%3E","subQuestions":[{"content":"%3Cp%3E%E5%AD%90%E9%A1%8C%E4%B8%80%E7%9A%84%E5%85%A7%E5%AE%B9%3C%2Fp%3E","optA":"%3Cp%3EA%3C%2Fp%3E","optB":"%3Cp%3EB%3C%2Fp%3E","optC":"%3Cp%3EC%3C%2Fp%3E","optD":"%3Cp%3ED%3C%2Fp%3E","ans":"A"}]}'>
                 <td><input type="checkbox" class="form-check-input" /></td>
                 <td class="text-dark fw-medium">
-                  關於人工智慧在教育應用的申論題...
+                  關於人工智慧在教育應用的題目...
                 </td>
-                <td>申論題</td>
+                <td><span class="badge bg-light text-dark border">中級</span></td>
+                <td>一般題目</td>
                 <td><span class="badge-outline badge-draft">草稿</span></td>
                 <td>2024-05-20 10:30</td>
                 <td>2024-05-21 14:15</td>
                 <td class="action-links">
-                  <a href="#">檢視</a><span class="action-divider">|</span>
-                  <a href="#">編輯</a><span class="action-divider">|</span>
-                  <a href="#">刪除</a>
+                  <button class="btn btn-link p-0 text-decoration-none small fw-bold"
+                    onclick="openPropModal(this, 'view')">檢視</button>
+                  <span class="text-muted mx-1">|</span>
+                  <button class="btn btn-link p-0 text-decoration-none small fw-bold"
+                    onclick="openPropModal(this, 'edit')">編輯</button>
+                  <span class="text-muted mx-1">|</span>
+                  <button class="btn btn-link p-0 text-decoration-none small fw-bold text-danger"
+                    onclick="deleteRow(this)">刪除</button>
                 </td>
               </tr>
-              <tr class="data-row" data-type="單選題" data-status="已確認">
+
+              <tr class="data-row" data-type="精選題目" data-status="已確認" data-level="初級"
+                data-json='{"level":"初級","mainCat":"語體文","content":"%3Cp%3E%E9%80%99%E6%98%AF%E4%B8%80%E7%AF%87%E7%AF%84%E4%BE%8B%E6%96%87%E7%AB%A0...%3C%2Fp%3E","subQuestions":[{"content":"%3Cp%3E%E5%AD%90%E9%A1%8C%E4%B8%80%E7%9A%84%E5%85%A7%E5%AE%B9%3C%2Fp%3E","optA":"%3Cp%3EA%3C%2Fp%3E","optB":"%3Cp%3EB%3C%2Fp%3E","optC":"%3Cp%3EC%3C%2Fp%3E","optD":"%3Cp%3ED%3C%2Fp%3E","ans":"A"}]}'>
                 <td><input type="checkbox" class="form-check-input" /></td>
                 <td class="text-dark fw-medium">
-                  下列哪個選項不是量子力學的基本原理？
+                  下列哪個選項修辭技巧使用正確？
                 </td>
-                <td>單選題</td>
+                <td><span class="badge bg-light text-dark border">初級</span></td>
+                <td>精選題目</td>
                 <td>
                   <span class="badge-outline badge-confirmed">已確認</span>
                 </td>
                 <td>2024-05-18 09:00</td>
                 <td>2024-05-19 11:20</td>
                 <td class="action-links">
-                  <a href="#">檢視</a>
+                  <button class="btn btn-link p-0 text-decoration-none small fw-bold"
+                    onclick="openPropModal(this, 'view')">檢視</button>
+                  <span class="text-muted mx-1">|</span>
+                  <button class="btn btn-link p-0 text-decoration-none small fw-bold"
+                    onclick="openPropModal(this, 'edit')">編輯</button>
+                  <span class="text-muted mx-1">|</span>
+                  <button class="btn btn-link p-0 text-decoration-none small fw-bold text-danger"
+                    onclick="deleteRow(this)">刪除</button>
                 </td>
               </tr>
-              <tr class="data-row" data-type="題組題" data-status="已傳送">
+
+              <tr class="data-row" data-type="閱讀題組" data-status="已傳送" data-level="中高級"
+                data-json='{"level":"中高級","mainCat":"語體文","content":"%3Cp%3E%E9%80%99%E6%98%AF%E4%B8%80%E7%AF%87%E7%AF%84%E4%BE%8B%E6%96%87%E7%AB%A0...%3C%2Fp%3E","subQuestions":[{"content":"%3Cp%3E%E5%AD%90%E9%A1%8C%E4%B8%80%E7%9A%84%E5%85%A7%E5%AE%B9%3C%2Fp%3E","optA":"%3Cp%3EA%3C%2Fp%3E","optB":"%3Cp%3EB%3C%2Fp%3E","optC":"%3Cp%3EC%3C%2Fp%3E","optD":"%3Cp%3ED%3C%2Fp%3E","ans":"A"}]}'>
                 <td><input type="checkbox" class="form-check-input" /></td>
                 <td class="text-dark fw-medium">
-                  閱讀下文，回答問題 3-5：『在一個遙遠的...』
+                  [閱讀] 閱讀下文，回答問題 3-5... (共1子題)
                 </td>
-                <td>題組題</td>
+                <td><span class="badge bg-light text-dark border">中高級</span></td>
+                <td>閱讀題組</td>
                 <td><span class="badge-outline badge-sent">已傳送</span></td>
                 <td>2024-05-15 16:45</td>
                 <td>2024-05-16 10:00</td>
                 <td class="action-links">
-                  <a href="#">檢視</a>
+                  <button class="btn btn-link p-0 text-decoration-none small fw-bold"
+                    onclick="openPropModal(this, 'view')">檢視</button>
                 </td>
               </tr>
-              <tr class="data-row" data-type="簡答題" data-status="草稿">
-                <td><input type="checkbox" class="form-check-input" /></td>
-                <td class="text-dark fw-medium">
-                  請解釋『永續發展』的定義並舉例說明。
-                </td>
-                <td>簡答題</td>
-                <td><span class="badge-outline badge-draft">草稿</span></td>
-                <td>2024-05-21 08:30</td>
-                <td>2024-05-21 08:30</td>
-                <td class="action-links">
-                  <a href="#">檢視</a><span class="action-divider">|</span>
-                  <a href="#">編輯</a><span class="action-divider">|</span>
-                  <a href="#">刪除</a>
-                </td>
-              </tr>
-              <tr class="data-row" data-type="圖形題" data-status="已確認">
-                <td><input type="checkbox" class="form-check-input" /></td>
-                <td class="text-dark fw-medium">
-                  圖中所示的生物屬於哪一界？
-                </td>
-                <td>圖形題</td>
-                <td>
-                  <span class="badge-outline badge-confirmed">已確認</span>
-                </td>
-                <td>2024-05-19 13:10</td>
-                <td>2024-05-20 09:45</td>
-                <td class="action-links">
-                  <a href="#">檢視</a>
-                </td>
-              </tr>
+
               <tr id="noDataRow" style="display: none">
                 <td colspan="7" class="text-center py-5 text-secondary">
                   <div class="d-flex flex-column align-items-center opacity-50">
@@ -788,258 +999,230 @@
       </div>
     </div>
   </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-  <script src="app.js"></script>
-
-  <!-- Prop Modal -->
+  <!-- 一般題型 -->
   <div class="modal fade" id="propModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
       <div class="modal-content border-0 rounded-4 shadow">
+
         <div class="modal-header border-bottom-0">
           <h5 class="modal-title fw-bold" id="propModalTitle">編輯命題</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
+
         <div class="modal-body pt-0">
           <form id="propForm">
             <input type="hidden" id="editRowFrom" value="">
-            <div class="row g-3">
+
+            <div class="row g-3 mb-3 pb-3 border-bottom">
               <div class="col-md-6">
-                <label class="form-label fw-bold small text-secondary">題型</label>
+                <label class="form-label fw-bold small text-secondary">題型選擇</label>
                 <select class="form-select" id="mType">
-                  <option value="單選題">單選題</option>
-                  <option value="申論題">申論題</option>
-                  <option value="題組題">題組題</option>
-                  <option value="簡答題">簡答題</option>
-                  <option value="圖形題">圖形題</option>
+                  <option value="一般題目" selected>一般題目</option>
+                  <option value="長文題組">長文題組</option>
+                  <option value="短文題組">短文題組</option>
+                  <option value="精選題目">精選題目</option>
+                  <option value="閱讀題組">閱讀題組</option>
+                  <option value="聽力題目">聽力題目</option>
+                  <option value="聽力題組">聽力題組</option>
                 </select>
               </div>
               <div class="col-md-6">
-                <label class="form-label fw-bold small text-secondary">狀態</label>
+                <label class="form-label fw-bold small text-secondary">目前狀態</label>
                 <div>
                   <span class="badge-outline badge-draft" id="mStatusBadge">草稿</span>
                 </div>
               </div>
-              <div class="col-12">
-                <label class="form-label fw-bold small text-secondary">題目內容</label>
-                <textarea class="form-control" id="mContent" rows="5" placeholder="請輸入題目敘述..."></textarea>
-              </div>
-              <div class="col-12">
-                <label class="form-label fw-bold small text-secondary">選項 / 參考答案</label>
-                <textarea class="form-control" id="mAnswer" rows="3" placeholder="請輸入選項或參考答案..."></textarea>
-              </div>
-              <!-- Attachments Section -->
-              <div class="col-12">
-                <div class="p-3 border rounded bg-light">
-                  <label class="form-label fw-bold small text-secondary mb-2">附件上傳</label>
-                  <div class="d-flex align-items-center gap-3">
-                    <input type="file" class="form-control" id="mAttachment">
-                    <div class="text-muted small text-nowrap">支援 JPG, PNG, PDF</div>
+            </div>
+
+            <div id="dynamicFormContainer">
+              <!-- 一般題目 -->
+              <!-- 精選題目 -->
+              <div id="form-general" class="question-form-group">
+
+                <div class="row g-3 mb-3">
+                  <div class="col-md-4">
+                    <label class="form-label fw-bold small text-secondary required-star">適用等級</label>
+                    <select class="form-select" id="gLevel">
+                      <option value="">請選擇...</option>
+                      <option value="初等">初等</option>
+                      <option value="中等">中等</option>
+                      <option value="中高等">中高等</option>
+                    </select>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label fw-bold small text-secondary required-star">主題</label>
+                    <select class="form-select" id="gMainCategory">
+                      <option value="">請選擇...</option>
+                    </select>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label fw-bold small text-secondary required-star">次類</label>
+                    <select class="form-select" id="gSubCategory" disabled>
+                      <option value="">請先選擇主題</option>
+                    </select>
                   </div>
                 </div>
+
+                <div class="mb-4">
+                  <label class="form-label fw-bold small text-secondary required-star">題幹內容</label>
+                  <div id="q-editor-content"></div>
+                </div>
+
+                <div class="p-3 bg-light rounded border mb-3">
+                  <label class="form-label fw-bold small text-secondary mb-2">選項與正確答案</label>
+
+                  <div class="mb-3 bg-white p-2 rounded border">
+                    <div class="option-header">
+                      <span class="badge bg-secondary">選項 A</span>
+                      <div class="form-check m-0">
+                        <input class="form-check-input" type="radio" name="correctAnswer" value="A" id="radioA">
+                        <label class="form-check-label small fw-bold text-success" for="radioA">設為正確答案</label>
+                      </div>
+                    </div>
+                    <div id="q-editor-optA" class="option-editor"></div>
+                  </div>
+
+                  <div class="mb-3 bg-white p-2 rounded border">
+                    <div class="option-header">
+                      <span class="badge bg-secondary">選項 B</span>
+                      <div class="form-check m-0">
+                        <input class="form-check-input" type="radio" name="correctAnswer" value="B" id="radioB">
+                        <label class="form-check-label small fw-bold text-success" for="radioB">設為正確答案</label>
+                      </div>
+                    </div>
+                    <div id="q-editor-optB" class="option-editor"></div>
+                  </div>
+
+                  <div class="mb-3 bg-white p-2 rounded border">
+                    <div class="option-header">
+                      <span class="badge bg-secondary">選項 C</span>
+                      <div class="form-check m-0">
+                        <input class="form-check-input" type="radio" name="correctAnswer" value="C" id="radioC">
+                        <label class="form-check-label small fw-bold text-success" for="radioC">設為正確答案</label>
+                      </div>
+                    </div>
+                    <div id="q-editor-optC" class="option-editor"></div>
+                  </div>
+
+                  <div class="mb-3 bg-white p-2 rounded border">
+                    <div class="option-header">
+                      <span class="badge bg-secondary">選項 D</span>
+                      <div class="form-check m-0">
+                        <input class="form-check-input" type="radio" name="correctAnswer" value="D" id="radioD">
+                        <label class="form-check-label small fw-bold text-success" for="radioD">設為正確答案</label>
+                      </div>
+                    </div>
+                    <div id="q-editor-optD" class="option-editor"></div>
+                  </div>
+                  <div class="form-text text-end mt-1 small">※ 請點選右側圓鈕設定正確答案</div>
+                </div>
               </div>
+              <!-- 閱讀題組 -->
+              <div id="form-reading" class="question-form-group d-none">
+
+                <div class="p-3 bg-white border rounded mb-4 shadow-sm">
+                  <h6 class="fw-bold text-primary mb-3 border-bottom pb-2">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                      class="me-1">
+                      <path
+                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253">
+                      </path>
+                    </svg>
+                    母題文章設定
+                  </h6>
+
+                  <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                      <label class="form-label fw-bold small text-secondary required-star">適用等級</label>
+                      <select class="form-select" id="rLevel">
+                        <option value="">請選擇...</option>
+                        <option value="初級">初級</option>
+                        <option value="中級">中級</option>
+                        <option value="中高">中高</option>
+                        <option value="高">高</option>
+                        <option value="優">優</option>
+                      </select>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label fw-bold small text-secondary required-star">文體</label>
+                      <select class="form-select" id="rGenre">
+                        <option value="">請選擇...</option>
+                        <option value="文言文">文言文</option>
+                        <option value="應用文">應用文</option>
+                        <option value="語體文">語體文</option>
+                      </select>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label fw-bold small text-secondary">附檔 (圖片/PDF)</label>
+                      <input class="form-control" type="file" id="rAttachment">
+                    </div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label fw-bold small text-secondary required-star">文章內容 (題目)</label>
+                    <div id="q-reading-main" style="height: 250px;"></div>
+                  </div>
+                </div>
+
+                <div class="bg-light p-3 rounded border">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold text-dark m-0">
+                      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                        class="me-1">
+                        <path
+                          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2">
+                        </path>
+                      </svg>
+                      子題列表
+                    </h6>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="Reading_AddSub()">
+                      + 新增子題
+                    </button>
+                  </div>
+
+                  <div id="sub-questions-container"></div>
+
+                  <div id="sub-questions-empty"
+                    class="text-center py-4 text-muted border border-dashed rounded bg-white">
+                    尚未新增任何子題，請點擊右上方按鈕新增。
+                  </div>
+                </div>
+
+              </div>
+
+              <div id="form-group-set" class="question-form-group d-none">
+                <div class="alert alert-info">此題型尚未實作欄位</div>
+              </div>
+
             </div>
           </form>
         </div>
+
         <div class="modal-footer border-top-0">
           <button type="button" class="btn btn-light" data-bs-dismiss="modal">取消</button>
           <button type="button" class="btn btn-outline-primary" id="btnSaveDraft" onclick="saveProp('草稿')">存為草稿</button>
           <button type="button" class="btn btn-primary fw-bold" id="btnSaveConfirm"
             onclick="saveProp('已確認')">儲存並確認</button>
         </div>
+
       </div>
     </div>
   </div>
-
+  <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1060;">
+    <div id="liveToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive"
+      aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body">
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+          aria-label="Close"></button>
+      </div>
+    </div>
+  </div>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-    let propModal;
-
-    document.addEventListener("DOMContentLoaded", function () {
-      // Init Modal
-      propModal = new bootstrap.Modal(document.getElementById('propModal'));
-
-      // 1. 初始化 Bootstrap Tooltips
-      const tooltipTriggerList = [].slice.call(
-        document.querySelectorAll('[data-bs-toggle="tooltip"]')
-      );
-      const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-      });
-
-      // 2. 命題列表篩選功能
-      initFilter();
-
-      // 3. 綁定列表按鈕事件 (檢視/編輯/刪除)
-      bindRowActions();
-    });
-
-    // --- Filter Logic ---
-    function initFilter() {
-      const filterType = document.getElementById("filterType");
-      const filterStatus = document.getElementById("filterStatus");
-      const searchInput = document.getElementById("searchInput");
-      const btnSearch = document.getElementById("btnSearch");
-
-      filterType.addEventListener("change", filterMyList);
-      filterStatus.addEventListener("change", filterMyList);
-      searchInput.addEventListener("input", filterMyList);
-      btnSearch.addEventListener("click", function (e) {
-        e.preventDefault();
-        filterMyList();
-      });
-    }
-
-    function filterMyList() {
-      const filterType = document.getElementById("filterType");
-      const filterStatus = document.getElementById("filterStatus");
-      const searchInput = document.getElementById("searchInput");
-      const noDataRow = document.getElementById("noDataRow");
-      const rows = document.querySelectorAll(".data-row");
-
-      const typeValue = filterType.value;
-      const statusValue = filterStatus.value;
-      const keyword = searchInput.value.trim().toLowerCase();
-
-      let visibleCount = 0;
-
-      rows.forEach((row) => {
-        const rowType = row.getAttribute("data-type");
-        const rowStatus = row.getAttribute("data-status");
-        const rowTitle = row.querySelector("td:nth-child(2)").textContent.toLowerCase();
-
-        let show = true;
-        if (typeValue !== "all" && rowType !== typeValue) show = false;
-        if (statusValue !== "all" && rowStatus !== statusValue) show = false;
-        if (keyword !== "" && !rowTitle.includes(keyword)) show = false;
-
-        if (show) {
-          row.style.display = "";
-          visibleCount++;
-        } else {
-          row.style.display = "none";
-        }
-      });
-
-      if (noDataRow) {
-        noDataRow.style.display = visibleCount === 0 ? "table-row" : "none";
-      }
-    }
-
-    // --- Modal Logic ---
-
-    // 開啟編輯/檢視 (mode: 'edit' | 'view')
-    window.openPropModal = function (btn, mode) {
-      const row = btn.closest('tr');
-      const type = row.getAttribute('data-type');
-      const status = row.getAttribute('data-status');
-      const content = row.querySelector('td:nth-child(2)').innerText;
-
-      // 設定 Modal 標題與欄位
-      const titleMap = { 'edit': '編輯命題', 'view': '檢視命題' };
-      document.getElementById('propModalTitle').innerText = titleMap[mode];
-
-      // 填入資料
-      document.getElementById('mType').value = type;
-      document.getElementById('mContent').value = content;
-      document.getElementById('mStatusBadge').innerText = status;
-      document.getElementById('mStatusBadge').className = `badge-outline badge-${getStatusClass(status)}`;
-
-      // 判斷是否為唯讀
-      const isView = (mode === 'view');
-      document.getElementById('mType').disabled = isView;
-      document.getElementById('mContent').disabled = isView;
-      document.getElementById('mAnswer').disabled = isView;
-      document.getElementById('mAttachment').disabled = isView;
-
-      // 隱藏/顯示 Footer 按鈕
-      const footerBtns = document.querySelectorAll('.modal-footer button:not([data-bs-dismiss])');
-      footerBtns.forEach(b => b.hidden = isView);
-
-      propModal.show();
-    }
-
-    function getStatusClass(statusText) {
-      if (statusText === '草稿') return 'draft';
-      if (statusText === '已確認') return 'confirmed';
-      if (statusText === '已傳送') return 'sent';
-      return 'secondary';
-    }
-
-    window.saveProp = function (targetStatus) {
-      // 這裡模擬儲存
-      alert(`已儲存為：${targetStatus}`);
-      propModal.hide();
-      // 實際專案應更新 row data 或 reload list
-    }
-
-    window.deleteRow = function (btn) {
-      if (confirm('確定要刪除此命題嗎？此動作無法復原。')) {
-        const row = btn.closest('tr');
-        row.remove();
-        filterMyList(); // 更新筆數或顯示無資料
-      }
-    }
-
-    // --- Batch Operations ---
-    window.batchAction = function (actionType) {
-      const checks = document.querySelectorAll('.data-row input[type="checkbox"]:checked');
-      if (checks.length === 0) {
-        alert('請先勾選項目');
-        return;
-      }
-
-      if (actionType === '刪除') {
-        if (!confirm(`確定要刪除選取的 ${checks.length} 筆資料嗎？`)) return;
-        checks.forEach(c => c.closest('tr').remove());
-      } else {
-        // 變更狀態
-        checks.forEach(c => {
-          const row = c.closest('tr');
-          row.setAttribute('data-status', actionType);
-          const badge = row.querySelector('.badge-outline');
-          badge.className = `badge-outline badge-${getStatusClass(actionType)}`;
-          badge.innerText = actionType;
-        });
-        alert(`已將選取項目設為：${actionType}`);
-      }
-      resetSelection(); // 完成後重置勾選
-    }
-
-    window.resetSelection = function () {
-      document.querySelectorAll('.data-row input[type="checkbox"]').forEach(c => c.checked = false);
-      // Header check if exists
-      const headCheck = document.querySelector('thead input[type="checkbox"]');
-      if (headCheck) headCheck.checked = false;
-    }
-
-    // --- Bind Actions dynamically ---
-    function bindRowActions() {
-      // 替換原本的 <a href="#"> 為 button onclick
-      const links = document.querySelectorAll('.action-links');
-      links.forEach(td => {
-        // 簡單暴力重寫 innerHTML，綁定 openPropModal
-        // 注意：這裡假設 HTML 結構固定
-        td.innerHTML = `
-                  <button class="btn btn-link p-0 text-decoration-none small fw-bold" onclick="openPropModal(this, 'view')">檢視</button>
-                  <span class="text-muted mx-1">|</span>
-                  <button class="btn btn-link p-0 text-decoration-none small fw-bold" onclick="openPropModal(this, 'edit')">編輯</button>
-                  <span class="text-muted mx-1">|</span>
-                  <button class="btn btn-link p-0 text-decoration-none small fw-bold text-danger" onclick="deleteRow(this)">刪除</button>
-              `;
-      });
-
-      // Header checkbox select all logic
-      const headCheck = document.querySelector('thead input[type="checkbox"]');
-      if (headCheck) {
-        headCheck.addEventListener('change', function () {
-          const isChecked = this.checked;
-          document.querySelectorAll('.data-row input[type="checkbox"]').forEach(c => c.checked = isChecked);
-        });
-      }
-    }
-  </script>
+  <script src="js/quill.min.js"></script>
+  <script src="js/General.js"></script>
+  <script src="js/Reading.js"></script>
   <script src="js/app.js"></script>
 </body>
 

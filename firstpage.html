@@ -350,10 +350,19 @@
     .reminder-meta {
       font-size: 0.85rem;
       color: #6b7280;
-      margin-top: 4px;
+      margin-top: 6px;
       display: flex;
       align-items: center;
-      gap: 6px;
+      flex-wrap: wrap;
+      gap: 6px 8px;
+      line-height: 1.4;
+    }
+
+    .reminder-meta>span {
+      display: inline-flex;
+      align-items: center;
+      white-space: nowrap;
+      /* 保持「徽章內部文字」不換行，但徽章整體可以換行 */
     }
 
     @media (min-width: 992px) and (max-width: 1199px) {
@@ -468,7 +477,11 @@
         <!-- 中間：專案切換器 -->
         <div class="col-6 d-flex justify-content-center">
           <div class="project-switcher">
-            <div class="project-display" id="projectToggle">
+            <div class="project-display glass-enhanced" id="projectToggle">
+              <div class="glass-icon">
+                <img src="ICON/calendar.svg" alt="Calendar" style="width: 24px; height: 24px;">
+              </div>
+
               <div class="project-info">
                 <div class="project-year" id="currentProjectYear">
                   2024年度
@@ -803,8 +816,38 @@
         <!-- 今日提醒 -->
         <div class="col-lg-3">
           <div class="reminder-card" style="position: sticky; top: 90px; height: calc(90vh - 90px);">
-            <div class="reminder-header">
-              <h3 class="reminder-title">今日提醒</h3>
+            <div class="reminder-header d-flex justify-content-between align-items-center">
+              <h3 class="reminder-title mb-0">今日提醒</h3>
+              <div class="bg-white rounded-pill px-2 py-1 border d-flex align-items-center shadow-sm"
+                style="width: fit-content;">
+
+                <span class="text-muted d-flex align-items-center me-2 border-end pe-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-type"
+                    viewBox="0 0 16 16">
+                    <path
+                      d="m2.244 13.081.943-2.803H6.66l.944 2.803H8.86L5.54 3.75H4.322L1 13.081zm2.7-7.923L6.34 9.314H3.51l1.4-4.156zm9.146 7.027h.035v.896h1.128V8.125c0-1.51-1.114-2.345-2.646-2.345-1.736 0-2.59.916-2.666 2.174h1.108c.068-.718.595-1.19 1.517-1.19.971 0 1.518.52 1.518 1.464v.731H12.19c-1.647.007-2.522.8-2.522 2.058 0 1.319.957 2.18 2.345 2.18 1.06 0 1.716-.43 2.078-1.011zm-1.763.035c-.752 0-1.456-.397-1.456-1.244 0-.65.424-1.115 1.408-1.115h1.805v.834c0 .896-.752 1.525-1.757 1.525" />
+                  </svg>
+                </span>
+
+                <button
+                  class="btn btn-sm bg-transparent border-0 p-0 rounded-circle d-flex align-items-center justify-content-center hover-effect"
+                  style="width: 28px; height: 28px; transition: transform 0.1s;" onclick="changeFontSize(-1)"
+                  title="縮小">
+                  <img src="ICON/minus.png" alt="縮小" style="width: 24px; height: auto;">
+                </button>
+
+                <span class="small fw-bold text-secondary mx-1 user-select-none"
+                  style="cursor: pointer; min-width: 40px; text-align: center; transition: color 0.3s;"
+                  onclick="resetFontSize()" id="fontSizeDisplay" title="點擊還原預設值">
+                  100%
+                </span>
+
+                <button
+                  class="btn btn-sm bg-transparent border-0 p-0 rounded-circle d-flex align-items-center justify-content-center hover-effect"
+                  style="width: 28px; height: 28px; transition: transform 0.1s;" onclick="changeFontSize(1)" title="放大">
+                  <img src="ICON/add.png" alt="放大" style="width: 24px; height: auto;">
+                </button>
+              </div>
             </div>
             <div class="d-flex flex-column" style="flex-grow: 1; overflow: hidden; position: relative;">
 
@@ -854,6 +897,7 @@
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
   <script src="js/app.js"></script>
   <script>
     const styleConfig = {
@@ -885,18 +929,20 @@
       if (isCountdown) {
         metaHtml = `<span class="fw-bold text-danger">剩餘 ${item.daysLeft} 天</span>`;
       } else {
-        metaHtml = `${item.date}`;
+        // 加上 "截止：" 標示，讓使用者知道這是截止日期
+        metaHtml = `<span class="text-secondary small"><i class="bi bi-hourglass-split me-1"></i>截止：${item.date}</span>`;
       }
 
-      const pinBadge = item.isPinned
-        ? `<span class="badge bg-danger me-1"><i class="bi bi-pin-angle-fill"></i> 置頂</span>`
-        : '';
+      const pinBadge = item.isPinned ? `<span class="badge bg-danger"><i class="bi bi-pin-angle-fill me-1"></i>置頂</span>` : '';
 
       const categoryBadge = isCountdown
-        ? `<span class="text-secondary small me-2"><i class="bi bi-calendar-event"></i> 截止：${item.date}</span>`
+        ? `<span class="text-secondary small"><i class="bi bi-calendar-event me-1"></i>截止：${item.date}</span>`
         : `<span class="badge border bg-white" style="color:${style.color}; border-color:${style.color}!important">${style.label}</span>`;
 
       const titleStyle = isCountdown ? 'font-weight:700; color:#b91c1c;' : '';
+
+      // 凍結區(countdown) 不使用 text-truncate，以免手機版看不到完整標題
+      const titleClass = isCountdown ? 'reminder-title text-wrap' : 'reminder-title text-truncate';
 
       div.innerHTML = `
             <div class="reminder-icon me-2">
@@ -904,7 +950,7 @@
             </div>
             <div class="flex-grow-1" style="min-width: 0;">
                 <div class="d-flex justify-content-between align-items-center">
-                    <div class="reminder-title text-truncate" style="${titleStyle}">${item.title}</div>
+                    <div class="${titleClass}" style="${titleStyle}">${item.title}</div>
                 </div>
                 <div class="reminder-meta">
                     ${pinBadge}
@@ -924,7 +970,7 @@
       return div;
     }
 
-    function renderReminders() {
+    function renderReminders(projectId) {
       // 取得兩個容器
       const fixedContainer = document.getElementById('reminderFixedList');
       const scrollContainer = document.getElementById('reminderScrollList');
@@ -936,13 +982,34 @@
       // 1. 取得並整理資料
       const storedAnnouncements = JSON.parse(localStorage.getItem("cwt_announcements") || "[]");
 
+      // [新增] 綁定梯次過濾邏輯
+      // 如果沒有傳入 projectId，嘗試從 localStorage 獲取
+      if (!projectId) {
+        projectId = localStorage.getItem("cwt_active_project");
+      }
+
       const announcements = storedAnnouncements
-        .filter(a => a.status === 'published')
+        .filter(a => {
+          // 狀態必須是已發布
+          if (a.status !== 'published') return false;
+
+          // [核心邏輯] 梯次綁定過濾
+          // 1. 如果公告是 'all' (全站通用)，則保留
+          // 2. 如果公告指定的 boundProject 等於當前選中的 projectId，則保留
+          // 注意：localStorage 存的可能是字串或數字，統一轉字串比對
+          if (a.boundProject && a.boundProject !== 'all') {
+            if (!projectId) return false; // 如果當前沒選專案，只顯示通用
+            return String(a.boundProject) === String(projectId);
+          }
+
+          return true; // default (all)
+        })
         .map(a => ({
           type: 'announcement',
           originalCategory: a.category,
           title: a.title,
-          date: a.date,
+          // 修正：原本 a.date 不存在，改顯示截止日期 (endDate)，若無則顯示 '無期限'
+          date: a.endDate ? a.endDate : '無期限',
           content: a.content,
           id: a.id,
           isPinned: a.isPinned || false
@@ -956,6 +1023,7 @@
       });
 
       // 倒數事項 (Mock Data)
+      // 注意：Mock Data 這裡沒做 ID 綁定，暫時當作「全站通用」
       const deadlineItems = [...mockDeadlines];
 
       // 2. 渲染 [凍結區] - 紅色倒數項目
@@ -1003,7 +1071,14 @@
       new bootstrap.Modal(document.getElementById('viewAnnouncementModal')).show();
     }
 
-    document.addEventListener('DOMContentLoaded', renderReminders);
+    document.addEventListener('DOMContentLoaded', () => renderReminders());
+
+    // [新增] 監聽專案切換事件
+    document.addEventListener('projectChanged', (e) => {
+      // e.detail 包含 { projectId, role }
+      console.log('收到專案切換事件:', e.detail);
+      renderReminders(e.detail.projectId);
+    });
   </script>
 </body>
 

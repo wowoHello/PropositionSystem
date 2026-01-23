@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>系統公告設定 - CWT 命題工作平臺</title>
+    <title>系統公告管理 - CWT 命題工作平臺</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="quill.snow.css">
@@ -119,33 +119,42 @@
             color: #9d174d;
         }
 
-        /* === [修改] 需求調整顏色 === */
-        /* 系統公告 - 橘色 */
+        /* === 公告分類 Badge 樣式 === */
         .badge-category-system {
             background-color: #ffedd5;
             color: #c2410c;
             border: 1px solid #fed7aa !important;
         }
 
-        /* 命題公告 - 藍色 */
         .badge-category-proposition {
             background-color: #dbeafe;
             color: #1d4ed8;
             border: 1px solid #bfdbfe !important;
         }
 
-        /* 審題公告 - 綠色 */
         .badge-category-review {
             background-color: #dcfce7;
             color: #15803d;
             border: 1px solid #bbf7d0 !important;
         }
 
-        /* 其他 - 灰色 */
         .badge-category-other {
             background-color: #f3f4f6;
             color: #4b5563;
             border: 1px solid #e5e7eb !important;
+        }
+
+        /* === 綁定專案 Badge 樣式 === */
+        .badge-project {
+            font-size: 0.75rem;
+            background-color: #f1f5f9;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            padding: 2px 6px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
 
         .action-btn {
@@ -185,7 +194,11 @@
                 <!-- 中間：專案切換器 -->
                 <div class="col-6 d-flex justify-content-center">
                     <div class="project-switcher">
-                        <div class="project-display" id="projectToggle">
+                        <div class="project-display glass-enhanced" id="projectToggle">
+                            <div class="glass-icon">
+                                <img src="ICON/calendar.svg" alt="Calendar" style="width: 24px; height: 24px;">
+                            </div>
+
                             <div class="project-info">
                                 <div class="project-year" id="currentProjectYear">
                                     2024年度
@@ -361,15 +374,49 @@
 
     <!-- 麵包屑導航 -->
     <div class="breadcrumb-bar">
-        <div class="container-fluid px-4">
-            <a href="firstpage.html" class="breadcrumb-item-link">首頁</a>
-            <span class="breadcrumb-separator">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="9 18 15 12 9 6"></polyline>
-                </svg>
-            </span>
-            <span class="breadcrumb-current">系統公告設定</span>
+        <div class="container-fluid px-4 d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <a href="firstpage.html" class="breadcrumb-item-link">首頁</a>
+                <span class="breadcrumb-separator">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </span>
+                <span class="breadcrumb-current">系統公告管理</span>
+            </div>
+
+            <div class="bg-white rounded-pill px-2 py-1 border d-flex align-items-center shadow-sm"
+                style="width: fit-content;">
+
+                <span class="text-muted d-flex align-items-center me-2 border-end pe-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+                        class="bi bi-type" viewBox="0 0 16 16">
+                        <path
+                            d="m2.244 13.081.943-2.803H6.66l.944 2.803H8.86L5.54 3.75H4.322L1 13.081zm2.7-7.923L6.34 9.314H3.51l1.4-4.156zm9.146 7.027h.035v.896h1.128V8.125c0-1.51-1.114-2.345-2.646-2.345-1.736 0-2.59.916-2.666 2.174h1.108c.068-.718.595-1.19 1.517-1.19.971 0 1.518.52 1.518 1.464v.731H12.19c-1.647.007-2.522.8-2.522 2.058 0 1.319.957 2.18 2.345 2.18 1.06 0 1.716-.43 2.078-1.011zm-1.763.035c-.752 0-1.456-.397-1.456-1.244 0-.65.424-1.115 1.408-1.115h1.805v.834c0 .896-.752 1.525-1.757 1.525" />
+                    </svg>
+                </span>
+
+                <button
+                    class="btn btn-sm bg-transparent border-0 p-0 rounded-circle d-flex align-items-center justify-content-center hover-effect"
+                    style="width: 32px; height: 32px; transition: transform 0.1s;" onclick="changeFontSize(-1)"
+                    title="縮小">
+                    <img src="ICON/minus.png" alt="縮小" style="width: 26px; height: auto;">
+                </button>
+
+                <span class="small fw-bold text-secondary mx-2 user-select-none"
+                    style="cursor: pointer; min-width: 45px; text-align: center; transition: color 0.3s;"
+                    onclick="resetFontSize()" id="fontSizeDisplay" title="點擊還原預設值">
+                    100%
+                </span>
+
+                <button
+                    class="btn btn-sm bg-transparent border-0 p-0 rounded-circle d-flex align-items-center justify-content-center hover-effect"
+                    style="width: 32px; height: 32px; transition: transform 0.1s;" onclick="changeFontSize(1)"
+                    title="放大">
+                    <img src="ICON/add.png" alt="放大" style="width: 28px; height: auto;">
+                </button>
+            </div>
         </div>
     </div>
 
@@ -408,7 +455,7 @@
                                     <tr>
                                         <th class="ps-3 border-bottom-0 text-secondary small">標題</th>
                                         <th class="border-bottom-0 text-secondary small">分類</th>
-                                        <th class="border-bottom-0 text-secondary small">發布日期</th>
+                                        <th class="border-bottom-0 text-secondary small">上架期間</th>
                                         <th class="border-bottom-0 text-secondary small">狀態</th>
                                         <th class="text-end pe-3 border-bottom-0 text-secondary small">操作</th>
                                     </tr>
@@ -422,64 +469,104 @@
             </div>
         </div>
     </div>
-    <!-- 編輯 / 新增 -->
+    <!-- 編輯 / 新增 (Premium Style) -->
     <div class="modal fade" id="announcementModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content border-0 shadow">
-                <div class="modal-header bg-light border-bottom-0">
-                    <h5 class="modal-title fw-bold" id="modalTitle">新增公告</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <div class="modal-content modal-premium-content">
+                <!-- Header -->
+                <div class="modal-header modal-premium-header">
+                    <h5 class="modal-title modal-premium-title" id="modalTitle">
+                        <i class="bi bi-pencil-square"></i> 新增公告
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body p-4">
+
+                <!-- Body -->
+                <div class="modal-body modal-premium-body">
                     <form id="announcementForm">
                         <input type="hidden" id="editId" />
                         <div class="row g-3">
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold small text-secondary">分類</label>
-                                <select class="form-select" id="category" required>
-                                    <option value="系統公告">系統公告 (橘)</option>
-                                    <option value="命題公告">命題公告 (藍)</option>
-                                    <option value="審題公告">審題公告 (綠)</option>
-                                    <option value="其他">其他 (灰)</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold small text-secondary">發布日期</label>
-                                <input type="date" class="form-control" id="publishDate" required />
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold small text-secondary">狀態</label>
-                                <select class="form-select" id="status">
-                                    <option value="published">已發布</option>
-                                    <option value="draft">草稿</option>
+                            <!-- 分類 -->
+                            <div class="col-md-6">
+                                <label class="form-label form-label-premium"><i class="bi bi-tag-fill"></i> 分類</label>
+                                <select class="form-select form-select-premium" id="category" required>
+                                    <option value="系統公告">系統公告</option>
+                                    <option value="命題公告">命題公告</option>
+                                    <option value="審題公告">審題公告</option>
+                                    <option value="其他">其他</option>
                                 </select>
                             </div>
 
+                            <!-- 狀態 -->
+                            <div class="col-md-6">
+                                <label class="form-label form-label-premium"><i class="bi bi-toggle-on"></i> 狀態</label>
+                                <select class="form-select form-select-premium" id="status">
+                                    <option value="draft">草稿</option>
+                                    <option value="published">已發布</option>
+                                    <option value="offshelf">已下架</option>
+                                </select>
+                            </div>
+
+                            <!-- 綁定專案 -->
+                            <div class="col-md-12">
+                                <label class="form-label form-label-premium"><i class="bi bi-link-45deg"></i>
+                                    綁定梯次</label>
+                                <select class="form-select form-select-premium" id="boundProject">
+                                    <option value="all">全站通用 (不指定)</option>
+                                </select>
+                            </div>
+
+                            <!-- 上架日期 -->
+                            <div class="col-md-6">
+                                <label class="form-label form-label-premium"><i class="bi bi-calendar-event"></i>
+                                    上架日期</label>
+                                <input type="date" class="form-control form-control-premium" id="startDate" required />
+                            </div>
+
+                            <!-- 下架日期 -->
+                            <div class="col-md-6">
+                                <label class="form-label form-label-premium"><i class="bi bi-calendar-x"></i> 下架日期
+                                    (選填)</label>
+                                <input type="date" class="form-control form-control-premium" id="endDate" />
+                            </div>
+
+                            <!-- 置頂開關 -->
                             <div class="col-12">
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" role="switch" id="isPinned">
-                                    <label class="form-check-label fw-bold text-danger" for="isPinned">
+                                <div class="form-check form-switch ps-0 d-flex align-items-center gap-2 mt-2">
+                                    <input class="form-check-input ms-0" type="checkbox" role="switch" id="isPinned"
+                                        style="width: 2.5em; height: 1.25em;">
+                                    <label class="form-check-label fw-bold text-danger d-flex align-items-center"
+                                        for="isPinned">
                                         <i class="bi bi-pin-angle-fill me-1"></i>將此公告置頂顯示
                                     </label>
                                 </div>
                             </div>
 
+                            <!-- 標題 -->
                             <div class="col-12">
-                                <label class="form-label fw-bold small text-secondary">公告標題</label>
-                                <input type="text" class="form-control" id="title" placeholder="請輸入標題" required />
+                                <label class="form-label form-label-premium"><i class="bi bi-card-heading"></i>
+                                    公告標題</label>
+                                <input type="text" class="form-control form-control-premium" id="title"
+                                    placeholder="請輸入標題" required />
                             </div>
+
+                            <!-- 內容 (Quill) -->
                             <div class="col-12">
-                                <label class="form-label fw-bold small text-secondary">公告內容</label>
-                                <div id="editor-container" style="height: 200px;"></div>
+                                <label class="form-label form-label-premium"><i class="bi bi-file-text"></i>
+                                    公告內容</label>
+                                <div id="editor-container" style="height: 200px; border-radius: 0 0 10px 10px;"></div>
                                 <input type="hidden" id="content">
                             </div>
                         </div>
                     </form>
                 </div>
-                <div class="modal-footer border-top-0 pt-0 pb-4 px-4">
-                    <button type="button" class="btn btn-light text-secondary fw-bold"
-                        data-bs-dismiss="modal">取消</button>
-                    <button type="button" class="btn btn-primary fw-bold px-4" onclick="saveAnnouncement()">儲存</button>
+
+                <!-- Footer -->
+                <div class="modal-footer modal-premium-footer">
+                    <button type="button" class="btn btn-premium-cancel" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-premium-save" onclick="saveAnnouncement()">
+                        <i class="bi bi-check-lg me-1"></i> 儲存公告
+                    </button>
                 </div>
             </div>
         </div>
@@ -489,21 +576,37 @@
     <script src="js/app.js"></script>
     <script>
         let quill; // Global Quill instance
-        const modalElement = document.getElementById('announcementModal'); // 快取 Modal 元素
+        const modalElement = document.getElementById('announcementModal');
+
+        // Default data
         const defaultAnnouncements = [
-            { id: 1, title: "113年度 命題規範更新說明", category: "命題公告", date: "2026-01-20", status: "published", content: "...", isPinned: true }, // 置頂範例
-            { id: 2, title: "試題審查重點提示", category: "審題公告", date: "2026-01-19", status: "published", content: "...", isPinned: false },
-            { id: 3, title: "系統維護公告", category: "系統公告", date: "2026-01-15", status: "published", content: "...", isPinned: false },
-            { id: 4, title: "辦公室春節休假通知", category: "其他", date: "2026-01-10", status: "published", content: "...", isPinned: false },
+            { id: 1, title: "113年度 命題規範更新說明", category: "命題公告", startDate: "2026-01-20", endDate: "", boundProject: "all", status: "published", content: "...", isPinned: true },
+            { id: 2, title: "試題審查重點提示", category: "審題公告", startDate: "2026-01-19", endDate: "2026-02-19", boundProject: "all", status: "published", content: "...", isPinned: false },
+            { id: 3, title: "系統維護公告", category: "系統公告", startDate: "2026-01-15", endDate: "2026-01-16", boundProject: "all", status: "offshelf", content: "...", isPinned: false },
+            { id: 4, title: "辦公室春節休假通知", category: "其他", startDate: "2026-01-10", endDate: "", boundProject: 1, status: "published", content: "...", isPinned: false },
         ];
 
         function loadAnnouncements() {
             const stored = localStorage.getItem("cwt_announcements");
-            if (!stored) {
-                localStorage.setItem("cwt_announcements", JSON.stringify(defaultAnnouncements));
-                return defaultAnnouncements;
+            let data = stored ? JSON.parse(stored) : defaultAnnouncements;
+
+            // Auto-offline check
+            const today = new Date().toISOString().split('T')[0];
+            let hasChange = false;
+
+            data = data.map(item => {
+                if (item.status === 'published' && item.endDate && item.endDate < today) {
+                    item.status = 'offshelf';
+                    hasChange = true;
+                }
+                return item;
+            });
+
+            if (hasChange) {
+                localStorage.setItem("cwt_announcements", JSON.stringify(data));
             }
-            return JSON.parse(stored);
+
+            return data;
         }
 
         function renderTable() {
@@ -514,11 +617,11 @@
 
             tbody.innerHTML = "";
 
-            // 排序：置頂優先，再來按日期
+            // Sort: Pinned first, then Newest Date
             data.sort((a, b) => {
                 if (a.isPinned && !b.isPinned) return -1;
                 if (!a.isPinned && b.isPinned) return 1;
-                return new Date(b.date) - new Date(a.date);
+                return new Date(b.startDate) - new Date(a.startDate);
             });
 
             const filteredData = data.filter((item) => {
@@ -527,24 +630,54 @@
                 return matchCat && matchSearch;
             });
 
+            if (filteredData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">查無符合條件的公告</td></tr>`;
+                return;
+            }
+
             filteredData.forEach((item) => {
                 let badgeClass = "badge-category-other";
                 if (item.category === "系統公告") badgeClass = "badge-category-system";
                 else if (item.category === "命題公告") badgeClass = "badge-category-proposition";
                 else if (item.category === "審題公告") badgeClass = "badge-category-review";
 
-                // 置頂圖示
+                // Pinned Icon
                 const pinIcon = item.isPinned ? '<i class="bi bi-pin-angle-fill text-danger me-2" title="置頂"></i>' : '';
 
-                const statusBadge = item.status === "published"
-                    ? '<span class="badge bg-success bg-opacity-10 text-success">已發布</span>'
-                    : '<span class="badge bg-secondary bg-opacity-10 text-secondary">草稿</span>';
+                let statusBadge = '';
+                if (item.status === "published") {
+                    statusBadge = '<span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">已發布</span>';
+                } else if (item.status === "offshelf") {
+                    statusBadge = '<span class="badge bg-secondary bg-opacity-25 text-secondary border">已下架</span>';
+                } else {
+                    statusBadge = '<span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25">草稿</span>';
+                }
+
+                // Bound Project
+                let projectBadge = '<span class="badge-project"><i class="bi bi-globe"></i> 全站通用</span>';
+                if (item.boundProject && item.boundProject !== 'all') {
+                    // Use loose equality (or conversion) since localStorage data might be number but initial logic was loose
+                    const proj = typeof mockProjects !== 'undefined' ? mockProjects.find(p => p.id == item.boundProject) : null;
+                    const pName = proj ? proj.name : '未知梯次';
+                    projectBadge = `<span class="badge-project text-primary bg-primary bg-opacity-10 border-primary border-opacity-25"><i class="bi bi-link-45deg"></i> ${pName}</span>`;
+                }
+
+                // Date Period
+                let periodText = '<span class="text-muted small">-</span>';
+                if (item.startDate) {
+                    const start = item.startDate.replace(/-/g, '/');
+                    const end = item.endDate ? item.endDate.replace(/-/g, '/') : '無期限';
+                    periodText = `<span class="text-secondary small font-monospace">${start} ~ ${end}</span>`;
+                }
 
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
                     <td class="ps-3 fw-medium text-dark">${pinIcon}${item.title}</td>
                     <td><span class="badge ${badgeClass}">${item.category}</span></td>
-                    <td class="text-secondary small">${item.date}</td>
+                    <td class="text-secondary small">
+                        ${projectBadge}
+                        <div class="mt-1">${periodText}</div>
+                    </td>
                     <td>${statusBadge}</td>
                     <td class="text-end pe-3">
                         <button class="btn btn-sm btn-light text-primary fw-bold" onclick="editAnnouncement(${item.id})">編輯</button>
@@ -559,9 +692,11 @@
             document.getElementById("announcementForm").reset();
             document.getElementById("editId").value = "";
             document.getElementById("modalTitle").innerText = "新增公告";
-            document.getElementById("publishDate").valueAsDate = new Date();
+            document.getElementById("startDate").valueAsDate = new Date();
+            document.getElementById("endDate").value = "";
+            document.getElementById("boundProject").value = "all";
             document.getElementById("isPinned").checked = false;
-            if (quill) quill.setText('');   // 清空 Quill
+            if (quill) quill.setText('');
             document.getElementById("content").value = "";
         }
 
@@ -572,19 +707,19 @@
                 document.getElementById("editId").value = item.id;
                 document.getElementById("title").value = item.title;
                 document.getElementById("category").value = item.category;
-                document.getElementById("publishDate").value = item.date;
+                document.getElementById("startDate").value = item.startDate || "";
+                document.getElementById("endDate").value = item.endDate || "";
+                document.getElementById("boundProject").value = item.boundProject || "all";
                 document.getElementById("status").value = item.status;
                 document.getElementById("isPinned").checked = item.isPinned || false;
-                // 統一使用 getOrCreateInstance 開啟視窗
+
                 const modalInstance = bootstrap.Modal.getOrCreateInstance(modalElement);
                 modalInstance.show();
 
-                // 視窗開啟後，稍微延遲一下再填入 Quill，確保渲染正確
+                // Delay to ensure rendering
                 setTimeout(() => {
                     if (quill) {
-                        // 先清空再貼上，避免內容重複
                         quill.setText('');
-                        // 處理 HTML 內容
                         const delta = quill.clipboard.convert({ html: item.content || "" });
                         quill.setContents(delta, 'silent');
                     }
@@ -596,48 +731,64 @@
 
         function saveAnnouncement() {
             try {
-                const title = document.getElementById("title").value;
+                const title = document.getElementById("title").value.trim();
                 const category = document.getElementById("category").value;
-                const date = document.getElementById("publishDate").value;
+                const startDate = document.getElementById("startDate").value;
+                const endDate = document.getElementById("endDate").value;
+                let boundProject = document.getElementById("boundProject").value;
                 const status = document.getElementById("status").value;
                 const isPinned = document.getElementById("isPinned").checked;
                 const editId = document.getElementById("editId").value;
 
-                // 獲取 Quill 內容 (HTML)
-                // 如果 quill 實例存在，使用 semanticHTML (v2.0推薦) 或 innerHTML
+                // Ensure numeric value for project ID if not 'all'
+                if (boundProject !== "all") {
+                    boundProject = parseInt(boundProject, 10);
+                }
+
+                // Get Quill Content
                 let content = "";
                 if (quill) {
-                    // Quill v2 取 HTML 的方式
                     content = quill.getSemanticHTML ? quill.getSemanticHTML() : quill.root.innerHTML;
                 } else {
                     content = document.getElementById("content").value;
                 }
 
-                if (!title || !date) {
-                    alert("請填寫必填欄位");
+                if (!title || !startDate) {
+                    if (typeof showToast === 'function') {
+                        showToast("請填寫標題與上架日期", "error");
+                    } else {
+                        alert("請填寫標題與上架日期");
+                    }
                     return;
                 }
 
                 let data = loadAnnouncements();
                 if (editId) {
                     const index = data.findIndex((x) => x.id == editId);
-                    if (index > -1) data[index] = { ...data[index], title, category, date, status, content, isPinned };
+                    if (index > -1) data[index] = { ...data[index], title, category, startDate, endDate, boundProject, status, content, isPinned };
                 } else {
                     const newId = data.length > 0 ? Math.max(...data.map((x) => x.id)) + 1 : 1;
-                    data.push({ id: newId, title, category, date, status, content, isPinned });
+                    data.push({ id: newId, title, category, startDate, endDate, boundProject, status, content, isPinned });
                 }
 
                 localStorage.setItem("cwt_announcements", JSON.stringify(data));
 
-                // 關閉 Modal
                 const modalInstance = bootstrap.Modal.getOrCreateInstance(modalElement);
                 modalInstance.hide();
 
                 renderTable();
 
+                if (typeof showToast === 'function') {
+                    showToast("公告已儲存", "success");
+                }
+
             } catch (error) {
                 console.error("儲存失敗:", error);
-                alert("儲存時發生錯誤，請檢查控制台(F12)的詳細訊息。");
+                if (typeof showToast === 'function') {
+                    showToast("儲存時發生錯誤", "error");
+                } else {
+                    alert("儲存時發生錯誤");
+                }
             }
         }
 
@@ -647,57 +798,40 @@
                 data = data.filter((x) => x.id !== id);
                 localStorage.setItem("cwt_announcements", JSON.stringify(data));
                 renderTable();
+
+                if (typeof showToast === 'function') {
+                    showToast("公告已刪除", "success");
+                }
             }
         }
-        // 初始化設定
+
+        // Initialize
         document.addEventListener("DOMContentLoaded", () => {
             renderTable();
             document.getElementById("filterCategory").addEventListener("change", renderTable);
             document.getElementById("searchInput").addEventListener("input", renderTable);
-            // Quill 功能設定
-            // 註冊自訂字體
-            const Font = Quill.import('attributors/class/font'); // 引入字體模組
-            Font.whitelist = [
-                'microsoft-jhenghei', // 微軟正黑體
-                'kaiu',               // 標楷體
-                'times-new-roman',    // Times New Roman
-                'arial',              // Arial
-                'comic-sans-ms'       // Comic Sans
-            ];
-            Quill.register(Font, true); // 註冊回 Quill
 
-            const toolbarOptions = [
-                [{ 'size': ['small', false, 'large', 'huge'] }],  // 文字大小
-                [{ 'header': [1, 2, 3, 4, 5, 6, false] }],      // 標題
-                [{
-                    'font': [false, // 預設字體
-                        'microsoft-jhenghei',   //微軟正黑體
-                        'kaiu',                 //標楷體
-                        'times-new-roman',      //Times New Roman
-                        'arial',                //Arial
-                        'comic-sans-ms'         //Comic Sans
-                    ]
-                }],                                 // 字體
-                [{ 'color': [] }, { 'background': [] }],          // 文字顏色、背景顏色
-                [{ 'align': [] }],                                // 對齊
-                ['bold', 'italic', 'underline', 'strike'],        // 粗體、斜體、底線、刪除線
-                ['blockquote', 'code-block'],                     // 引用、程式碼區塊
-                ['link', 'image', 'video'],
-                [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'list': 'check' }], // 有序列表、無序列表、待辦清單
-                [{ 'script': 'sub' }, { 'script': 'super' }],      // 上標、下標
-                [{ 'indent': '-1' }, { 'indent': '+1' }],          // 縮排
-                [{ 'direction': 'rtl' }],                         // 文字方向
-                ['clean']                                         // 清除格式
-            ];
+            // Init Quill
+            if (typeof Quill !== 'undefined') {
+                quill = new Quill('#editor-container', {
+                    theme: 'snow',
+                    placeholder: '請輸入內容...',
+                    modules: {
+                        toolbar: window.mainToolbar // from app.js
+                    }
+                });
+            }
 
-            // 初始化 Quill
-            quill = new Quill('#editor-container', {
-                theme: 'snow',
-                placeholder: '請輸入內容...',
-                modules: {
-                    toolbar: toolbarOptions
-                }
-            });
+            // Init Project Select
+            const projSelect = document.getElementById('boundProject');
+            if (projSelect && typeof mockProjects !== 'undefined') {
+                mockProjects.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p.id;
+                    opt.textContent = `${p.year} ${p.name}`;
+                    projSelect.appendChild(opt);
+                });
+            }
         });
     </script>
 </body>
