@@ -424,7 +424,7 @@ window.batchUpdateStatus = function (targetStatus) {
         icon = "warning";
         confirmBtnColor = "#2563eb"; // 藍色
     } else if (targetStatus === '已確認') {
-        text = "設為已確認代表題目已完成編輯。";
+        text = "設為已確認代表題目已完成編輯，還可再進行編輯。";
         icon = "info";
         confirmBtnColor = "#10b981"; // 綠色
     } else {

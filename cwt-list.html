@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>我的命題列表 - CWT 命題工作平臺</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="css/quill.snow.css">
   <link rel="stylesheet" href="css/sweetalert2.css">
@@ -894,6 +895,35 @@
             </div>
           </div>
         </div>
+      </div>
+
+      <div class="alert alert-info alert-dismissible fade show d-flex align-items-center mb-4 shadow-sm" role="alert"
+        style="border-left: 5px solid #0dcaf0;">
+        <svg xmlns="http://www.w3.org/2000/svg" class="bi flex-shrink-0 me-3" width="24" height="24" fill="currentColor"
+          viewBox="0 0 16 16">
+          <path
+            d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z" />
+        </svg>
+        <div>
+          <strong>操作提示：</strong> 點擊下方統計卡片中的 <span class="badge rounded-pill bg-light text-dark border mx-1">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="icon-orange">
+              <path
+                d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0zM9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1zM4.5 9a.5.5 0 0 1 0-1h7a.5.5 0 0 1 0 1h-7zm0 2.5a.5.5 0 0 1 0-1h4a.5.5 0 0 1 0 1h-4z" />
+            </svg>
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="icon-green">
+              <path
+                d="M5.072.56C6.157.265 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.596 4.477-.787 7.795-2.465 9.99a11.775 11.775 0 0 1-2.517 2.453 7.159 7.159 0 0 1-1.048.625c-.28.132-.581.24-.829.24s-.548-.108-.829-.24a7.158 7.158 0 0 1-1.048-.625 11.777 11.777 0 0 1-2.517-2.453C1.928 10.487.545 7.169 1.141 2.692A1.54 1.54 0 0 1 2.185 1.43 62.456 62.456 0 0 1 5.072.56z" />
+              <path fill="white"
+                d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z" />
+            </svg>
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="icon-blue">
+              <path
+                d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z" />
+            </svg>
+            圖示</span> ( 草稿、已確認、已傳送 )，即可將列表選取的項目 <strong class="text-primary">批次變更</strong>
+          為該狀態。
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
       </div>
 
       <div class="row g-4 mb-4">
