@@ -93,6 +93,7 @@ const TypeHandlers = {
     '精選題目': typeof GeneralHandler !== 'undefined' ? GeneralHandler : null,
     '閱讀題組': typeof ReadingHandler !== 'undefined' ? ReadingHandler : null,
     '長文題目': typeof LongArticleHandler !== 'undefined' ? LongArticleHandler : null,
+    '短文題組': typeof ShortArticleHandler !== 'undefined' ? ShortArticleHandler : null,
 };
 
 // ==========================================
@@ -117,6 +118,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (TypeHandlers['一般題目'] && TypeHandlers['一般題目'].init) TypeHandlers['一般題目'].init();
     if (TypeHandlers['閱讀題組'] && TypeHandlers['閱讀題組'].init) TypeHandlers['閱讀題組'].init();
     if (TypeHandlers['長文題目'] && TypeHandlers['長文題目'].init) TypeHandlers['長文題目'].init();
+    if (TypeHandlers['短文題組'] && TypeHandlers['短文題組'].init) TypeHandlers['短文題組'].init();
 
     // C. 啟動各功能模組
     initProjectHeader();    // 原 app.js 的專案切換功能
@@ -788,6 +790,9 @@ function initTypeSwitcher() {
             if (el) el.classList.remove('d-none');
         } else if (val === '長文題目') {
             const el = document.getElementById('form-longarticle');
+            if (el) el.classList.remove('d-none');
+        } else if (val === '短文題組') {
+            const el = document.getElementById('form-shortarticle');
             if (el) el.classList.remove('d-none');
         }
     });

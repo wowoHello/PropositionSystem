@@ -281,10 +281,15 @@ const GeneralHandler = (function () {
             });
 
             // 如果是開啟編輯模式，且主類已有值，則次類應該要開啟
-            if (editable) {
-                const mainCat = document.getElementById('gMainCategory').value;
-                if (mainCat) {
-                    document.getElementById('gSubCategory').disabled = false;
+            const subSelect = document.getElementById('gSubCategory');
+            if (subSelect) {
+                if (editable) {
+                    // 編輯模式：如果有選主類，次類就要解鎖；沒選主類則保持鎖定
+                    const mainCat = document.getElementById('gMainCategory').value;
+                    subSelect.disabled = !mainCat;
+                } else {
+                    // 檢視模式 (editable=false) 下，強制鎖定次類
+                    subSelect.disabled = true;
                 }
             }
         }
