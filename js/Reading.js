@@ -13,18 +13,6 @@ const ReadingHandler = (function () {
             // 綁定全域函式
             window.Reading_AddSub = () => this.addSubQuestion(null, false); // 手動新增預設展開
             window.Reading_RemoveSub = (uid) => this.removeSubQuestion(uid);
-
-            const container = document.getElementById('sub-questions-container');
-            if (container) {
-                container.addEventListener('shown.bs.collapse', (e) => {
-                    if (e.target.classList.contains('sub-question-body-collapse')) {
-                        const card = e.target.closest('.card');
-                        if (card) {
-                            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        }
-                    }
-                });
-            }
         },
 
         clear: function () {

@@ -128,6 +128,45 @@
       overflow-x: hidden;
     }
 
+
+    /* =========================================
+   狀態列樣式區隔
+   ========================================= */
+
+    /* 1. 鎖定狀態 (已傳送 / Submitted) */
+    /* 使用淺灰色背景，讓文字變淡，營造無法編輯的感覺 */
+    .row-locked {
+      background-color: #f8f9fa !important;
+      /* 淺灰背景 */
+      color: #adb5bd !important;
+      /* 文字變淡 */
+    }
+
+    /* 2. 讓該行的一般連結 (如標題) 失效 */
+    .row-locked a.fw-bold {
+      color: #adb5bd !important;
+      pointer-events: none;
+      /* 禁止點擊標題 */
+      text-decoration: none;
+    }
+
+    /* 3. 讓 Checkbox 看起來是停用的 */
+    .row-locked .form-check-input {
+      background-color: #e9ecef;
+      border-color: #dee2e6;
+      opacity: 0.5;
+      pointer-events: none;
+      /* 禁止點擊 Checkbox */
+    }
+
+    /* 4. 讓「檢視」按鈕恢復可點擊 */
+    .row-locked button {
+      pointer-events: auto !important;
+      cursor: pointer;
+      color: #3b82f6 !important;
+      opacity: 1 !important;
+    }
+
     /* =========================================
          原有的樣式保留 (Breadcrumb, Main Content)
          ========================================= */
@@ -479,22 +518,89 @@
       box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.15);
     }
 
-    /* 當 Radio 被選中時，外框變色提示 */
-    .input-group:has(input[type="radio"]:checked) .form-control {
-      border-color: #10b981;
-      /* 綠色代表正確答案 */
-      background-color: #f0fdf4;
+    /* 選項卡片樣式 Redesign */
+    .option-card {
+      border: 1px solid #e5e7eb;
+      background-color: white;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
     }
 
-    .input-group:has(input[type="radio"]:checked) .input-group-text {
+    .option-header-styled {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0.75rem;
+      background-color: #f9fafb;
+      border-bottom: 1px solid #e5e7eb;
+      cursor: pointer;
+      /* 整條可點 */
+      transition: background-color 0.2s;
+    }
+
+    .option-header-styled:hover {
+      background-color: #f3f4f6;
+    }
+
+    /* === 使用 CSS :has 選擇器處理選取狀態 (無需 JS) === */
+
+    /* 1. 外框與陰影：當內部 radio 被選中時 */
+    .option-card:has(input[type="radio"]:checked) {
       border-color: #10b981;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+      /* 輕微綠色陰影 */
+      /* 不再顯示左側綠色 border */
+    }
+
+    /* 2. 標頭變色 */
+    .option-card:has(input[type="radio"]:checked) .option-header-styled {
       background-color: #f0fdf4;
+      /* 極淡綠色標題 */
+      border-bottom-color: #86efac;
+    }
+
+    /* 3. 文字變色 */
+    .option-card:has(input[type="radio"]:checked) .form-check-label {
       color: #059669 !important;
+      font-weight: 800 !important;
+    }
+
+    /* 4. ★★★ 關鍵修正：確保編輯器區域永遠維持白色背景 ★★★ */
+    /* 強制覆蓋任何可能繼承的背景色 */
+    .question-form-group .ql-toolbar,
+    .question-form-group .ql-container,
+    .option-editor,
+    .option-card:has(input[type="radio"]:checked) .ql-toolbar,
+    .option-card:has(input[type="radio"]:checked) .ql-container {
+      background-color: white !important;
+      border-color: #dee2e6 !important;
+    }
+
+    /* 移除舊的 input-group 樣式干擾，避免它同時生效 */
+    .input-group:has(input[type="radio"]:checked) .form-control {
+      background-color: white !important;
+      border-color: #dee2e6 !important;
     }
 
     /* 選項收合速度 */
     .collapsing {
       transition: height 0.6s ease;
+    }
+
+    /* 互動式狀態 Icon */
+    .stat-icon.interactive {
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .stat-icon.interactive:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-icon.interactive:active {
+      transform: scale(0.95);
     }
   </style>
 </head>
@@ -804,7 +910,7 @@
         </div>
         <div class="col-md-3">
           <div class="stat-card">
-            <div class="stat-icon icon-orange">
+            <div class="stat-icon icon-orange interactive" onclick="batchUpdateStatus('草稿')" title="將選取項目設為「草稿」">
               <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
                 <path
                   d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0zM9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1zM4.5 9a.5.5 0 0 1 0-1h7a.5.5 0 0 1 0 1h-7zm0 2.5a.5.5 0 0 1 0-1h4a.5.5 0 0 1 0 1h-4z" />
@@ -818,7 +924,7 @@
         </div>
         <div class="col-md-3">
           <div class="stat-card">
-            <div class="stat-icon icon-green">
+            <div class="stat-icon icon-green interactive" onclick="batchUpdateStatus('已確認')" title="將選取項目設為「已確認」">
               <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
                 <path
                   d="M5.072.56C6.157.265 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.596 4.477-.787 7.795-2.465 9.99a11.775 11.775 0 0 1-2.517 2.453 7.159 7.159 0 0 1-1.048.625c-.28.132-.581.24-.829.24s-.548-.108-.829-.24a7.158 7.158 0 0 1-1.048-.625 11.777 11.777 0 0 1-2.517-2.453C1.928 10.487.545 7.169 1.141 2.692A1.54 1.54 0 0 1 2.185 1.43 62.456 62.456 0 0 1 5.072.56z" />
@@ -834,7 +940,7 @@
         </div>
         <div class="col-md-3">
           <div class="stat-card">
-            <div class="stat-icon icon-blue">
+            <div class="stat-icon icon-blue interactive" onclick="batchUpdateStatus('已傳送')" title="將選取項目設為「已傳送」">
               <svg width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
                 <path
                   d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z" />
@@ -861,22 +967,15 @@
           </div>
 
           <div class="d-flex gap-2">
-            <div class="dropdown d-inline-block">
-              <button class="btn-tool dropdown-toggle" type="button" id="batchDropdown" data-bs-toggle="dropdown"
-                aria-expanded="false">
-                <span class="icon-checkbox"></span>
-                編輯操作
-              </button>
-              <ul class="dropdown-menu shadow border-0" aria-labelledby="batchDropdown">
-                <li><a class="dropdown-item" href="#" onclick="batchAction('草稿')">設為草稿</a></li>
-                <li><a class="dropdown-item" href="#" onclick="batchAction('已確認')">設為已確認</a></li>
-                <li><a class="dropdown-item" href="#" onclick="batchAction('已傳送')">設為已傳送</a></li>
-                <li>
-                  <hr class="dropdown-divider">
-                </li>
-                <li><a class="dropdown-item text-danger" href="#" onclick="batchAction('刪除')">批次刪除</a></li>
-              </ul>
-            </div>
+            <button class="btn-tool text-danger" onclick="batchAction('刪除')">
+              <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                <path
+                  d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z" />
+                <path
+                  d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z" />
+              </svg>
+              <span>批次刪除</span>
+            </button>
 
             <button class="btn-tool" onclick="resetSelection()">
               <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -928,7 +1027,7 @@
                   <button class="btn btn-link p-0 text-decoration-none small fw-bold"
                     onclick="openPropModal(this, 'view')">檢視</button>
                   <span class="text-muted mx-1">|</span>
-                  <button class="btn btn-link p-0 text-decoration-none small fw-bold"
+                  <button class="btn btn-link p-0 text-decoration-none small fw-bold text-success"
                     onclick="openPropModal(this, 'edit')">編輯</button>
                   <span class="text-muted mx-1">|</span>
                   <button class="btn btn-link p-0 text-decoration-none small fw-bold text-danger"
@@ -953,7 +1052,7 @@
                   <button class="btn btn-link p-0 text-decoration-none small fw-bold"
                     onclick="openPropModal(this, 'view')">檢視</button>
                   <span class="text-muted mx-1">|</span>
-                  <button class="btn btn-link p-0 text-decoration-none small fw-bold"
+                  <button class="btn btn-link p-0 text-decoration-none small fw-bold text-success"
                     onclick="openPropModal(this, 'edit')">編輯</button>
                   <span class="text-muted mx-1">|</span>
                   <button class="btn btn-link p-0 text-decoration-none small fw-bold text-danger"
@@ -961,9 +1060,9 @@
                 </td>
               </tr>
 
-              <tr class="data-row" data-type="閱讀題組" data-status="已傳送" data-level="中高級"
+              <tr class="data-row row-locked" data-type="閱讀題組" data-status="已傳送" data-level="中高級"
                 data-json='{"level":"中高級","mainCat":"語體文","content":"%3Cp%3E%E9%80%99%E6%98%AF%E4%B8%80%E7%AF%87%E7%AF%84%E4%BE%8B%E6%96%87%E7%AB%A0...%3C%2Fp%3E","subQuestions":[{"content":"%3Cp%3E%E5%AD%90%E9%A1%8C%E4%B8%80%E7%9A%84%E5%85%A7%E5%AE%B9%3C%2Fp%3E","optA":"%3Cp%3EA%3C%2Fp%3E","optB":"%3Cp%3EB%3C%2Fp%3E","optC":"%3Cp%3EC%3C%2Fp%3E","optD":"%3Cp%3ED%3C%2Fp%3E","ans":"A"}]}'>
-                <td><input type="checkbox" class="form-check-input" /></td>
+                <td><input type="checkbox" class="form-check-input" disabled /></td>
                 <td class="text-dark fw-medium">
                   [閱讀] 閱讀下文，回答問題 3-5... (共1子題)
                 </td>
@@ -1040,33 +1139,57 @@
               <!-- 精選題目 -->
               <div id="form-general" class="question-form-group">
 
-                <div class="row g-3 mb-3">
-                  <div class="col-md-4">
-                    <label class="form-label fw-bold small text-secondary required-star">適用等級</label>
-                    <select class="form-select" id="gLevel">
-                      <option value="">請選擇...</option>
-                      <option value="初等">初等</option>
-                      <option value="中等">中等</option>
-                      <option value="中高等">中高等</option>
-                    </select>
-                  </div>
-                  <div class="col-md-4">
-                    <label class="form-label fw-bold small text-secondary required-star">主題</label>
-                    <select class="form-select" id="gMainCategory">
-                      <option value="">請選擇...</option>
-                    </select>
-                  </div>
-                  <div class="col-md-4">
-                    <label class="form-label fw-bold small text-secondary required-star">次類</label>
-                    <select class="form-select" id="gSubCategory" disabled>
-                      <option value="">請先選擇主題</option>
-                    </select>
-                  </div>
-                </div>
+                <div class="p-3 bg-white border rounded mb-4 shadow-sm">
+                  <h6 class="fw-bold text-primary mb-3 border-bottom pb-2">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                      class="me-1">
+                      <path
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                      </path>
+                    </svg>
+                    試題內容設定
+                  </h6>
 
-                <div class="mb-4">
-                  <label class="form-label fw-bold small text-secondary required-star">題幹內容</label>
-                  <div id="q-editor-content"></div>
+                  <div class="row g-3 mb-3">
+                    <!-- Row 1 -->
+                    <div class="col-md-6">
+                      <label class="form-label fw-bold small text-secondary required-star">適用等級</label>
+                      <select class="form-select" id="gLevel">
+                        <option value="">請選擇...</option>
+                        <option value="初等">初等</option>
+                        <option value="中等">中等</option>
+                        <option value="中高等">中高等</option>
+                      </select>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label fw-bold small text-secondary required-star">主題</label>
+                      <select class="form-select" id="gMainCategory">
+                        <option value="">請選擇...</option>
+                      </select>
+                    </div>
+
+                    <!-- Row 2 -->
+                    <div class="col-md-6">
+                      <label class="form-label fw-bold small text-secondary required-star">次類</label>
+                      <select class="form-select" id="gSubCategory" disabled>
+                        <option value="">請先選擇主題</option>
+                      </select>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label fw-bold small text-secondary">附檔 (圖片/PDF)</label>
+                      <div class="input-group">
+                        <input class="form-control" type="file" id="gAttachment">
+                      </div>
+                      <div class="form-text small mt-1 text-primary d-none" id="gAttachmentName">
+                        <!-- 顯示目前已上傳的檔名 (編輯模式用) -->
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label fw-bold small text-secondary required-star">題幹內容</label>
+                    <div id="q-editor-content"></div>
+                  </div>
                 </div>
 
                 <div class="p-3 bg-light rounded border mb-3">
@@ -1220,6 +1343,57 @@
       </div>
     </div>
   </div>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      console.log("開始執行鎖定邏輯..."); // 用來檢查是否有執行
+
+      // 1. 抓取表格 tbody 內的所有列
+      // 注意：這裡直接抓 tbody 裡的 tr，避免抓到 header
+      const rows = document.querySelectorAll('tbody tr');
+
+      rows.forEach((row, index) => {
+        // 2. 找到「狀態」那個欄位 (第 6 欄)
+        // 為了避免算錯格，我們直接找裡面的 .badge
+        const badge = row.querySelector('.badge');
+
+        if (badge) {
+          // 去除前後空白，確保比對正確
+          const statusText = badge.innerText.trim();
+          console.log(`第 ${index + 1} 行狀態:`, statusText); // 檢查用
+
+          // 3. 判斷是否為「已傳送」
+          if (statusText === '已傳送') {
+
+            // A. 加上鎖定樣式 class
+            row.classList.add('row-locked');
+
+            // B. 真的把 checkbox 停用 (防止全選時被選中)
+            const checkbox = row.querySelector('input[type="checkbox"]');
+            if (checkbox) {
+              checkbox.disabled = true;
+            }
+          }
+        }
+      });
+
+      // 4. 修正全選功能
+      // (確保全選時，不會勾到已鎖定的項目)
+      const selectAllBtn = document.getElementById('selectAll');
+      if (selectAllBtn) {
+        selectAllBtn.addEventListener('change', function () {
+          const isChecked = this.checked;
+          const allCheckboxes = document.querySelectorAll('tbody input[type="checkbox"]');
+
+          allCheckboxes.forEach(cb => {
+            // 只有「沒有被 disabled」的才跟著全選
+            if (!cb.disabled) {
+              cb.checked = isChecked;
+            }
+          });
+        });
+      }
+    });
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="js/sweetalert2.min.js"></script>
   <script src="js/quill.min.js"></script>

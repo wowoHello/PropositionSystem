@@ -43,7 +43,7 @@ const GeneralHandler = (function () {
                         });
                     } else {
                         subSelect.disabled = true;
-                        subSelect.innerHTML = '<option value="">請先選擇主題</option>';
+                        subSelect.innerHTML = '<option value="">請先選擇主類</option>';
                     }
                 });
             }
@@ -98,12 +98,21 @@ const GeneralHandler = (function () {
                 mainSelect.value = '';
                 mainSelect.dispatchEvent(new Event('change'));
             }
+
             // Clear Sub Category explicitly just in case
             const subSelect = document.getElementById('gSubCategory');
             if (subSelect) {
-                subSelect.value = '';
-                subSelect.innerHTML = '<option value="">請先選擇主題</option>';
+                subSelect.innerHTML = '<option value="">請先選擇主類</option>';
                 subSelect.disabled = true;
+            }
+
+            // 清空附檔
+            const attachInput = document.getElementById('gAttachment');
+            const attachLabel = document.getElementById('gAttachmentName');
+            if (attachInput) attachInput.value = '';
+            if (attachLabel) {
+                attachLabel.innerText = '';
+                attachLabel.classList.add('d-none');
             }
 
             if (quills.content) quills.content.setText('');
@@ -117,15 +126,28 @@ const GeneralHandler = (function () {
         fill: function (data, isViewMode) {
             document.getElementById('gLevel').value = data.level || '';
             const mainSelect = document.getElementById('gMainCategory');
+            const subSelect = document.getElementById('gSubCategory'); // Define subSelect here
+
             if (mainSelect) {
                 mainSelect.value = data.mainCat || '';
                 // 觸發 change 事件以填充次類選項
                 mainSelect.dispatchEvent(new Event('change'));
 
                 // 填充次類的值 (必須在 change 事件後執行)
-                const subSelect = document.getElementById('gSubCategory');
                 if (subSelect && data.subCat) {
                     subSelect.value = data.subCat;
+                }
+            }
+
+            // 回填附檔資訊 (因為無法設定 file input 的 value，改用文字顯示 current file)
+            const attachLabel = document.getElementById('gAttachmentName');
+            if (attachLabel) {
+                if (data.attachment) {
+                    attachLabel.innerHTML = `<i class="bi bi-paperclip"></i> 目前檔案：${data.attachment}`;
+                    attachLabel.classList.remove('d-none');
+                } else {
+                    attachLabel.innerText = '';
+                    attachLabel.classList.add('d-none');
                 }
             }
 
@@ -159,6 +181,22 @@ const GeneralHandler = (function () {
             const mainCat = document.getElementById('gMainCategory').value;
             const subCat = document.getElementById('gSubCategory').value;
             const contentText = quills.content.getText().trim();
+
+            // 處理附檔 (若有新上傳則用新檔名，否則保留舊檔名-這裡簡化處理，實務上要判斷)
+            const attachInput = document.getElementById('gAttachment');
+            let attachName = '';
+            if (attachInput && attachInput.files.length > 0) {
+                attachName = attachInput.files[0].name;
+            } else {
+                // 如果沒上傳新檔案，嘗試讀取 old value (但在這個純前端 demo 比較難做，先假設沒選就是沒檔案，或是編輯時保留原值邏輯要再細寫)
+                // 簡易作法：讀取 gAttachmentName 的文字來判斷是否已有檔案
+                const attachLabel = document.getElementById('gAttachmentName');
+                if (attachLabel && !attachLabel.classList.contains('d-none')) {
+                    // 格式：目前檔案：xxx.jpg
+                    attachName = attachLabel.innerText.replace(' 目前檔案：', '').trim();
+                }
+            }
+
             const answerEl = document.querySelector('input[name="correctAnswer"]:checked');
 
             if (status === '已確認') {
@@ -193,6 +231,7 @@ const GeneralHandler = (function () {
                 level: level,
                 mainCat: mainCat,
                 subCat: subCat,
+                attachment: attachName,
                 content: encodeURIComponent(quills.content.root.innerHTML), // 存 HTML
                 summary: contentText.length > 20 ? contentText.substring(0, 20) + '...' : contentText,
                 optA: encodeURIComponent(quills.optA.root.innerHTML),

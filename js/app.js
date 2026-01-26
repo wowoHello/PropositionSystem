@@ -363,6 +363,9 @@ window.deleteRow = function (btn) {
 
 // 批次操作
 window.batchAction = function (action) {
+    // 這裡只處理 '刪除'，但保留參數結構以便未來擴充
+    if (action !== '刪除') return;
+
     const checkedRows = document.querySelectorAll('tbody .data-row input[type="checkbox"]:checked');
     if (checkedRows.length === 0) {
         Swal.fire({
@@ -374,44 +377,110 @@ window.batchAction = function (action) {
     }
 
     Swal.fire({
-        title: `確定要對選取的 ${checkedRows.length} 筆資料執行「${action}」嗎？`,
-        icon: 'question',
+        title: `確定要刪除選取的 ${checkedRows.length} 筆資料嗎？`,
+        icon: 'warning',
         showCancelButton: true,
-        confirmButtonText: '確定',
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: '確定刪除',
         cancelButtonText: '取消'
     }).then((result) => {
         if (result.isConfirmed) {
             checkedRows.forEach(cb => {
+                // 二次防呆：忽略已禁用的項目
+                if (cb.disabled) return;
+
                 const row = cb.closest('tr');
-                if (action === '刪除') {
-                    row.remove();
-                } else {
-                    // 更新狀態顯示
-                    const badgeClass = getStatusClass(action);
-                    // 注意：如果表格欄位有變動，這裡的 cells index 可能要確認一下
-                    // 假設狀態欄位是第 5 欄 (Index 4)
-                    if (row.cells[4]) {
-                        row.cells[4].innerHTML = `<span class="badge-outline badge-${badgeClass}">${action}</span>`;
-                    }
-                    row.setAttribute('data-status', action);
-
-                    // 更新隱藏的 JSON 資料
-                    let jsonData = JSON.parse(row.getAttribute('data-json') || '{}');
-                    jsonData.status = action;
-                    row.setAttribute('data-json', JSON.stringify(jsonData));
-
-                    // 刷新操作按鈕 (例如變成已傳送後，不能再編輯)
-                    updateRowActionButtons(row, action);
-                }
+                row.remove();
             });
 
-            if (typeof resetSelection === 'function') {
-                resetSelection();
-            } else {
-                // 如果還沒把 resetSelection 加進去，這段是後備代碼
-                document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-            }
-            showToast(`批次${action}完成`, 'success');
+            if (typeof resetSelection === 'function') resetSelection();
+            checkEmptyState(); // 刪除後檢查是否為空並更新統計
+            showToast(`已刪除 ${checkedRows.length} 筆資料`, 'success');
+        }
+    });
+}
+
+// 批次更新狀態 (透過 Icon 觸發)
+window.batchUpdateStatus = function (targetStatus) {
+    const checkedRows = document.querySelectorAll('tbody .data-row input[type="checkbox"]:checked');
+    if (checkedRows.length === 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: '提示',
+            text: '請先勾選試題'
+        });
+        return;
+    }
+
+    // 根據狀態顯示不同訊息
+    let title = `確定將 ${checkedRows.length} 筆資料設為「${targetStatus}」？`;
+    let text = "";
+    let icon = "question";
+    let confirmBtnColor = "#3085d6";
+
+    if (targetStatus === '已傳送') {
+        text = "傳送後將進入審題階段，無法再進行編輯。";
+        icon = "warning";
+        confirmBtnColor = "#2563eb"; // 藍色
+    } else if (targetStatus === '已確認') {
+        text = "設為已確認代表題目已完成編輯。";
+        icon = "info";
+        confirmBtnColor = "#10b981"; // 綠色
+    } else {
+        // 草稿
+        text = "設為草稿後可繼續編輯。";
+        confirmBtnColor = "#f59e0b"; // 橘色
+    }
+
+    Swal.fire({
+        title: title,
+        text: text,
+        icon: icon,
+        showCancelButton: true,
+        confirmButtonText: '確定',
+        cancelButtonText: '取消',
+        confirmButtonColor: confirmBtnColor
+    }).then((result) => {
+        if (result.isConfirmed) {
+            checkedRows.forEach(cb => {
+                const row = cb.closest('tr');
+
+                // 1. 更新狀態顯示 (原本的程式碼)
+                const badgeClass = getStatusClass(targetStatus);
+                if (row.cells[4]) {
+                    row.cells[4].innerHTML = `<span class="badge-outline badge-${badgeClass}">${targetStatus}</span>`;
+                }
+                row.setAttribute('data-status', targetStatus);
+
+                // 2. 更新隱藏的 JSON 資料 (原本的程式碼)
+                let jsonData = JSON.parse(row.getAttribute('data-json') || '{}');
+                jsonData.status = targetStatus;
+                row.setAttribute('data-json', JSON.stringify(jsonData));
+
+                // 3. 刷新操作按鈕 (原本的程式碼)
+                updateRowActionButtons(row, targetStatus);
+
+                // ==========================================
+                // ★ 新增邏輯：動態切換鎖定樣式與 Checkbox ★
+                // ==========================================
+                if (targetStatus === '已傳送') {
+                    // 加上鎖定樣式
+                    row.classList.add('row-locked');
+                    // 禁用 checkbox (防止被再次選取)
+                    cb.disabled = true;
+                    // 因為 resetSelection() 會在迴圈後執行，這裡只需設 disabled
+                } else {
+                    // 如果未來允許從已傳送退回草稿/已確認，要記得解鎖
+                    row.classList.remove('row-locked');
+                    cb.disabled = false;
+                }
+                // ==========================================
+            });
+
+            if (typeof resetSelection === 'function') resetSelection();
+            updateStats(); // 更新統計
+            showToast(`已將 ${checkedRows.length} 筆資料設為${targetStatus}`, 'success');
         }
     });
 }
@@ -463,6 +532,16 @@ function writeToTable(data) {
         initCheckboxLogic();
     }
 
+    if (data.status === '已傳送') {
+        row.classList.add('row-locked');
+        const cb = row.querySelector('input[type="checkbox"]');
+        if (cb) cb.disabled = true;
+    } else {
+        row.classList.remove('row-locked');
+        const cb = row.querySelector('input[type="checkbox"]');
+        if (cb) cb.disabled = false;
+    }
+
     // 更新 Data Attributes
     row.setAttribute('data-type', data.type);
     row.setAttribute('data-status', data.status);
@@ -473,13 +552,13 @@ function writeToTable(data) {
 }
 
 function getActionHtml(status) {
-    let html = `<button class="btn btn-link p-0 fw-bold" onclick="openPropModal(this, 'view')">檢視</button>`;
+    let html = `<button class="btn btn-link p-0 text-decoration-none fw-bold" onclick="openPropModal(this, 'view')">檢視</button>`;
     if (status != '已傳送') {
         html += `
             <span class="text-muted mx-1">|</span>
-            <button class="btn btn-link p-0 fw-bold" onclick="openPropModal(this, 'edit')">編輯</button>
+            <button class="btn btn-link p-0 text-decoration-none fw-bold text-success" onclick="openPropModal(this, 'edit')">編輯</button>
             <span class="text-muted mx-1">|</span>
-            <button class="btn btn-link p-0 fw-bold text-danger" onclick="deleteRow(this)">刪除</button>
+            <button class="btn btn-link p-0 text-decoration-none fw-bold text-danger" onclick="deleteRow(this)">刪除</button>
         `;
     }
     return html;
@@ -546,7 +625,8 @@ function initCheckboxLogic() {
         newCheckAll.addEventListener('change', function () {
             const isChecked = this.checked;
             document.querySelectorAll('tbody .data-row input[type="checkbox"]').forEach(cb => {
-                if (cb.closest('tr').style.display !== 'none') {
+                // 只選取「未被禁用」且「可見」的項目
+                if (cb.closest('tr').style.display !== 'none' && !cb.disabled) {
                     cb.checked = isChecked;
                 }
             });
