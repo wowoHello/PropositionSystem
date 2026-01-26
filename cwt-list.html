@@ -36,14 +36,19 @@
     /* 長文題目-內容 */
     #q-long-explanation .ql-editor,
     /* 短文題組-內容 */
-    #q-short-main .ql-editor {
-      /* 長文題目-解析 */
+    #q-short-main .ql-editor,
+    /* 聽力題目-內容 */
+    #q-listen-content .ql-editor,
+    /* 聽力題目-解析 */
+    #q-listen-explanation .ql-editor,
+    /* 聽力題目-參考答案 */
+    #q-listen-ref-answer .ql-editor {
+      /* A. 預設高度 (最矮 200px) */
       min-height: 200px;
-      /* A. 預設高度 (最矮 250px) */
+      /* B. 最大高度 (超過 400px 就停住) */
       max-height: 400px;
-      /* B. 最大高度 (超過 500px 就停住) */
-      overflow-y: auto;
       /* C. 超過最大高度時，出現垂直卷軸 */
+      overflow-y: auto;
     }
 
     /* 選項的高度 (比較矮) */
@@ -1584,9 +1589,159 @@
                 </div>
 
               </div>
+              <!-- 聽力題目 -->
+              <div id="form-listen" class="question-form-group d-none">
 
-              <div id="form-group-set" class="question-form-group d-none">
-                <div class="alert alert-info">此題型尚未實作欄位</div>
+                <div class="p-3 bg-white border rounded mb-4 shadow-sm">
+                  <h6 class="fw-bold text-primary mb-3 border-bottom pb-2">
+                    <i class="bi bi-info-circle me-2"></i>
+                    一、題目基本資料
+                  </h6>
+                  <div class="row g-3">
+                    <div class="col-md-4">
+                      <label class="form-label fw-bold small text-secondary required-star">難度</label>
+                      <select class="form-select" id="liLevel">
+                        <option value="">請選擇...</option>
+                        <option value="難度一">難度一</option>
+                        <option value="難度二">難度二</option>
+                        <option value="難度三">難度三</option>
+                        <option value="難度四">難度四</option>
+                        <option value="難度五">難度五</option>
+                      </select>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label fw-bold small text-secondary required-star">核心能力</label>
+                      <select class="form-select readonly-field" id="liCore" disabled>
+                        <option value="">請先選擇難度</option>
+                      </select>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label fw-bold small text-secondary required-star">細目指標</label>
+                      <select class="form-select readonly-field" id="liIndicator" disabled>
+                        <option value="">請先選擇難度</option>
+                      </select>
+                    </div>
+
+                    <div class="col-md-4">
+                      <label class="form-label fw-bold small text-secondary required-star">語音類型</label>
+                      <select class="form-select" id="liVoiceType">
+                        <option value="">請選擇...</option>
+                        <option value="對話">對話</option>
+                        <option value="情境">情境</option>
+                        <option value="陳述">陳述</option>
+                      </select>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label fw-bold small text-secondary required-star">素材分類</label>
+                      <select class="form-select" id="liMaterial">
+                        <option value="">請選擇...</option>
+                        <option value="生活">生活</option>
+                        <option value="教育">教育</option>
+                        <option value="職場">職場</option>
+                        <option value="專業">專業</option>
+                      </select>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label fw-bold small text-secondary">命題者</label>
+                      <input type="text" class="form-control readonly-field" id="liPropositioner" value="沈雅茹" disabled
+                        readonly>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="p-3 bg-white border rounded mb-4 shadow-sm">
+                  <h6 class="fw-bold text-primary mb-3 border-bottom pb-2">
+                    <i class="bi bi-file-text me-2"></i>
+                    二、題目內容
+                  </h6>
+
+                  <div class="mb-3">
+                    <label class="form-label fw-bold small text-secondary required-star">題目</label>
+                    <input type="text" class="form-control" id="liTopic" placeholder="請輸入標題...">
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label fw-bold small text-secondary required-star">語音內容 (腳本)</label>
+                    <div id="q-listen-content"></div>
+                  </div>
+
+                  <div class="mb-4">
+                    <label class="form-label fw-bold small text-secondary">附檔 (音檔/圖片)</label>
+                    <div class="input-group">
+                      <input class="form-control" type="file" id="liAttachment">
+                    </div>
+                    <div class="form-text small mt-1 text-primary d-none" id="liAttachmentName"></div>
+                  </div>
+
+                  <label class="form-label fw-bold small text-secondary mb-2">選項與正確答案</label>
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <div class="card option-card h-100">
+                        <label class="option-header-styled" for="liRadioA">
+                          <span class="badge bg-secondary">選項 A</span>
+                          <div class="form-check m-0">
+                            <input class="form-check-input" type="radio" name="liCorrectAnswer" value="A" id="liRadioA">
+                            <span class="small fw-bold text-success">設為正確答案</span>
+                          </div>
+                        </label>
+                        <div id="q-listen-optA" class="option-editor border-0"></div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="card option-card h-100">
+                        <label class="option-header-styled" for="liRadioB">
+                          <span class="badge bg-secondary">選項 B</span>
+                          <div class="form-check m-0">
+                            <input class="form-check-input" type="radio" name="liCorrectAnswer" value="B" id="liRadioB">
+                            <span class="small fw-bold text-success">設為正確答案</span>
+                          </div>
+                        </label>
+                        <div id="q-listen-optB" class="option-editor border-0"></div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="card option-card h-100">
+                        <label class="option-header-styled" for="liRadioC">
+                          <span class="badge bg-secondary">選項 C</span>
+                          <div class="form-check m-0">
+                            <input class="form-check-input" type="radio" name="liCorrectAnswer" value="C" id="liRadioC">
+                            <span class="small fw-bold text-success">設為正確答案</span>
+                          </div>
+                        </label>
+                        <div id="q-listen-optC" class="option-editor border-0"></div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="card option-card h-100">
+                        <label class="option-header-styled" for="liRadioD">
+                          <span class="badge bg-secondary">選項 D</span>
+                          <div class="form-check m-0">
+                            <input class="form-check-input" type="radio" name="liCorrectAnswer" value="D" id="liRadioD">
+                            <span class="small fw-bold text-success">設為正確答案</span>
+                          </div>
+                        </label>
+                        <div id="q-listen-optD" class="option-editor border-0"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="p-3 bg-white border rounded mb-4 shadow-sm">
+                  <h6 class="fw-bold text-primary mb-3 border-bottom pb-2">
+                    <i class="bi bi-lightbulb me-2"></i>
+                    三、詳解與解析
+                  </h6>
+
+                  <div class="mb-3">
+                    <label class="form-label fw-bold small text-secondary">解析 (紀錄答案理由)</label>
+                    <div id="q-listen-explanation"></div>
+                  </div>
+
+                  <div id="div-ref-answer" class="mb-3 d-none">
+                    <label class="form-label fw-bold small text-secondary required-star">參考答案 (難度五必填)</label>
+                    <div id="q-listen-ref-answer"></div>
+                  </div>
+                </div>
               </div>
 
             </div>
@@ -1668,6 +1823,7 @@
   <script src="js/Reading.js"></script>
   <script src="js/LongArticle.js"></script>
   <script src="js/ShortArticle.js"></script>
+  <script src="js/Listen.js"></script>
   <script src="js/app.js"></script>
 </body>
 
