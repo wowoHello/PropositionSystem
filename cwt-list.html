@@ -20,14 +20,34 @@
       font-size: 1rem;
     }
 
-    /* 題目敘述的高度 */
-    #q-editor-content {
-      height: 200px;
+    /* 1. 設定外層容器：讓它高度自動，不要寫死 */
+    #q-editor-content,
+    #q-reading-main {
+      height: auto !important;
+      /* 移除寫死的高度，讓它可以包住內部的編輯區 */
+    }
+
+    /* 2. 設定內層編輯區 (.ql-editor)：控制卷軸邏輯 */
+    #q-editor-content .ql-editor,
+    /* 一般題目、精選題目-內容 */
+    #q-reading-main .ql-editor,
+    /* 閱讀題組-內容 */
+    #q-long-content .ql-editor,
+    /* 長文題目-內容 */
+    #q-long-explanation .ql-editor {
+      /* 長文題目-解析 */
+      min-height: 200px;
+      /* A. 預設高度 (最矮 250px) */
+      max-height: 400px;
+      /* B. 最大高度 (超過 500px 就停住) */
+      overflow-y: auto;
+      /* C. 超過最大高度時，出現垂直卷軸 */
     }
 
     /* 選項的高度 (比較矮) */
     .option-editor {
-      height: 80px;
+      min-height: 100px;
+      max-height: 150px;
     }
 
     /* 調整選項區塊的標頭 */
@@ -857,7 +877,7 @@
               <option value="精選題目">精選題目</option>
               <option value="閱讀題組">閱讀題組</option>
               <option value="短文題組">短文題組</option>
-              <option value="長文題組">長文題組</option>
+              <option value="長文題目">長文題目</option>
               <option value="聽力題目">聽力題目</option>
               <option value="聽力題組">聽力題組</option>
             </select>
@@ -1148,7 +1168,7 @@
                 <label class="form-label fw-bold small text-secondary">題型選擇</label>
                 <select class="form-select" id="mType">
                   <option value="一般題目" selected>一般題目</option>
-                  <option value="長文題組">長文題組</option>
+                  <option value="長文題目">長文題組</option>
                   <option value="短文題組">短文題組</option>
                   <option value="精選題目">精選題目</option>
                   <option value="閱讀題組">閱讀題組</option>
@@ -1169,20 +1189,14 @@
               <!-- 精選題目 -->
               <div id="form-general" class="question-form-group">
 
+                <!-- 第一區塊：基本資料 -->
                 <div class="p-3 bg-white border rounded mb-4 shadow-sm">
                   <h6 class="fw-bold text-primary mb-3 border-bottom pb-2">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
-                      class="me-1">
-                      <path
-                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
-                      </path>
-                    </svg>
-                    試題內容設定
+                    <i class="bi bi-clipboard-data me-2"></i>
+                    一、題目基本資料
                   </h6>
-
-                  <div class="row g-3 mb-3">
-                    <!-- Row 1 -->
-                    <div class="col-md-6">
+                  <div class="row g-3">
+                    <div class="col-md-4">
                       <label class="form-label fw-bold small text-secondary required-star">適用等級</label>
                       <select class="form-select" id="gLevel">
                         <option value="">請選擇...</option>
@@ -1191,102 +1205,198 @@
                         <option value="中高等">中高等</option>
                       </select>
                     </div>
-                    <div class="col-md-6">
-                      <label class="form-label fw-bold small text-secondary required-star">主題</label>
+                    <div class="col-md-4">
+                      <label class="form-label fw-bold small text-secondary required-star">主類</label>
                       <select class="form-select" id="gMainCategory">
                         <option value="">請選擇...</option>
                       </select>
                     </div>
-
-                    <!-- Row 2 -->
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                       <label class="form-label fw-bold small text-secondary required-star">次類</label>
-                      <select class="form-select" id="gSubCategory" disabled>
+                      <select class="form-select readonly-field" id="gSubCategory" disabled>
                         <option value="">請先選擇主題</option>
                       </select>
                     </div>
-                    <div class="col-md-6">
-                      <label class="form-label fw-bold small text-secondary">附檔 (圖片/PDF)</label>
-                      <div class="input-group">
-                        <input class="form-control" type="file" id="gAttachment">
-                      </div>
-                      <div class="form-text small mt-1 text-primary d-none" id="gAttachmentName">
-                        <!-- 顯示目前已上傳的檔名 (編輯模式用) -->
-                      </div>
+                    <div class="col-md-4">
+                      <label class="form-label fw-bold small text-secondary">難度</label>
+                      <select class="form-select" id="gDifficulty">
+                        <option value="">請選擇...</option>
+                        <option value="難度 1">難度 1</option>
+                        <option value="難度 2" selected>難度 2</option>
+                        <option value="難度 3">難度 3</option>
+                      </select>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label fw-bold small text-secondary">命題者 (您)</label>
+                      <input type="text" class="form-control readonly-field" id="gPropositioner" value="沈雅茹" disabled
+                        readonly>
                     </div>
                   </div>
+                </div>
 
+                <!-- 第二區塊：題目內容 (含選項) -->
+                <div class="p-3 bg-white border rounded mb-4 shadow-sm">
+                  <h6 class="fw-bold text-primary mb-3 border-bottom pb-2">
+                    <i class="bi bi-file-text me-2"></i>
+                    二、題目內容與選項
+                  </h6>
                   <div class="mb-3">
                     <label class="form-label fw-bold small text-secondary required-star">題幹內容</label>
                     <div id="q-editor-content"></div>
                   </div>
+                  <div class="mb-4">
+                    <label class="form-label fw-bold small text-secondary">附檔 (圖片/PDF)</label>
+                    <div class="input-group">
+                      <input class="form-control" type="file" id="gAttachment">
+                    </div>
+                    <div class="form-text small mt-1 text-primary d-none" id="gAttachmentName"></div>
+                  </div>
+
+                  <!-- 選項區域 (移至此處) -->
+                  <label class="form-label fw-bold small text-secondary mb-2">選項與正確答案</label>
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <div class="card option-card h-100">
+                        <div class="option-header-styled">
+                          <span class="badge bg-secondary">選項 A</span>
+                          <div class="form-check m-0">
+                            <input class="form-check-input" type="radio" name="correctAnswer" value="A" id="radioA">
+                            <label class="form-check-label small fw-bold text-success" for="radioA">設為正確答案</label>
+                          </div>
+                        </div>
+                        <div id="q-editor-optA" class="option-editor border-0"></div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="card option-card h-100">
+                        <div class="option-header-styled">
+                          <span class="badge bg-secondary">選項 B</span>
+                          <div class="form-check m-0">
+                            <input class="form-check-input" type="radio" name="correctAnswer" value="B" id="radioB">
+                            <label class="form-check-label small fw-bold text-success" for="radioB">設為正確答案</label>
+                          </div>
+                        </div>
+                        <div id="q-editor-optB" class="option-editor border-0"></div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="card option-card h-100">
+                        <div class="option-header-styled">
+                          <span class="badge bg-secondary">選項 C</span>
+                          <div class="form-check m-0">
+                            <input class="form-check-input" type="radio" name="correctAnswer" value="C" id="radioC">
+                            <label class="form-check-label small fw-bold text-success" for="radioC">設為正確答案</label>
+                          </div>
+                        </div>
+                        <div id="q-editor-optC" class="option-editor border-0"></div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="card option-card h-100">
+                        <div class="option-header-styled">
+                          <span class="badge bg-secondary">選項 D</span>
+                          <div class="form-check m-0">
+                            <input class="form-check-input" type="radio" name="correctAnswer" value="D" id="radioD">
+                            <label class="form-check-label small fw-bold text-success" for="radioD">設為正確答案</label>
+                          </div>
+                        </div>
+                        <div id="q-editor-optD" class="option-editor border-0"></div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                <div class="p-3 bg-light rounded border mb-3">
-                  <label class="form-label fw-bold small text-secondary mb-2">選項與正確答案</label>
+                <!-- 第三區塊：參考答案及解析 (只留解析) -->
+                <div class="p-3 bg-white border rounded mb-3 shadow-sm">
+                  <h6 class="fw-bold text-primary mb-3 border-bottom pb-2">
+                    <i class="bi bi-check-circle me-2"></i>
+                    三、解析
+                  </h6>
 
-                  <div class="mb-3 bg-white p-2 rounded border">
-                    <div class="option-header">
-                      <span class="badge bg-secondary">選項 A</span>
-                      <div class="form-check m-0">
-                        <input class="form-check-input" type="radio" name="correctAnswer" value="A" id="radioA">
-                        <label class="form-check-label small fw-bold text-success" for="radioA">設為正確答案</label>
-                      </div>
+                  <div class="mb-3">
+                    <label class="form-label fw-bold small text-secondary">解析 (紀錄答案理由)</label>
+                    <div id="q-editor-explanation" style="height: 150px;"></div>
+                  </div>
+                </div>
+              </div>
+              <!-- 長文題目 -->
+              <div id="form-longarticle" class="question-form-group d-none">
+                <div class="p-3 bg-white border rounded mb-4 shadow-sm">
+                  <h6 class="fw-bold text-primary mb-3 border-bottom pb-2">
+                    <i class="bi bi-info-circle me-2"></i>
+                    一、題目基本資料
+                  </h6>
+                  <div class="row g-3">
+                    <div class="col-md-4">
+                      <label class="form-label fw-bold small text-secondary required-star">適用等級</label>
+                      <select class="form-select" id="lLevel">
+                        <option value="">請選擇...</option>
+                        <option value="初等">初等</option>
+                        <option value="中等">中等</option>
+                        <option value="中高等">中高等</option>
+                        <option value="優等">優等</option>
+                      </select>
                     </div>
-                    <div id="q-editor-optA" class="option-editor"></div>
+                    <div class="col-md-4">
+                      <label class="form-label fw-bold small text-secondary required-star">題型</label>
+                      <select class="form-select" id="lType">
+                        <option value="">請選擇...</option>
+                        <option value="引導寫作">引導寫作</option>
+                        <option value="資訊整合">資訊整合</option>
+                      </select>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label fw-bold small text-secondary">命題者</label>
+                      <input type="text" class="form-control readonly-field" id="lPropositioner" value="沈雅茹" disabled
+                        readonly>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="p-3 bg-white border rounded mb-4 shadow-sm">
+                  <h6 class="fw-bold text-primary mb-3 border-bottom pb-2">
+                    <i class="bi bi-file-text me-2"></i>
+                    二、題目內容
+                  </h6>
+
+                  <div class="mb-3">
+                    <label class="form-label fw-bold small text-secondary required-star">題目</label>
+                    <input type="text" class="form-control" id="lTopic" placeholder="請輸入標題...">
                   </div>
 
-                  <div class="mb-3 bg-white p-2 rounded border">
-                    <div class="option-header">
-                      <span class="badge bg-secondary">選項 B</span>
-                      <div class="form-check m-0">
-                        <input class="form-check-input" type="radio" name="correctAnswer" value="B" id="radioB">
-                        <label class="form-check-label small fw-bold text-success" for="radioB">設為正確答案</label>
-                      </div>
-                    </div>
-                    <div id="q-editor-optB" class="option-editor"></div>
+                  <div class="mb-3">
+                    <label class="form-label fw-bold small text-secondary required-star">內容</label>
+                    <div id="q-long-content"></div>
                   </div>
 
-                  <div class="mb-3 bg-white p-2 rounded border">
-                    <div class="option-header">
-                      <span class="badge bg-secondary">選項 C</span>
-                      <div class="form-check m-0">
-                        <input class="form-check-input" type="radio" name="correctAnswer" value="C" id="radioC">
-                        <label class="form-check-label small fw-bold text-success" for="radioC">設為正確答案</label>
-                      </div>
+                  <div class="mb-4">
+                    <label class="form-label fw-bold small text-secondary">附檔 (圖片/PDF)</label>
+                    <div class="input-group">
+                      <input class="form-control" type="file" id="lAttachment">
                     </div>
-                    <div id="q-editor-optC" class="option-editor"></div>
+                    <div class="form-text small mt-1 text-primary d-none" id="lAttachmentName"></div>
                   </div>
+                </div>
 
-                  <div class="mb-3 bg-white p-2 rounded border">
-                    <div class="option-header">
-                      <span class="badge bg-secondary">選項 D</span>
-                      <div class="form-check m-0">
-                        <input class="form-check-input" type="radio" name="correctAnswer" value="D" id="radioD">
-                        <label class="form-check-label small fw-bold text-success" for="radioD">設為正確答案</label>
-                      </div>
-                    </div>
-                    <div id="q-editor-optD" class="option-editor"></div>
-                  </div>
-                  <div class="form-text text-end mt-1 small">※ 請點選右側圓鈕設定正確答案</div>
+                <div class="p-3 bg-white border rounded mb-4 shadow-sm">
+                  <h6 class="fw-bold text-primary mb-3 border-bottom pb-2">
+                    <i class="bi bi-lightbulb me-2"></i>
+                    三、詳解與解析 (選填)
+                  </h6>
+                  <div id="q-long-explanation"></div>
                 </div>
               </div>
               <!-- 閱讀題組 -->
               <div id="form-reading" class="question-form-group d-none">
 
+                <!-- 第一區塊：題目基本資料 -->
                 <div class="p-3 bg-white border rounded mb-4 shadow-sm">
                   <h6 class="fw-bold text-primary mb-3 border-bottom pb-2">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
-                      class="me-1">
-                      <path
-                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253">
-                      </path>
-                    </svg>
-                    母題文章設定
+                    <i class="bi bi-clipboard-data me-2"></i>
+                    一、題目基本資料
                   </h6>
-
-                  <div class="row g-3 mb-3">
-                    <div class="col-md-4">
+                  <div class="row g-3">
+                    <div class="col-md-6">
                       <label class="form-label fw-bold small text-secondary required-star">適用等級</label>
                       <select class="form-select" id="rLevel">
                         <option value="">請選擇...</option>
@@ -1297,7 +1407,7 @@
                         <option value="優">優</option>
                       </select>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                       <label class="form-label fw-bold small text-secondary required-star">文體</label>
                       <select class="form-select" id="rGenre">
                         <option value="">請選擇...</option>
@@ -1306,40 +1416,73 @@
                         <option value="語體文">語體文</option>
                       </select>
                     </div>
-                    <div class="col-md-4">
-                      <label class="form-label fw-bold small text-secondary">附檔 (圖片/PDF)</label>
-                      <input class="form-control" type="file" id="rAttachment">
+                    <div class="col-md-6">
+                      <label class="form-label fw-bold small text-secondary">難度</label>
+                      <select class="form-select" id="rDifficulty">
+                        <option value="">請選擇...</option>
+                        <option value="難度 1">難度 1</option>
+                        <option value="難度 2">難度 2</option>
+                        <option value="難度 3">難度 3</option>
+                      </select>
                     </div>
-                  </div>
-
-                  <div class="mb-3">
-                    <label class="form-label fw-bold small text-secondary required-star">文章內容 (題目)</label>
-                    <div id="q-reading-main" style="height: 250px;"></div>
+                    <div class="col-md-6">
+                      <label class="form-label fw-bold small text-secondary">命題者</label>
+                      <input type="text" class="form-control readonly-field" id="rPropositioner" value="沈雅茹" disabled
+                        readonly>
+                    </div>
                   </div>
                 </div>
 
-                <div class="bg-light p-3 rounded border">
-                  <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="fw-bold text-dark m-0">
-                      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
-                        class="me-1">
-                        <path
-                          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2">
-                        </path>
-                      </svg>
-                      子題列表
-                    </h6>
-                    <button type="button" class="btn btn-sm btn-primary" onclick="Reading_AddSub()">
-                      + 新增子題
-                    </button>
+                <!-- 第二區塊：題目內容 -->
+                <div class="p-3 bg-white border rounded mb-4 shadow-sm">
+                  <h6 class="fw-bold text-primary mb-3 border-bottom pb-2">
+                    <i class="bi bi-file-text me-2"></i>
+                    二、題目內容 (母題與子題)
+                  </h6>
+
+                  <div class="mb-3">
+                    <label class="form-label fw-bold small text-secondary required-star">母題文章內容</label>
+                    <div id="q-reading-main"></div>
                   </div>
 
-                  <div id="sub-questions-container"></div>
-
-                  <div id="sub-questions-empty"
-                    class="text-center py-4 text-muted border border-dashed rounded bg-white">
-                    尚未新增任何子題，請點擊右上方按鈕新增。
+                  <div class="mb-4">
+                    <label class="form-label fw-bold small text-secondary">附檔 (圖片/PDF)</label>
+                    <input class="form-control" type="file" id="rAttachment">
                   </div>
+
+                  <!-- 子題列表區塊 -->
+                  <div class="bg-light p-3 rounded border">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                      <h6 class="fw-bold text-dark m-0">
+                        <i class="bi bi-list-ol me-1"></i>
+                        子題列表
+                      </h6>
+                      <button type="button" class="btn btn-sm btn-primary" onclick="Reading_AddSub()">
+                        + 新增子題
+                      </button>
+                    </div>
+
+                    <div id="sub-questions-container"></div>
+
+                    <div id="sub-questions-empty"
+                      class="text-center py-4 text-muted border border-dashed rounded bg-white">
+                      尚未新增任何子題，請點擊右上方按鈕新增。
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 第三區塊：(閱讀題組無統一解析，保留區塊結構或隱藏) -->
+                <!-- 註：使用者要求三個區塊，但對閱讀題組而言，解析通常在子題內。
+                     這裡可以放一個全域備註或暫時隱藏，或者說明「請於子題內編輯解析」。 -->
+                <div class="p-3 bg-white border rounded mb-3 shadow-sm">
+                  <h6 class="fw-bold text-primary mb-3 border-bottom pb-2">
+                    <i class="bi bi-check-circle me-2"></i>
+                    三、參考答案及解析
+                  </h6>
+                  <p class="text-muted small m-0">
+                    <i class="bi bi-info-circle me-1"></i>
+                    閱讀題組的答案與解析請於上方「子題列表」中逐題設定。
+                  </p>
                 </div>
 
               </div>
@@ -1375,8 +1518,6 @@
   </div>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
-      console.log("開始執行鎖定邏輯..."); // 用來檢查是否有執行
-
       // 1. 抓取表格 tbody 內的所有列
       // 注意：這裡直接抓 tbody 裡的 tr，避免抓到 header
       const rows = document.querySelectorAll('tbody tr');
@@ -1389,8 +1530,6 @@
         if (badge) {
           // 去除前後空白，確保比對正確
           const statusText = badge.innerText.trim();
-          console.log(`第 ${index + 1} 行狀態:`, statusText); // 檢查用
-
           // 3. 判斷是否為「已傳送」
           if (statusText === '已傳送') {
 
@@ -1429,6 +1568,7 @@
   <script src="js/quill.min.js"></script>
   <script src="js/General.js"></script>
   <script src="js/Reading.js"></script>
+  <script src="js/LongArticle.js"></script>
   <script src="js/app.js"></script>
 </body>
 

@@ -53,20 +53,25 @@ const GeneralHandler = (function () {
             if (document.getElementById('q-editor-content')) {
                 quills.content = new Quill('#q-editor-content', { theme: 'snow', modules: { toolbar: window.mainToolbar }, placeholder: '請輸入題幹...' });
 
+                // ★ 初始化解析編輯器 ★
+                if (document.getElementById('q-editor-explanation')) {
+                    quills.explanation = new Quill('#q-editor-explanation', {
+                        theme: 'snow',
+                        modules: { toolbar: window.mainToolbar }, // 解析也可以用完整工具列，或改用簡化版
+                        placeholder: '請輸入試題解析與答案理由...'
+                    });
+                }
+
                 ['A', 'B', 'C', 'D'].forEach(opt => {
                     quills[`opt${opt}`] = new Quill(`#q-editor-opt${opt}`, { theme: 'snow', modules: { toolbar: window.optionToolbar }, placeholder: `選項 ${opt}` });
 
                     // UI 重繪邏輯
                     const editorEl = document.getElementById(`q-editor-opt${opt}`);
-                    const container = editorEl.closest('.mb-3');
+                    const container = editorEl.closest('.option-card'); // 修正 selector 抓取方式
 
                     if (container) {
-                        container.className = 'mb-3 option-card rounded';
-
-                        const header = container.querySelector('.option-header');
+                        const header = container.querySelector('.option-header-styled');
                         if (header) {
-                            header.className = 'option-header-styled';
-
                             // ★★★ 新增：點擊整個 Header 時觸發 Radio ★★★
                             header.onclick = function (e) {
                                 // 如果點到的不是 radio 本身 (避免重複觸發)，就手動點擊 radio
@@ -74,16 +79,6 @@ const GeneralHandler = (function () {
                                     document.getElementById(`radio${opt}`).click();
                                 }
                             };
-
-                            header.innerHTML = `
-                                <div class="form-check m-0 d-flex align-items-center gap-2">
-                                    <input class="form-check-input" type="radio" name="correctAnswer" value="${opt}" id="radio${opt}" style="cursor:pointer">
-                                    <span class="small text-secondary fw-bold">
-                                        設為正確答案
-                                    </span>
-                                </div>
-                                <span class="badge bg-light text-secondary border">選項 ${opt}</span>
-                            `;
                         }
                     }
                 });
@@ -93,6 +88,15 @@ const GeneralHandler = (function () {
         // 2. 清空表單
         clear: function () {
             document.getElementById('gLevel').value = '';
+            document.getElementById('gDifficulty').value = ''; // 默認空白
+
+            // 同步命題者
+            const userNameEl = document.querySelector('.user-name');
+            const propInput = document.getElementById('gPropositioner');
+            if (propInput && userNameEl) {
+                propInput.value = userNameEl.innerText.trim();
+            }
+
             const mainSelect = document.getElementById('gMainCategory');
             if (mainSelect) {
                 mainSelect.value = '';
@@ -116,6 +120,8 @@ const GeneralHandler = (function () {
             }
 
             if (quills.content) quills.content.setText('');
+            if (quills.explanation) quills.explanation.setText('');
+
             ['A', 'B', 'C', 'D'].forEach(opt => { if (quills[`opt${opt}`]) quills[`opt${opt}`].setText(''); });
 
             document.querySelectorAll('input[name="correctAnswer"]').forEach(el => el.checked = false);
@@ -125,6 +131,14 @@ const GeneralHandler = (function () {
         // 3. 回填資料
         fill: function (data, isViewMode) {
             document.getElementById('gLevel').value = data.level || '';
+            document.getElementById('gDifficulty').value = data.difficulty || ''; // 回填難度或空白
+
+            // 命題者回填 (如果 data 有存就用 data 的，不然就用當前登入者)
+            const propInput = document.getElementById('gPropositioner');
+            if (propInput) {
+                propInput.value = data.propositioner || (document.querySelector('.user-name')?.innerText.trim() || '系統管理員');
+            }
+
             const mainSelect = document.getElementById('gMainCategory');
             const subSelect = document.getElementById('gSubCategory'); // Define subSelect here
 
@@ -163,6 +177,8 @@ const GeneralHandler = (function () {
 
             // 回填題目
             setQuillContent(quills.content, data.content);
+            // 回填解析
+            setQuillContent(quills.explanation, data.explanation);
 
             // 回填選項
             ['A', 'B', 'C', 'D'].forEach(opt => {
@@ -180,6 +196,8 @@ const GeneralHandler = (function () {
             const level = document.getElementById('gLevel').value;
             const mainCat = document.getElementById('gMainCategory').value;
             const subCat = document.getElementById('gSubCategory').value;
+            const difficulty = document.getElementById('gDifficulty').value;
+            const propositioner = document.getElementById('gPropositioner').value;
             const contentText = quills.content.getText().trim();
 
             // 處理附檔 (若有新上傳則用新檔名，否則保留舊檔名-這裡簡化處理，實務上要判斷)
@@ -207,6 +225,8 @@ const GeneralHandler = (function () {
                 if (contentText.length === 0) errorMsg.push("請輸入「題幹」");
                 if (!answerEl) errorMsg.push("請設定「正確答案」");
 
+                // 解析非必填，但如果有填也可以驗證
+
                 if (errorMsg.length > 0) {
                     Swal.fire({
                         icon: 'error',
@@ -231,8 +251,11 @@ const GeneralHandler = (function () {
                 level: level,
                 mainCat: mainCat,
                 subCat: subCat,
+                difficulty: difficulty,
+                propositioner: propositioner,
                 attachment: attachName,
                 content: encodeURIComponent(quills.content.root.innerHTML), // 存 HTML
+                explanation: encodeURIComponent(quills.explanation ? quills.explanation.root.innerHTML : ''),
                 summary: contentText.length > 20 ? contentText.substring(0, 20) + '...' : contentText,
                 optA: encodeURIComponent(quills.optA.root.innerHTML),
                 optB: encodeURIComponent(quills.optB.root.innerHTML),
@@ -244,8 +267,26 @@ const GeneralHandler = (function () {
 
         // 輔助：切換唯讀
         toggleEditable: function (editable) {
-            Object.values(quills).forEach(q => q.enable(editable));
-            // Input 鎖定邏輯可由 app.js 統一處理，或這裡處理特例
+            Object.values(quills).forEach(q => {
+                if (q) q.enable(editable);
+            });
+            // Input 鎖定邏輯
+            const formInputs = document.querySelectorAll('#form-general input, #form-general select, #form-general textarea');
+            formInputs.forEach(input => {
+                // 排除 命題者(gPropositioner) 和 次類(gSubCategory)
+                // 次類的鎖定狀態由主類(gMainCategory)連動控制，不應在此被統一開啟
+                if (input.id !== 'gPropositioner' && input.id !== 'gSubCategory') {
+                    input.disabled = !editable;
+                }
+            });
+
+            // 如果是開啟編輯模式，且主類已有值，則次類應該要開啟
+            if (editable) {
+                const mainCat = document.getElementById('gMainCategory').value;
+                if (mainCat) {
+                    document.getElementById('gSubCategory').disabled = false;
+                }
+            }
         }
     };
 })();

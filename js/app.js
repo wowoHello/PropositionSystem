@@ -92,6 +92,7 @@ const TypeHandlers = {
     '一般題目': typeof GeneralHandler !== 'undefined' ? GeneralHandler : null,
     '精選題目': typeof GeneralHandler !== 'undefined' ? GeneralHandler : null,
     '閱讀題組': typeof ReadingHandler !== 'undefined' ? ReadingHandler : null,
+    '長文題目': typeof LongArticleHandler !== 'undefined' ? LongArticleHandler : null,
 };
 
 // ==========================================
@@ -115,6 +116,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // B. 初始化 Handlers (如果有的話)
     if (TypeHandlers['一般題目'] && TypeHandlers['一般題目'].init) TypeHandlers['一般題目'].init();
     if (TypeHandlers['閱讀題組'] && TypeHandlers['閱讀題組'].init) TypeHandlers['閱讀題組'].init();
+    if (TypeHandlers['長文題目'] && TypeHandlers['長文題目'].init) TypeHandlers['長文題目'].init();
 
     // C. 啟動各功能模組
     initProjectHeader();    // 原 app.js 的專案切換功能
@@ -784,13 +786,21 @@ function initTypeSwitcher() {
         } else if (val === '閱讀題組') {
             const el = document.getElementById('form-reading');
             if (el) el.classList.remove('d-none');
+        } else if (val === '長文題目') {
+            const el = document.getElementById('form-longarticle');
+            if (el) el.classList.remove('d-none');
         }
     });
 }
 
 // UI 輔助
 function toggleGlobalEditable(editable) {
-    const inputs = document.querySelectorAll('#propModal input:not(#mType), #propModal select:not(#mType), #propModal textarea');
+    const inputs = document.querySelectorAll(
+        '#propModal input:not(#mType):not(.readonly-field), ' +
+        '#propModal select:not(#mType):not(.readonly-field), ' +
+        '#propModal textarea:not(.readonly-field)'
+    );
+
     inputs.forEach(el => el.disabled = !editable);
     const footerBtns = document.querySelectorAll('.modal-footer button:not([data-bs-dismiss])');
     footerBtns.forEach(b => b.hidden = !editable);

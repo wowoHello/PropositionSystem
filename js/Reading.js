@@ -13,11 +13,21 @@ const ReadingHandler = (function () {
             // 綁定全域函式
             window.Reading_AddSub = () => this.addSubQuestion(null, false); // 手動新增預設展開
             window.Reading_RemoveSub = (uid) => this.removeSubQuestion(uid);
+            // 移除手動完成按鈕綁定 window.Reading_ToggleComplete
         },
 
         clear: function () {
             document.getElementById('rLevel').value = '';
             document.getElementById('rGenre').value = '';
+            document.getElementById('rDifficulty').value = ''; // 默認空白
+
+            // 同步命題者
+            const userNameEl = document.querySelector('.user-name');
+            const propInput = document.getElementById('rPropositioner');
+            if (propInput && userNameEl) {
+                propInput.value = userNameEl.innerText.trim();
+            }
+
             document.getElementById('rAttachment').value = '';
             if (quills.main) quills.main.setText('');
 
@@ -30,6 +40,12 @@ const ReadingHandler = (function () {
         fill: function (data, isViewMode) {
             document.getElementById('rLevel').value = data.level || '';
             document.getElementById('rGenre').value = data.mainCat || '';
+            document.getElementById('rDifficulty').value = data.difficulty || '';
+
+            const propInput = document.getElementById('rPropositioner');
+            if (propInput) {
+                propInput.value = data.propositioner || (document.querySelector('.user-name')?.innerText.trim() || '系統管理員');
+            }
 
             // 修正點：使用 API 填入母題內容
             if (quills.main) {
@@ -56,6 +72,8 @@ const ReadingHandler = (function () {
         collect: function (status) {
             const level = document.getElementById('rLevel').value;
             const genre = document.getElementById('rGenre').value;
+            const difficulty = document.getElementById('rDifficulty').value;
+            const propositioner = document.getElementById('rPropositioner').value;
             const mainText = quills.main.getText().trim();
             const subKeys = Object.keys(quills.subs);
 
@@ -95,13 +113,17 @@ const ReadingHandler = (function () {
                     optB: encodeURIComponent(q.optB.root.innerHTML),
                     optC: encodeURIComponent(q.optC.root.innerHTML),
                     optD: encodeURIComponent(q.optD.root.innerHTML),
-                    ans: ansEl ? ansEl.value : ''
+                    ans: ansEl ? ansEl.value : '',
+                    explanation: encodeURIComponent(q.explanation.root.innerHTML),
+                    isCompleted: card.classList.contains('sub-completed') // 簡單標記是否完成，可選
                 };
             });
 
             return {
                 level: level,
                 mainCat: genre,
+                difficulty: difficulty,
+                propositioner: propositioner,
                 content: encodeURIComponent(quills.main.root.innerHTML),
                 summary: `[閱讀] ${mainText.substring(0, 15)}... (${subsData.length}子題)`,
                 subQuestions: subsData
@@ -121,8 +143,10 @@ const ReadingHandler = (function () {
             card.className = 'card mb-3 sub-question-card shadow-sm border-0';
             card.id = `card-${uid}`;
 
+            // 移除手動完成按鈕
             card.innerHTML = `
                 <div class="card-header sub-accordion-btn bg-white border d-flex justify-content-between align-items-center ${isOpen ? '' : 'collapsed'}" 
+                        id="header-${uid}"
                         style="cursor: pointer;"
                         data-bs-toggle="collapse" 
                         data-bs-target="#collapse-${uid}" 
@@ -136,12 +160,17 @@ const ReadingHandler = (function () {
                             style="width: 16px; height: 16px;">
                         
                         <span class="fw-bold text-primary sub-index-label">子題代碼：${currentSeq}</span>
+                        <!-- 完成勾勾圖示 (預設隱藏，由 CSS/JS 控制顯示) -->
+                        <i class="bi bi-check-circle-fill text-success ms-2 d-none" id="check-icon-${uid}"></i>
                     </div>
 
-                    <button type="button" class="btn btn-sm btn-outline-danger border-0 z-index-2" 
-                            onclick="event.stopPropagation(); Reading_RemoveSub('${uid}')">
-                        移除
-                    </button>
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-danger border-0 z-index-2" 
+                                onclick="event.stopPropagation(); Reading_RemoveSub('${uid}')"
+                                title="移除子題">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <div id="collapse-${uid}" 
@@ -155,7 +184,7 @@ const ReadingHandler = (function () {
                         </div>
                         
                         <label class="form-label fw-bold text-secondary mb-2">選項設定</label>
-                        <div class="d-flex flex-column gap-2">
+                        <div class="d-flex flex-column gap-2 mb-4">
                             ${['A', 'B', 'C', 'D'].map(opt => `
                                 <div class="card option-card shadow-sm mb-2">
                                     <label class="option-header-styled w-100" for="radio-${uid}-${opt}">
@@ -181,6 +210,11 @@ const ReadingHandler = (function () {
                                 </div>
                             `).join('')}
                         </div>
+
+                        <div class="mb-2">
+                             <label class="form-label fw-bold text-muted">解析(紀錄答案理由)</label>
+                             <div id="q-${uid}-explanation" class="bg-white" style="height:120px"></div>
+                        </div>
                     </div>
                 </div>
             `;
@@ -193,8 +227,23 @@ const ReadingHandler = (function () {
                 optA: new Quill(`#q-${uid}-optA`, { theme: 'snow', modules: { toolbar: toolbar }, placeholder: '選項 A' }),
                 optB: new Quill(`#q-${uid}-optB`, { theme: 'snow', modules: { toolbar: toolbar }, placeholder: '選項 B' }),
                 optC: new Quill(`#q-${uid}-optC`, { theme: 'snow', modules: { toolbar: toolbar }, placeholder: '選項 C' }),
-                optD: new Quill(`#q-${uid}-optD`, { theme: 'snow', modules: { toolbar: toolbar }, placeholder: '選項 D' })
+                optD: new Quill(`#q-${uid}-optD`, { theme: 'snow', modules: { toolbar: toolbar }, placeholder: '選項 D' }),
+                explanation: new Quill(`#q-${uid}-explanation`, { theme: 'snow', modules: { toolbar: toolbar }, placeholder: '請輸入解析...' })
             };
+
+            // 綁定自動檢查事件
+            const checkFn = () => this.checkCompletion(uid);
+
+            // 監聽所有 Quill 的 text-change
+            Object.values(quills.subs[uid]).forEach(q => {
+                q.on('text-change', checkFn);
+            });
+
+            // 監聽 Radio change (使用事件代理或直接綁定)
+            const radios = card.querySelectorAll(`input[name="ans-${uid}"]`);
+            radios.forEach(radio => {
+                radio.addEventListener('change', checkFn);
+            });
 
             // 回填資料
             if (data) {
@@ -209,9 +258,13 @@ const ReadingHandler = (function () {
                 safePaste(quills.subs[uid].optB, data.optB);
                 safePaste(quills.subs[uid].optC, data.optC);
                 safePaste(quills.subs[uid].optD, data.optD);
+                safePaste(quills.subs[uid].explanation, data.explanation);
 
                 const radio = card.querySelector(`input[value="${data.ans}"]`);
                 if (radio) radio.checked = true;
+
+                // 回填後檢查一次狀態
+                checkFn();
             }
         },
 
@@ -248,6 +301,40 @@ const ReadingHandler = (function () {
                 label.innerText = `子題代碼：${index + 1}`;
             });
         },
+
+        checkCompletion: function (uid) {
+            const q = quills.subs[uid];
+            if (!q) return;
+
+            // 檢查所有編輯器是否有內容 (getText().trim().length > 0)
+            // 注意：Quill 空白時預設是 '\n'，長度為 1，所以要 trim
+            const hasContent = q.content.getText().trim().length > 0;
+            const hasOptA = q.optA.getText().trim().length > 0;
+            const hasOptB = q.optB.getText().trim().length > 0;
+            const hasOptC = q.optC.getText().trim().length > 0;
+            const hasOptD = q.optD.getText().trim().length > 0;
+            const hasExp = q.explanation.getText().trim().length > 0;
+
+            // 檢查是否選取答案
+            const card = document.getElementById(`card-${uid}`);
+            const hasAns = card.querySelector(`input[name="ans-${uid}"]:checked`) !== null;
+
+            const isComplete = hasContent && hasOptA && hasOptB && hasOptC && hasOptD && hasExp && hasAns;
+
+            const cardHeader = document.getElementById(`header-${uid}`);
+            const checkIcon = document.getElementById(`check-icon-${uid}`);
+
+            if (isComplete) {
+                card.classList.add('sub-completed');
+                cardHeader.classList.add('bg-success', 'bg-opacity-10');
+                if (checkIcon) checkIcon.classList.remove('d-none');
+            } else {
+                card.classList.remove('sub-completed');
+                cardHeader.classList.remove('bg-success', 'bg-opacity-10');
+                if (checkIcon) checkIcon.classList.add('d-none');
+            }
+        },
+
         // 切換選項編輯器顯示/隱藏 (簡單的 JS toggle)
         toggleOptionBody: function (containerId) {
             const el = document.getElementById(containerId);
@@ -269,6 +356,7 @@ const ReadingHandler = (function () {
                 s.optB.enable(editable);
                 s.optC.enable(editable);
                 s.optD.enable(editable);
+                if (s.explanation) s.explanation.enable(editable);
             });
 
             // 2. 鎖定「新增子題」按鈕 (直接隱藏)
@@ -279,9 +367,13 @@ const ReadingHandler = (function () {
             const removeBtns = document.querySelectorAll('.sub-remove-btn');
             removeBtns.forEach(btn => btn.hidden = !editable);
 
-            // 4. 鎖定所有輸入框 (包含 Radio, File Input, Select)
+            // 4. 鎖定所有輸入框 (包含 Radio, File Input, Select)，但排除命題者
             const formInputs = document.querySelectorAll('#form-reading input, #form-reading select');
-            formInputs.forEach(input => input.disabled = !editable);
+            formInputs.forEach(input => {
+                if (input.id !== 'rPropositioner') {
+                    input.disabled = !editable;
+                }
+            });
         }
     };
 })();
