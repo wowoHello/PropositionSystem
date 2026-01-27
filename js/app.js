@@ -126,6 +126,7 @@ document.addEventListener("DOMContentLoaded", function () {
     initCheckboxLogic();    // 表格全選/反選
     initFilter();           // 表格篩選功能
     initTypeSwitcher();     // Modal 內的題型切換顯示
+    initAutoSelect();       // [新增] 自動選取單一選項
     updateStats();          // [新增] 初始化統計數字
 });
 
@@ -800,7 +801,88 @@ function initTypeSwitcher() {
             if (el) el.classList.remove('d-none');
         }
     });
+
+    // 觸發一次以初始化正確狀態
+    if (typeSelect.value) {
+        typeSelect.dispatchEvent(new Event('change'));
+    }
 }
+
+// ==========================================
+//  9. 自動選取單一選項 (Auto Select)
+// ==========================================
+let autoSelectObserver;
+const selectTimers = new Map();
+
+function initAutoSelect() {
+    // 1. 定義 MutationObserver
+    autoSelectObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.type === 'childList') {
+                if (mutation.target.tagName === 'SELECT') {
+                    // 選項變動
+                    debouncedCheck(mutation.target);
+                } else {
+                    // 節點變動 (檢查新增的 SELECT)
+                    mutation.addedNodes.forEach(node => {
+                        if (node.nodeType === 1) { // Element
+                            if (node.tagName === 'SELECT') debouncedCheck(node);
+                            // 檢查子元素是否有 SELECT
+                            if (node.querySelectorAll) {
+                                node.querySelectorAll('select').forEach(debouncedCheck);
+                            }
+                        }
+                    });
+                }
+            }
+        });
+    });
+
+    // 2. 監聽整個 body (subtree: true)
+    autoSelectObserver.observe(document.body, { childList: true, subtree: true });
+
+    // 3. 初始檢查頁面上已存在的 SELECT
+    document.querySelectorAll('select').forEach(debouncedCheck);
+}
+
+function debouncedCheck(select) {
+    // 清除舊的計時器
+    if (selectTimers.has(select)) {
+        clearTimeout(selectTimers.get(select));
+    }
+    // 設定新的計時器 (50ms 防抖動，等待選項加載完成)
+    const timerId = setTimeout(() => {
+        checkAndSelect(select);
+        selectTimers.delete(select);
+    }, 50);
+    selectTimers.set(select, timerId);
+}
+
+function checkAndSelect(select) {
+    if (!select) return;
+    // 忽略多選選單
+    if (select.multiple) return;
+
+    // 取得所有選項
+    const options = Array.from(select.options);
+
+    // 過濾出有效選項：值不為空 且 未被禁用
+    // 通常 "請選擇..." 的 value 會是空字串
+    const validOptions = options.filter(opt => opt.value !== "" && !opt.disabled);
+
+    // 如果只有一個有效選項
+    if (validOptions.length === 1) {
+        const targetValue = validOptions[0].value;
+        // 如果當前未選取該值，則自動選取
+        if (select.value !== targetValue) {
+            select.value = targetValue;
+            // 觸發 change 事件以確保連動邏輯正常運作
+            select.dispatchEvent(new Event('change', { bubbles: true }));
+            // console.log(`[AutoSelect] 自動選取：${select.id || 'unknown'} -> ${targetValue}`);
+        }
+    }
+}
+
 
 // UI 輔助
 function toggleGlobalEditable(editable) {

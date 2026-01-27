@@ -69,7 +69,7 @@ const ListenHandler = (function () {
                     const val = this.value;
                     coreSelect.innerHTML = '<option value="">請選擇...</option>';
                     indSelect.innerHTML = '<option value="">請選擇...</option>';
-                    
+
                     // 控制難度五的參考答案欄位顯示
                     if (val === '難度五') {
                         refDiv.classList.remove('d-none');
@@ -106,7 +106,7 @@ const ListenHandler = (function () {
             document.getElementById('liVoiceType').value = '';
             document.getElementById('liMaterial').value = '';
             document.getElementById('liTopic').value = '';
-            
+
             // 命題者
             const userNameEl = document.querySelector('.user-name');
             const propInput = document.getElementById('liPropositioner');
@@ -122,7 +122,7 @@ const ListenHandler = (function () {
             }
 
             // 清空 Quills
-            Object.values(quills).forEach(q => { if(q) q.setText(''); });
+            Object.values(quills).forEach(q => { if (q) q.setText(''); });
 
             // 清空 Radio
             document.querySelectorAll('input[name="liCorrectAnswer"]').forEach(el => el.checked = false);
@@ -139,7 +139,7 @@ const ListenHandler = (function () {
             // 延遲一點點確保 Option 產生後再賦值 (或直接賦值因為是同步的)
             document.getElementById('liCore').value = data.core || '';
             document.getElementById('liIndicator').value = data.indicator || '';
-            
+
             document.getElementById('liVoiceType').value = data.voiceType || '';
             document.getElementById('liMaterial').value = data.material || '';
             document.getElementById('liTopic').value = data.topic || '';
@@ -164,13 +164,13 @@ const ListenHandler = (function () {
             const safePaste = (q, html) => {
                 if (q) {
                     q.setText('');
-                    if(html) q.clipboard.dangerouslyPasteHTML(0, decodeURIComponent(html));
+                    if (html) q.clipboard.dangerouslyPasteHTML(0, decodeURIComponent(html));
                 }
             };
             safePaste(quills.content, data.content);
             safePaste(quills.explanation, data.explanation);
             safePaste(quills.refAnswer, data.refAnswer); // 難度五參考答案
-            
+
             ['A', 'B', 'C', 'D'].forEach(opt => {
                 safePaste(quills[`opt${opt}`], data[`opt${opt}`]);
             });
@@ -259,7 +259,7 @@ const ListenHandler = (function () {
         },
 
         toggleEditable: function (editable) {
-            Object.values(quills).forEach(q => { if(q) q.enable(editable); });
+            Object.values(quills).forEach(q => { if (q) q.enable(editable); });
 
             const inputs = document.querySelectorAll('#form-listen input, #form-listen select, #form-listen textarea');
             inputs.forEach(input => {
@@ -269,7 +269,7 @@ const ListenHandler = (function () {
                     input.disabled = !editable;
                 }
             });
-            
+
             // 特殊處理：連動選單在開啟編輯時，若上層沒選，下層要鎖住
             if (editable) {
                 const level = document.getElementById('liLevel').value;
