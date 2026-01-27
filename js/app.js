@@ -95,6 +95,7 @@ const TypeHandlers = {
     '長文題目': typeof LongArticleHandler !== 'undefined' ? LongArticleHandler : null,
     '短文題組': typeof ShortArticleHandler !== 'undefined' ? ShortArticleHandler : null,
     '聽力題目': typeof ListenHandler !== 'undefined' ? ListenHandler : null,
+    '聽力題組': typeof ListenGroupHandler !== 'undefined' ? ListenGroupHandler : null,
 };
 
 // ==========================================
@@ -121,6 +122,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (TypeHandlers['長文題目'] && TypeHandlers['長文題目'].init) TypeHandlers['長文題目'].init();
     if (TypeHandlers['短文題組'] && TypeHandlers['短文題組'].init) TypeHandlers['短文題組'].init();
     if (TypeHandlers['聽力題目'] && TypeHandlers['聽力題目'].init) TypeHandlers['聽力題目'].init();
+    if (TypeHandlers['聽力題組'] && TypeHandlers['聽力題組'].init) TypeHandlers['聽力題組'].init();
     // C. 啟動各功能模組
     initProjectHeader();    // 原 app.js 的專案切換功能
     initCheckboxLogic();    // 表格全選/反選
@@ -798,6 +800,9 @@ function initTypeSwitcher() {
             if (el) el.classList.remove('d-none');
         } else if (val === '聽力題目') {
             const el = document.getElementById('form-listen');
+            if (el) el.classList.remove('d-none');
+        } else if (val === '聽力題組') {
+            const el = document.getElementById('form-listengroup');
             if (el) el.classList.remove('d-none');
         }
     });

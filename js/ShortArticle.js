@@ -45,6 +45,7 @@ const ShortArticleHandler = (function () {
             document.getElementById('sSubCat').value = '篇章辨析';
 
             document.getElementById('sLevel').value = '';
+            document.getElementById('sDifficulty').value = '';
             document.getElementById('sGenre').value = '';
             document.getElementById('sTopic').value = '';
 
@@ -77,6 +78,7 @@ const ShortArticleHandler = (function () {
             document.getElementById('sMainCat').value = '文義判讀';
             document.getElementById('sSubCat').value = '篇章辨析';
             document.getElementById('sLevel').value = data.level || '';
+            document.getElementById('sDifficulty').value = data.difficulty || '';
             document.getElementById('sGenre').value = data.subType || ''; // 這裡用 subType 存語體文等
             document.getElementById('sTopic').value = data.topic || '';
 
@@ -117,6 +119,7 @@ const ShortArticleHandler = (function () {
 
         collect: function (status) {
             const level = document.getElementById('sLevel').value;
+            const difficulty = document.getElementById('sDifficulty').value;
             const genre = document.getElementById('sGenre').value;
             const topic = document.getElementById('sTopic').value.trim();
             const propositioner = document.getElementById('sPropositioner').value;
@@ -185,6 +188,7 @@ const ShortArticleHandler = (function () {
                 subCat: '篇章辨析',
                 subType: genre, // 文體 (文言文/應用文/語體文)
                 level: level,
+                difficulty: difficulty,
                 propositioner: propositioner,
                 topic: topic,
                 attachment: attachName,
@@ -234,26 +238,26 @@ const ShortArticleHandler = (function () {
                         <!-- Metadata Row (Dimension, Indicator, Score) -->
                         <div class="row g-2 mb-3">
                             <div class="col-md-4">
-                                <label class="form-label fw-bold small text-secondary">主向度</label>
+                                <label class="form-label fw-bold small text-secondary required-star">主向度</label>
                                 <select class="form-select form-select-sm" id="dim-${uid}">
                                     <option value="">請選擇...</option>
                                     ${Object.keys(dimensionData).map(k => `<option value="${k}">${k}</option>`).join('')}
                                 </select>
                             </div>
                             <div class="col-md-5">
-                                <label class="form-label fw-bold small text-secondary">能力指標</label>
+                                <label class="form-label fw-bold small text-secondary required-star">能力指標</label>
                                 <select class="form-select form-select-sm" id="ind-${uid}" disabled>
                                     <option value="">請先選擇主向度</option>
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label fw-bold small text-secondary">記分</label>
+                                <label class="form-label fw-bold small text-secondary required-star">記分</label>
                                 <input type="number" class="form-control form-control-sm" id="score-${uid}" placeholder="分數">
                             </div>
                         </div>
 
                         <div class="mb-4">
-                            <label class="form-label fw-bold text-dark">子題內容(題目)</label>
+                            <label class="form-label fw-bold text-dark required-star">子題內容(題目)</label>
                             <div id="qs-${uid}-content" class="bg-white" style="height:120px"></div>
                         </div>
                         

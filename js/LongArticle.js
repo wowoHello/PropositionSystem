@@ -17,7 +17,7 @@ const LongArticleHandler = (function () {
                 quills.explanation = new Quill('#q-long-explanation', {
                     theme: 'snow',
                     modules: { toolbar: window.mainToolbar },
-                    placeholder: '請輸入解析 (可留空)...'
+                    placeholder: '請輸入試題解析與答案理由...'
                 });
             }
         },
@@ -25,6 +25,7 @@ const LongArticleHandler = (function () {
         clear: function () {
             document.getElementById('lType').value = '';
             document.getElementById('lLevel').value = '';
+            document.getElementById('lDifficulty').value = '';
 
             const userNameEl = document.querySelector('.user-name');
             const propInput = document.getElementById('lPropositioner');
@@ -52,6 +53,7 @@ const LongArticleHandler = (function () {
         fill: function (data, isViewMode) {
             document.getElementById('lType').value = data.subType || '';
             document.getElementById('lLevel').value = data.level || '';
+            document.getElementById('lDifficulty').value = data.difficulty || '';
             document.getElementById('lTopic').value = data.topic || '';
 
             const propInput = document.getElementById('lPropositioner');
@@ -87,6 +89,7 @@ const LongArticleHandler = (function () {
         collect: function (status) {
             const type = document.getElementById('lType').value;
             const level = document.getElementById('lLevel').value;
+            const difficulty = document.getElementById('lDifficulty').value;
             const topic = document.getElementById('lTopic').value.trim();
             const propositioner = document.getElementById('lPropositioner').value;
 
@@ -138,6 +141,7 @@ const LongArticleHandler = (function () {
                 subCat: type,
                 subType: type,
                 level: level,
+                difficulty: difficulty,
                 propositioner: propositioner,
                 topic: topic,
                 attachment: attachName, // ★ 新增：回傳附檔名

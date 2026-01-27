@@ -42,7 +42,11 @@
     /* 聽力題目-解析 */
     #q-listen-explanation .ql-editor,
     /* 聽力題目-參考答案 */
-    #q-listen-ref-answer .ql-editor {
+    #q-listen-ref-answer .ql-editor,
+    /* 聽力題組-內容 */
+    #q-listengroup-content .ql-editor,
+    /* 聽力題組-解析 */
+    #q-listengroup-explanation .ql-editor {
       /* A. 預設高度 (最矮 200px) */
       min-height: 200px;
       /* B. 最大高度 (超過 400px 就停住) */
@@ -1251,7 +1255,7 @@
                     <div id="q-editor-content"></div>
                   </div>
                   <div class="mb-4">
-                    <label class="form-label fw-bold small text-secondary">附檔 (圖片/PDF)</label>
+                    <label class="form-label fw-bold small text-secondary">附檔 (圖片/PNG)</label>
                     <div class="input-group">
                       <input class="form-control" type="file" id="gAttachment">
                     </div>
@@ -1259,7 +1263,7 @@
                   </div>
 
                   <!-- 選項區域 (移至此處) -->
-                  <label class="form-label fw-bold small text-secondary mb-2">選項與正確答案</label>
+                  <label class="form-label fw-bold small text-secondary mb-2 required-star">選項與正確答案</label>
                   <div class="row g-3">
                     <div class="col-md-6">
                       <div class="card option-card h-100">
@@ -1316,7 +1320,7 @@
                 <div class="p-3 bg-white border rounded mb-3 shadow-sm">
                   <h6 class="fw-bold text-primary mb-3 border-bottom pb-2">
                     <i class="bi bi-lightbulb me-2"></i>
-                    三、解析
+                    三、詳解與解析
                   </h6>
 
                   <div class="mb-3">
@@ -1333,7 +1337,7 @@
                     一、題目基本資料
                   </h6>
                   <div class="row g-3">
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                       <label class="form-label fw-bold small text-secondary required-star">適用等級</label>
                       <select class="form-select" id="lLevel">
                         <option value="">請選擇...</option>
@@ -1343,7 +1347,7 @@
                         <option value="優等">優等</option>
                       </select>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                       <label class="form-label fw-bold small text-secondary required-star">題型</label>
                       <select class="form-select" id="lType">
                         <option value="">請選擇...</option>
@@ -1351,7 +1355,16 @@
                         <option value="資訊整合">資訊整合</option>
                       </select>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-6">
+                      <label class="form-label fw-bold small text-secondary">難度</label>
+                      <select class="form-select" id="lDifficulty">
+                        <option value="">請選擇...</option>
+                        <option value="難度 1">難度 1</option>
+                        <option value="難度 2">難度 2</option>
+                        <option value="難度 3">難度 3</option>
+                      </select>
+                    </div>
+                    <div class="col-md-6">
                       <label class="form-label fw-bold small text-secondary">命題者</label>
                       <input type="text" class="form-control readonly-field" id="lPropositioner" value="沈雅茹" disabled
                         readonly>
@@ -1376,7 +1389,7 @@
                   </div>
 
                   <div class="mb-4">
-                    <label class="form-label fw-bold small text-secondary">附檔 (圖片/PDF)</label>
+                    <label class="form-label fw-bold small text-secondary">附檔 (圖片/PNG)</label>
                     <div class="input-group">
                       <input class="form-control" type="file" id="lAttachment">
                     </div>
@@ -1387,9 +1400,12 @@
                 <div class="p-3 bg-white border rounded mb-4 shadow-sm">
                   <h6 class="fw-bold text-primary mb-3 border-bottom pb-2">
                     <i class="bi bi-lightbulb me-2"></i>
-                    三、詳解與解析 (選填)
+                    三、詳解與解析
                   </h6>
-                  <div id="q-long-explanation"></div>
+                  <div class="mb-3">
+                    <label class="form-label fw-bold small text-secondary">解析 (紀錄答案理由)</label>
+                    <div id="q-long-explanation"></div>
+                  </div>
                 </div>
               </div>
               <!-- 短文題組 -->
@@ -1400,14 +1416,19 @@
                     一、題目基本資料
                   </h6>
                   <div class="row g-3">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                       <label class="form-label fw-bold small text-secondary">主類</label>
                       <input type="text" class="form-control readonly-field" id="sMainCat" value="文義判讀" disabled
                         readonly>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                       <label class="form-label fw-bold small text-secondary">次類</label>
                       <input type="text" class="form-control readonly-field" id="sSubCat" value="篇章辨析" disabled
+                        readonly>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label fw-bold small text-secondary">命題者</label>
+                      <input type="text" class="form-control readonly-field" id="sPropositioner" value="沈雅茹" disabled
                         readonly>
                     </div>
                     <div class="col-md-4">
@@ -1428,9 +1449,13 @@
                       </select>
                     </div>
                     <div class="col-md-4">
-                      <label class="form-label fw-bold small text-secondary">命題者</label>
-                      <input type="text" class="form-control readonly-field" id="sPropositioner" value="沈雅茹" disabled
-                        readonly>
+                      <label class="form-label fw-bold small text-secondary">難度</label>
+                      <select class="form-select" id="sDifficulty">
+                        <option value="">請選擇...</option>
+                        <option value="難度 1">難度 1</option>
+                        <option value="難度 2">難度 2</option>
+                        <option value="難度 3">難度 3</option>
+                      </select>
                     </div>
                   </div>
                 </div>
@@ -1549,7 +1574,7 @@
                   </div>
 
                   <div class="mb-4">
-                    <label class="form-label fw-bold small text-secondary">附檔 (圖片/PDF)</label>
+                    <label class="form-label fw-bold small text-secondary">附檔 (圖片/PNG)</label>
                     <input class="form-control" type="file" id="rAttachment">
                   </div>
 
@@ -1580,7 +1605,7 @@
                 <div class="p-3 bg-white border rounded mb-3 shadow-sm">
                   <h6 class="fw-bold text-primary mb-3 border-bottom pb-2">
                     <i class="bi bi-lightbulb me-2"></i>
-                    三、參考答案及解析
+                    三、詳解與解析
                   </h6>
                   <p class="text-muted small m-0">
                     <i class="bi bi-info-circle me-1"></i>
@@ -1661,19 +1686,19 @@
                   </div>
 
                   <div class="mb-3">
-                    <label class="form-label fw-bold small text-secondary required-star">語音內容 (腳本)</label>
+                    <label class="form-label fw-bold small text-secondary required-star">語音內容</label>
                     <div id="q-listen-content"></div>
                   </div>
 
                   <div class="mb-4">
-                    <label class="form-label fw-bold small text-secondary">附檔 (音檔/圖片)</label>
+                    <label class="form-label fw-bold small text-secondary">附檔 (音檔/MP3)</label>
                     <div class="input-group">
                       <input class="form-control" type="file" id="liAttachment">
                     </div>
                     <div class="form-text small mt-1 text-primary d-none" id="liAttachmentName"></div>
                   </div>
 
-                  <label class="form-label fw-bold small text-secondary mb-2">選項與正確答案</label>
+                  <label class="form-label fw-bold small text-secondary mb-2 required-star">選項與正確答案</label>
                   <div class="row g-3">
                     <div class="col-md-6">
                       <div class="card option-card h-100">
@@ -1743,7 +1768,84 @@
                   </div>
                 </div>
               </div>
+              <!-- 聽力題組 -->
+              <div id="form-listengroup" class="question-form-group d-none">
 
+                <div class="p-3 bg-white border rounded mb-4 shadow-sm">
+                  <h6 class="fw-bold text-primary mb-3 border-bottom pb-2">
+                    <i class="bi bi-info-circle me-2"></i>
+                    一、題目基本資料
+                  </h6>
+                  <div class="row g-3">
+                    <div class="col-md-4">
+                      <label class="form-label fw-bold small text-secondary required-star">語音類型</label>
+                      <select class="form-select" id="lgVoiceType">
+                        <option value="">請選擇...</option>
+                        <option value="對話">對話</option>
+                        <option value="情境">情境</option>
+                        <option value="陳述">陳述</option>
+                      </select>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label fw-bold small text-secondary required-star">素材分類</label>
+                      <select class="form-select" id="lgMaterial">
+                        <option value="">請選擇...</option>
+                        <option value="生活">生活</option>
+                        <option value="教育">教育</option>
+                        <option value="職場">職場</option>
+                        <option value="專業">專業</option>
+                      </select>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label fw-bold small text-secondary">命題者</label>
+                      <input type="text" class="form-control readonly-field" id="lgPropositioner" value="沈雅茹" disabled
+                        readonly>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="p-3 bg-white border rounded mb-4 shadow-sm">
+                  <h6 class="fw-bold text-primary mb-3 border-bottom pb-2">
+                    <i class="bi bi-file-text me-2"></i>
+                    二、題目內容
+                  </h6>
+
+                  <div class="mb-3">
+                    <label class="form-label fw-bold small text-secondary required-star">語音內容</label>
+                    <div id="q-listengroup-content"></div>
+                  </div>
+
+                  <div class="mb-4">
+                    <label class="form-label fw-bold small text-secondary">附檔 (音檔/MP3)</label>
+                    <div class="input-group">
+                      <input class="form-control" type="file" id="lgAttachment">
+                    </div>
+                    <div class="form-text small mt-1 text-primary d-none" id="lgAttachmentName"></div>
+                  </div>
+
+                  <div class="bg-light p-3 rounded border">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                      <h6 class="fw-bold text-dark m-0">
+                        <i class="bi bi-list-ol me-1"></i>
+                        子題列表
+                      </h6>
+                    </div>
+
+                    <div id="listengroup-sub-container"></div>
+                  </div>
+                </div>
+
+                <div class="p-3 bg-white border rounded mb-4 shadow-sm">
+                  <h6 class="fw-bold text-primary mb-3 border-bottom pb-2">
+                    <i class="bi bi-lightbulb me-2"></i>
+                    三、詳解與解析
+                  </h6>
+                  <p class="text-muted small m-0">
+                    <i class="bi bi-info-circle me-1"></i>
+                    閱讀題組的答案與解析請於上方「子題列表」中逐題設定。
+                  </p>
+                </div>
+              </div>
             </div>
           </form>
         </div>
@@ -1824,6 +1926,7 @@
   <script src="js/LongArticle.js"></script>
   <script src="js/ShortArticle.js"></script>
   <script src="js/Listen.js"></script>
+  <script src="js/ListenGroup.js"></script>
   <script src="js/app.js"></script>
 </body>
 

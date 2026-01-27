@@ -36,12 +36,12 @@ const ListenHandler = (function () {
             // 1. 初始化 Quill 編輯器
             if (document.getElementById('q-listen-content')) {
                 quills.content = new Quill('#q-listen-content', {
-                    theme: 'snow', modules: { toolbar: window.mainToolbar }, placeholder: '請輸入語音內容腳本...'
+                    theme: 'snow', modules: { toolbar: window.mainToolbar }, placeholder: '請輸入語音內容...'
                 });
             }
             if (document.getElementById('q-listen-explanation')) {
                 quills.explanation = new Quill('#q-listen-explanation', {
-                    theme: 'snow', modules: { toolbar: window.mainToolbar }, placeholder: '請輸入解析...'
+                    theme: 'snow', modules: { toolbar: window.mainToolbar }, placeholder: '請輸入試題解析與答案理由...'
                 });
             }
             if (document.getElementById('q-listen-ref-answer')) {
@@ -216,7 +216,7 @@ const ListenHandler = (function () {
                 if (!voiceType) err.push("請選擇語音類型");
                 if (!material) err.push("請選擇素材分類");
                 if (!topic) err.push("請輸入題目");
-                if (contentText.length === 0) err.push("請輸入語音內容腳本");
+                if (contentText.length === 0) err.push("請輸入語音內容...");
                 if (!ansEl) err.push("請設定正確答案");
 
                 // 難度五特殊驗證

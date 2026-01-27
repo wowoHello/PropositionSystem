@@ -179,11 +179,11 @@ const ReadingHandler = (function () {
                     
                     <div class="card-body bg-light">
                         <div class="mb-4">
-                            <label class="form-label fw-bold text-dark">子題內容(題目)</label>
+                            <label class="form-label fw-bold text-dark required-star">子題內容(題目)</label>
                             <div id="q-${uid}-content" class="bg-white" style="height:120px"></div>
                         </div>
                         
-                        <label class="form-label fw-bold text-secondary mb-2">選項設定</label>
+                        <label class="form-label fw-bold text-secondary mb-2 required-star">選項設定</label>
                         <div class="d-flex flex-column gap-2 mb-4">
                             ${['A', 'B', 'C', 'D'].map(opt => `
                                 <div class="card option-card shadow-sm mb-2">
@@ -228,7 +228,7 @@ const ReadingHandler = (function () {
                 optB: new Quill(`#q-${uid}-optB`, { theme: 'snow', modules: { toolbar: toolbar }, placeholder: '選項 B' }),
                 optC: new Quill(`#q-${uid}-optC`, { theme: 'snow', modules: { toolbar: toolbar }, placeholder: '選項 C' }),
                 optD: new Quill(`#q-${uid}-optD`, { theme: 'snow', modules: { toolbar: toolbar }, placeholder: '選項 D' }),
-                explanation: new Quill(`#q-${uid}-explanation`, { theme: 'snow', modules: { toolbar: toolbar }, placeholder: '請輸入解析...' })
+                explanation: new Quill(`#q-${uid}-explanation`, { theme: 'snow', modules: { toolbar: toolbar }, placeholder: '請輸入試題解析與答案理由...' })
             };
 
             // 綁定自動檢查事件
