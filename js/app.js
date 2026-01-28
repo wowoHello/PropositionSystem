@@ -31,12 +31,11 @@ if (typeof Quill !== 'undefined') {
 window.mainToolbar = [
     [{ 'size': ['small', false, 'large', 'huge'] }],  // 文字大小
     [{ 'header': [1, 2, 3, 4, 5, 6, false] }],        // 標題
-    [{ 'font': [false, 'microsoft-jhenghei', 'kaiu', 'times-new-roman', 'arial', 'comic-sans-ms'] }], // 字體
-    [{ 'color': [] }, { 'background': [] }],          // 顏色
+    [{ 'font': ['kaiu', 'times-new-roman'] }], // 字體
+    [{ 'color': [] }],          // 顏色
     [{ 'align': [] }],                                // 對齊
-    ['bold', 'italic', 'underline', 'strike'],        // 樣式
-    ['blockquote', 'code-block'],                     // 區塊
-    ['link', 'image', 'video'],                       // 媒體 (選項通常不需要 video，但在主旨需要)
+    ['bold', 'underline', 'strike'],        // 樣式
+    ['link'],                       // 媒體 (選項通常不需要 video，但在主旨需要)
     [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'list': 'check' }],
     [{ 'script': 'sub' }, { 'script': 'super' }],
     [{ 'indent': '-1' }, { 'indent': '+1' }],
@@ -46,12 +45,16 @@ window.mainToolbar = [
 // 設定 B：精簡版 (用於：選項 A/B/C/D)
 // 去除了標題(h1-h6)、媒體(video/image)、區塊引用，保留字體與顏色，避免選項框太擠
 window.optionToolbar = [
-    [{ 'size': ['small', false, 'large'] }],          // 文字大小 (選項不需要 huge)
-    [{ 'font': [false, 'microsoft-jhenghei', 'kaiu', 'times-new-roman', 'arial', 'comic-sans-ms'] }],
-    [{ 'color': [] }, { 'background': [] }],          // 顏色 (重要！選項常需要標紅字)
-    ['bold', 'italic', 'underline', 'strike'],
-    ['link', 'image'],
+    [{ 'size': ['small', false, 'large', 'huge'] }],  // 文字大小
+    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],        // 標題
+    [{ 'font': ['kaiu', 'times-new-roman'] }], // 字體
+    [{ 'color': [] }],          // 顏色
+    [{ 'align': [] }],                                // 對齊
+    ['bold', 'underline', 'strike'],        // 樣式
+    ['link'],                       // 媒體 (選項通常不需要 video，但在主旨需要)
+    [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'list': 'check' }],
     [{ 'script': 'sub' }, { 'script': 'super' }],
+    [{ 'indent': '-1' }, { 'indent': '+1' }],
     ['clean']
 ];
 
@@ -427,17 +430,16 @@ window.batchUpdateStatus = function (targetStatus) {
     let icon = "question";
     let confirmBtnColor = "#3085d6";
 
-    if (targetStatus === '已傳送') {
+    if (targetStatus === '命題送審') {
         text = "傳送後將進入審題階段，無法再進行編輯。";
         icon = "warning";
         confirmBtnColor = "#2563eb"; // 藍色
-    } else if (targetStatus === '已確認') {
-        text = "設為已確認代表題目已完成編輯，還可再進行編輯。";
+    } else if (targetStatus === '命題完成') {
+        text = "設為命題完成代表題目已完成編輯，也還可再進行編輯。";
         icon = "info";
         confirmBtnColor = "#10b981"; // 綠色
     } else {
-        // 草稿
-        text = "設為草稿後可繼續編輯。";
+        text = "設為命題草稿後可繼續編輯。";
         confirmBtnColor = "#f59e0b"; // 橘色
     }
 
@@ -472,14 +474,14 @@ window.batchUpdateStatus = function (targetStatus) {
                 // ==========================================
                 // ★ 新增邏輯：動態切換鎖定樣式與 Checkbox ★
                 // ==========================================
-                if (targetStatus === '已傳送') {
+                if (targetStatus === '命題送審') {
                     // 加上鎖定樣式
                     row.classList.add('row-locked');
                     // 禁用 checkbox (防止被再次選取)
                     cb.disabled = true;
                     // 因為 resetSelection() 會在迴圈後執行，這裡只需設 disabled
                 } else {
-                    // 如果未來允許從已傳送退回草稿/已確認，要記得解鎖
+                    // 如果未來允許從命題送審退回命題草稿/命題完成，要記得解鎖
                     row.classList.remove('row-locked');
                     cb.disabled = false;
                 }
@@ -540,7 +542,7 @@ function writeToTable(data) {
         initCheckboxLogic();
     }
 
-    if (data.status === '已傳送') {
+    if (data.status === '命題送審') {
         row.classList.add('row-locked');
         const cb = row.querySelector('input[type="checkbox"]');
         if (cb) cb.disabled = true;
@@ -561,7 +563,7 @@ function writeToTable(data) {
 
 function getActionHtml(status) {
     let html = `<button class="btn btn-link p-0 text-decoration-none fw-bold" onclick="openPropModal(this, 'view')">檢視</button>`;
-    if (status != '已傳送') {
+    if (status != '命題送審') {
         html += `
             <span class="text-muted mx-1">|</span>
             <button class="btn btn-link p-0 text-decoration-none fw-bold text-success" onclick="openPropModal(this, 'edit')">編輯</button>
@@ -603,9 +605,9 @@ function updateStats() {
 
     rows.forEach(row => {
         const status = row.getAttribute('data-status');
-        if (status === '草稿') draft++;
-        else if (status === '已確認') confirmed++;
-        else if (status === '已傳送') sent++;
+        if (status === '命題草稿') draft++;
+        else if (status === '命題完成') confirmed++;
+        else if (status === '命題送審') sent++;
     });
 
     const elTotal = document.getElementById('stat-total');
@@ -904,9 +906,9 @@ function toggleGlobalEditable(editable) {
 
 function getStatusClass(s) {
     if (s === '未儲存') return 'unsaved';
-    if (s === '草稿') return 'draft';
-    if (s === '已確認') return 'confirmed';
-    if (s === '已傳送') return 'sent';
+    if (s === '命題草稿') return 'draft';
+    if (s === '命題完成') return 'confirmed';
+    if (s === '命題送審') return 'sent';
     return 'secondary';
 }
 

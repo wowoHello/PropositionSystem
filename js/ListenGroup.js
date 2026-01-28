@@ -106,6 +106,10 @@ const ListenGroupHandler = (function () {
                             
                             <!-- Options Section (Updated styling to match Reading.js somewhat but keep user request) -->
                             <label class="form-label fw-bold text-secondary mb-2 required-star">選項設定</label>
+                            <div class="p-2 mb-2 bg-light border rounded text-secondary small d-flex align-items-center">
+                                <i class="bi bi-exclamation-circle-fill me-2 text-danger"></i>
+                                請避免選項長短、語氣明顯差異，以免影響鑑別度
+                            </div>
                             <div class="d-flex flex-column gap-2 mb-4">
                                 ${['A', 'B', 'C', 'D'].map(opt => `
                                     <div class="card option-card shadow-sm mb-2">
@@ -190,6 +194,7 @@ const ListenGroupHandler = (function () {
 
         clear: function () {
             // 清空基本資料
+            document.getElementById('lgLevel').value = '';
             document.getElementById('lgVoiceType').value = '';
             document.getElementById('lgMaterial').value = '';
 
@@ -231,6 +236,7 @@ const ListenGroupHandler = (function () {
         },
 
         fill: function (data, isViewMode) {
+            document.getElementById('lgLevel').value = data.level || '';
             document.getElementById('lgVoiceType').value = data.subCat || ''; // 這裡 subCat 存語音類型
             document.getElementById('lgMaterial').value = data.material || '';
 
@@ -286,6 +292,7 @@ const ListenGroupHandler = (function () {
         },
 
         collect: function (status) {
+            const level = document.getElementById('lgLevel').value;
             const voiceType = document.getElementById('lgVoiceType').value;
             const material = document.getElementById('lgMaterial').value;
             const propositioner = document.getElementById('lgPropositioner').value;
@@ -340,6 +347,7 @@ const ListenGroupHandler = (function () {
 
             // 驗證母題
             if (status === '已確認') {
+                if (!level) err.push("請選擇適用等級");
                 if (!voiceType) err.push("請選擇語音類型");
                 if (!material) err.push("請選擇素材分類");
                 if (contentText.length === 0) err.push("請輸入語音內容...");
@@ -358,12 +366,13 @@ const ListenGroupHandler = (function () {
             return {
                 mainCat: '聽力題組',
                 subCat: voiceType, // 語音類型
+                level: level,
                 material: material,
                 propositioner: propositioner,
                 content: encodeURIComponent(quills.main.root.innerHTML),
                 // explanation: encodeURIComponent(quills.explanation.root.innerHTML), // REMOVED GLOBAL
                 attachment: attachName,
-                summary: `[聽力題組] ${voiceType} - ${contentText.substring(0, 15)}...`,
+                summary: contentText.substring(0, 15) + '...',
                 subQuestions: subsData
             };
         },

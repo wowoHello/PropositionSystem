@@ -17,7 +17,7 @@ const LongArticleHandler = (function () {
                 quills.explanation = new Quill('#q-long-explanation', {
                     theme: 'snow',
                     modules: { toolbar: window.mainToolbar },
-                    placeholder: '請輸入試題解析與答案理由...'
+                    placeholder: '請簡要說明正確答案的判斷依據，並簡述其他選項錯誤原因...'
                 });
             }
         },
@@ -147,7 +147,7 @@ const LongArticleHandler = (function () {
                 attachment: attachName, // ★ 新增：回傳附檔名
                 content: encodeURIComponent(contentHTML),
                 explanation: encodeURIComponent(explanationHTML),
-                summary: `[${type}] ${contentText.substring(0, 15)}...`
+                summary: topic
             };
         },
 

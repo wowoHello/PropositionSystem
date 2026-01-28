@@ -51,14 +51,14 @@ const GeneralHandler = (function () {
             // 初始化 Quill (如果有定義全域 toolbar 設定，可直接用，或是這裡再定義一次)
             // 假設 mainToolbar 和 optionToolbar 在 app.js 定義為全域
             if (document.getElementById('q-editor-content')) {
-                quills.content = new Quill('#q-editor-content', { theme: 'snow', modules: { toolbar: window.mainToolbar }, placeholder: '請輸入題幹...' });
+                quills.content = new Quill('#q-editor-content', { theme: 'snow', modules: { toolbar: window.mainToolbar }, placeholder: '請輸入題幹內容...' });
 
                 // ★ 初始化解析編輯器 ★
                 if (document.getElementById('q-editor-explanation')) {
                     quills.explanation = new Quill('#q-editor-explanation', {
                         theme: 'snow',
                         modules: { toolbar: window.mainToolbar }, // 解析也可以用完整工具列，或改用簡化版
-                        placeholder: '請輸入試題解析與答案理由...'
+                        placeholder: '請簡要說明正確答案的判斷依據，並簡述其他選項錯誤原因...'
                     });
                 }
 

@@ -193,7 +193,7 @@ const ShortArticleHandler = (function () {
                 topic: topic,
                 attachment: attachName,
                 content: encodeURIComponent(contentHTML),
-                summary: `[${genre}] ${topic}`,
+                summary: topic,
                 subQuestions: subsData
             };
         },

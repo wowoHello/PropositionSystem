@@ -41,7 +41,7 @@ const ListenHandler = (function () {
             }
             if (document.getElementById('q-listen-explanation')) {
                 quills.explanation = new Quill('#q-listen-explanation', {
-                    theme: 'snow', modules: { toolbar: window.mainToolbar }, placeholder: '請輸入試題解析與答案理由...'
+                    theme: 'snow', modules: { toolbar: window.mainToolbar }, placeholder: '請簡要說明正確答案的判斷依據，並簡述其他選項錯誤原因...'
                 });
             }
             if (document.getElementById('q-listen-ref-answer')) {
@@ -254,7 +254,7 @@ const ListenHandler = (function () {
                 optC: encodeURIComponent(quills.optC.root.innerHTML),
                 optD: encodeURIComponent(quills.optD.root.innerHTML),
                 ans: ansEl ? ansEl.value : '',
-                summary: `[聽力] ${topic}`
+                summary: topic
             };
         },
 

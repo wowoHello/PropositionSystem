@@ -184,6 +184,10 @@ const ReadingHandler = (function () {
                         </div>
                         
                         <label class="form-label fw-bold text-secondary mb-2 required-star">選項設定</label>
+                        <div class="p-2 mb-3 bg-light border rounded text-secondary small d-flex align-items-center">
+                            <i class="bi bi-exclamation-circle-fill me-2 text-danger"></i>
+                            請避免選項長短、語氣明顯差異，以免影響鑑別度
+                        </div>
                         <div class="d-flex flex-column gap-2 mb-4">
                             ${['A', 'B', 'C', 'D'].map(opt => `
                                 <div class="card option-card shadow-sm mb-2">
@@ -228,7 +232,7 @@ const ReadingHandler = (function () {
                 optB: new Quill(`#q-${uid}-optB`, { theme: 'snow', modules: { toolbar: toolbar }, placeholder: '選項 B' }),
                 optC: new Quill(`#q-${uid}-optC`, { theme: 'snow', modules: { toolbar: toolbar }, placeholder: '選項 C' }),
                 optD: new Quill(`#q-${uid}-optD`, { theme: 'snow', modules: { toolbar: toolbar }, placeholder: '選項 D' }),
-                explanation: new Quill(`#q-${uid}-explanation`, { theme: 'snow', modules: { toolbar: toolbar }, placeholder: '請輸入試題解析與答案理由...' })
+                explanation: new Quill(`#q-${uid}-explanation`, { theme: 'snow', modules: { toolbar: toolbar }, placeholder: '請簡要說明正確答案的判斷依據，並簡述其他選項錯誤原因...' })
             };
 
             // 綁定自動檢查事件
