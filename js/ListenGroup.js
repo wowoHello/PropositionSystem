@@ -117,7 +117,7 @@ const ListenGroupHandler = (function () {
                                             <div class="form-check m-0 d-flex align-items-center gap-2">
                                                 <input class="form-check-input" type="radio" 
                                                     name="ans-${uid}" value="${opt}" id="radio-${uid}-${opt}" style="cursor:pointer">
-                                                <span class="small text-secondary fw-bold" style="cursor:pointer">設為正確答案</span>
+                                                <span class="form-check-label small text-secondary fw-bold" style="cursor:pointer">設為正確答案</span>
                                             </div>
                                             <span class="badge bg-secondary">選項 ${opt}</span>
                                         </label>

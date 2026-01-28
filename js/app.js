@@ -494,6 +494,9 @@ window.batchUpdateStatus = function (targetStatus) {
 
             if (typeof resetSelection === 'function') resetSelection();
             updateStats(); // 更新統計
+            if (typeof updateMasterCheckboxState === 'function') {
+                updateMasterCheckboxState();
+            }
             showToast(`已將 ${checkedRows.length} 筆資料設為${targetStatus}`, 'success');
         }
     });
@@ -628,6 +631,27 @@ function updateStats() {
 // ==========================================
 //  7. 篩選與 Checkbox 邏輯
 // ==========================================
+function getVisibleSelectableChecks() {
+    return Array.from(document.querySelectorAll('tbody .data-row input[type="checkbox"]'))
+        .filter(cb => cb.closest('tr').style.display !== 'none' && !cb.disabled);
+}
+
+function updateMasterCheckboxState() {
+    const masterCheck = document.querySelector('thead input[type="checkbox"]');
+    if (!masterCheck) return;
+
+    const selectableChecks = getVisibleSelectableChecks();
+    const hasSelectable = selectableChecks.length > 0;
+
+    masterCheck.disabled = !hasSelectable;
+    if (!hasSelectable) {
+        masterCheck.checked = false;
+        return;
+    }
+
+    masterCheck.checked = selectableChecks.every(cb => cb.checked);
+}
+
 function initCheckboxLogic() {
     const checkAll = document.querySelector('thead input[type="checkbox"]');
     const rowChecks = document.querySelectorAll('tbody .data-row input[type="checkbox"]');
@@ -638,24 +662,18 @@ function initCheckboxLogic() {
 
         newCheckAll.addEventListener('change', function () {
             const isChecked = this.checked;
-            document.querySelectorAll('tbody .data-row input[type="checkbox"]').forEach(cb => {
-                // 只選取「未被禁用」且「可見」的項目
-                if (cb.closest('tr').style.display !== 'none' && !cb.disabled) {
-                    cb.checked = isChecked;
-                }
+            getVisibleSelectableChecks().forEach(cb => {
+                cb.checked = isChecked;
             });
         });
     }
 
     rowChecks.forEach(cb => {
         cb.addEventListener('change', function () {
-            const currentChecks = document.querySelectorAll('tbody .data-row input[type="checkbox"]');
-            const allVisible = Array.from(currentChecks).filter(r => r.closest('tr').style.display !== 'none');
-            const allChecked = allVisible.length > 0 && allVisible.every(c => c.checked);
-            const masterCheck = document.querySelector('thead input[type="checkbox"]');
-            if (masterCheck) masterCheck.checked = allChecked;
+            updateMasterCheckboxState();
         });
     });
+    updateMasterCheckboxState();
 }
 
 function initFilter() {
@@ -731,8 +749,7 @@ function initFilter() {
 
         checkEmptyState();
         // 篩選後重置全選按鈕
-        const masterCheck = document.querySelector('thead input[type="checkbox"]');
-        if (masterCheck) masterCheck.checked = false;
+        updateMasterCheckboxState();
     };
 
     // 4. 綁定事件
@@ -974,6 +991,10 @@ function resetSelection() {
         cb.checked = false;
     });
 
+    if (typeof updateMasterCheckboxState === 'function') {
+        updateMasterCheckboxState();
+    }
+    
     // (選用) 如果有 Toast 提示，可以顯示一下
     showToast('已重置所有選取', 'secondary');
 }
