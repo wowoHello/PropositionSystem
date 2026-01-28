@@ -43,7 +43,7 @@ window.mainToolbar = [
 ];
 
 // 設定 B：精簡版 (用於：選項 A/B/C/D)
-// 去除了標題(h1-h6)、媒體(video/image)、區塊引用，保留字體與顏色，避免選項框太擠
+// 去除了影片/圖片與區塊引用，保留標題與連結，避免選項框太擠
 window.optionToolbar = [
     [{ 'size': ['small', false, 'large', 'huge'] }],  // 文字大小
     [{ 'header': [1, 2, 3, 4, 5, 6, false] }],        // 標題
@@ -314,6 +314,10 @@ window.openPropModal = function (btn, mode) {
         const isView = (mode === 'view');
         typeSelect.disabled = isView;
         toggleGlobalEditable(!isView);
+
+        // 切換檢視模式樣式
+        const paramForm = document.getElementById('propForm');
+        if (paramForm) paramForm.classList.toggle('view-mode', isView);
 
         typeSelect.dispatchEvent(new Event('change'));
     }

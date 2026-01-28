@@ -180,17 +180,17 @@ const ReadingHandler = (function () {
                     <div class="card-body bg-light">
                         <div class="mb-4">
                             <label class="form-label fw-bold text-dark required-star">子題內容(題目)</label>
-                            <div id="q-${uid}-content" class="bg-white" style="height:120px"></div>
+                            <div id="q-${uid}-content" class="bg-white" style="min-height:120px"></div>
                         </div>
                         
-                        <label class="form-label fw-bold text-secondary mb-2 required-star">選項設定</label>
-                        <div class="p-2 mb-3 bg-light border rounded text-secondary small d-flex align-items-center">
-                            <i class="bi bi-exclamation-circle-fill me-2 text-danger"></i>
+                        <label class="form-label fw-bold text-secondary mb-2 required-star">選項與正確答案</label>
+                        <div class="alert-hint">
+                            <i class="bi bi-exclamation-circle-fill"></i>
                             請避免選項長短、語氣明顯差異，以免影響鑑別度
                         </div>
                         <div class="d-flex flex-column gap-2 mb-4">
                             ${['A', 'B', 'C', 'D'].map(opt => `
-                                <div class="card option-card shadow-sm mb-2">
+                                <div class="card option-card mb-2">
                                     <label class="option-header-styled w-100" for="radio-${uid}-${opt}">
                                         
                                         <div class="form-check m-0 d-flex align-items-center gap-2">
@@ -205,19 +205,17 @@ const ReadingHandler = (function () {
                                             </span>
                                         </div>
 
-                                        <span class="badge bg-light text-secondary border">選項 ${opt}</span>
+                                        <span class="badge bg-secondary">選項 ${opt}</span>
                                     </label>
                                     
-                                    <div style="border-top: 1px solid #eee;">
-                                        <div id="q-${uid}-opt${opt}" style="height:150px;"></div>
-                                    </div>
+                                    <div id="q-${uid}-opt${opt}" style="min-height:80px;"></div>
                                 </div>
                             `).join('')}
                         </div>
 
                         <div class="mb-2">
                              <label class="form-label fw-bold text-muted">解析(紀錄答案理由)</label>
-                             <div id="q-${uid}-explanation" class="bg-white" style="height:120px"></div>
+                             <div id="q-${uid}-explanation" class="bg-white" style="min-height:120px"></div>
                         </div>
                     </div>
                 </div>

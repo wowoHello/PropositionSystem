@@ -25,6 +25,10 @@ body {
    ========================================= */
 
 /* 1. 修正 Quill 字體選單寬度不足的問題 */
+.ql-editor.ql-blank:focus::before {
+    opacity: 0;
+}
+
 .ql-snow .ql-picker.ql-font {
     width: 160px !important;
 }
@@ -35,11 +39,25 @@ body {
 }
 
 /* 2. 定義編輯器內的字體樣式 (讓編輯區顯示正確字體) */
-.ql-font-microsoft-jhenghei { font-family: "Microsoft JhengHei", "微軟正黑體", sans-serif; }
-.ql-font-kaiu { font-family: "DFKai-SB", "標楷體", serif; }
-.ql-font-times-new-roman { font-family: "Times New Roman", serif; }
-.ql-font-arial { font-family: "Arial", sans-serif; }
-.ql-font-comic-sans-ms { font-family: "Comic Sans MS", cursive; }
+.ql-font-microsoft-jhenghei {
+    font-family: "Microsoft JhengHei", "微軟正黑體", sans-serif;
+}
+
+.ql-font-kaiu {
+    font-family: "DFKai-SB", "標楷體", serif;
+}
+
+.ql-font-times-new-roman {
+    font-family: "Times New Roman", serif;
+}
+
+.ql-font-arial {
+    font-family: "Arial", sans-serif;
+}
+
+.ql-font-comic-sans-ms {
+    font-family: "Comic Sans MS", cursive;
+}
 
 /* 3. 設定下拉選單的「中文標籤名稱」 (這是給選單看的) */
 .ql-snow .ql-picker.ql-font .ql-picker-label[data-value="microsoft-jhenghei"]::before,
@@ -123,25 +141,42 @@ body {
     /* 微微變灰，暗示可點擊 */
 }
 
+/* ★ 新增：檢視模式下的游標修正 (View Mode Cursor Fix) */
+.view-mode .option-header-styled,
+.view-mode .form-check,
+.view-mode .form-check-label,
+.view-mode input[type="radio"] {
+    cursor: default !important;
+}
+
+.view-mode .option-header-styled:hover {
+    background-color: transparent !important;
+    /* 移除懸浮效果 */
+}
+
 /* =========================================
    手風琴箭頭動畫
    ========================================= */
 
 /* 1. 定義箭頭的基本樣式與動畫時間 */
 .accordion-arrow {
-    transition: transform 0.3s ease; /* 平滑旋轉 0.3秒 */
-    transform-origin: center center; /* 以中心點旋轉 */
+    transition: transform 0.3s ease;
+    /* 平滑旋轉 0.3秒 */
+    transform-origin: center center;
+    /* 以中心點旋轉 */
 }
 
 /* 2. 當 Header 被加上 'collapsed' (收合狀態) 時 */
 /* Bootstrap 會自動在收合時幫按鈕加上 .collapsed class */
 .sub-accordion-btn.collapsed .accordion-arrow {
-    transform: rotate(-90deg); /* 逆時針轉 90 度 (變成朝右) */
+    transform: rotate(-90deg);
+    /* 逆時針轉 90 度 (變成朝右) */
 }
 
 /* 3. 當 Header 沒有 'collapsed' (展開狀態) 時 */
 .sub-accordion-btn:not(.collapsed) .accordion-arrow {
-    transform: rotate(0deg);   /* 維持原狀 (朝下) */
+    transform: rotate(0deg);
+    /* 維持原狀 (朝下) */
 }
 
 /* =========================================
@@ -193,9 +228,12 @@ body {
     font-weight: 600;
     font-size: 0.95rem;
     white-space: nowrap;
-    overflow: hidden;    /* 隱藏超出部分 */
-    text-overflow: ellipsis; /* 超出顯示 ... */
-    max-width: 100%;     /* 限制最大寬度 */
+    overflow: hidden;
+    /* 隱藏超出部分 */
+    text-overflow: ellipsis;
+    /* 超出顯示 ... */
+    max-width: 100%;
+    /* 限制最大寬度 */
 }
 
 .project-display:hover {
@@ -217,8 +255,10 @@ body {
 }
 
 .project-info {
-    min-width: 0; /* 關鍵：讓 Flex 子元素可以縮小到比內容還小 */
-    flex: 1;      /* 佔滿剩餘空間 */
+    min-width: 0;
+    /* 關鍵：讓 Flex 子元素可以縮小到比內容還小 */
+    flex: 1;
+    /* 佔滿剩餘空間 */
 }
 
 .project-year {

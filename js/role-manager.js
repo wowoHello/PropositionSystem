@@ -196,8 +196,11 @@ function openPermissionModal(roleName) {
     document.getElementById("permissionModal")
   );
 
-  // 設定標題
-  document.getElementById("modalRoleTitle").innerText = roleName;
+  // 設定標題 (Now an input)
+  const nameInput = document.getElementById("editRoleNameInput");
+  if (nameInput) {
+    nameInput.value = roleName;
+  }
 
   // Find Role Data
   const role = rolesData.find(r => r.name === roleName);
@@ -234,6 +237,12 @@ function savePermissions() {
   const typeEl = document.querySelector('input[name="permRoleType"]:checked');
   if (typeEl) {
     currentEditingRole.type = typeEl.value;
+  }
+
+  // 1.5 Update Name
+  const nameInput = document.getElementById("editRoleNameInput");
+  if (nameInput && nameInput.value.trim()) {
+    currentEditingRole.name = nameInput.value.trim();
   }
 
   // 2. Collect Visible Blocks

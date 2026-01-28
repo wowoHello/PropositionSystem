@@ -1,0 +1,522 @@
+/* =====================================================
+   CWT 命題彈窗 - 進階美化樣式
+   檔案：css/modal-enhanced.css
+   設計方向：專業教育系統 + 柔和漸層 + 視覺層次
+   ===================================================== */
+
+/* === 主色調定義 === */
+:root {
+  --cwt-primary: #2563eb;
+  --cwt-primary-light: #3b82f6;
+  --cwt-primary-dark: #1d4ed8;
+  --cwt-accent: #10b981;
+  --cwt-warning: #f59e0b;
+  --cwt-bg-gradient-start: #f8fafc;
+  --cwt-bg-gradient-end: #e2e8f0;
+  --cwt-section-bg: linear-gradient(145deg, #ffffff 0%, #f9fafb 100%);
+  --cwt-header-gradient: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #06b6d4 100%);
+  --cwt-shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.08);
+  --cwt-shadow-card: 0 2px 12px rgba(37, 99, 235, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
+  --cwt-border-subtle: rgba(37, 99, 235, 0.1);
+}
+
+/* === Modal 整體容器 === */
+#propModal .modal-content {
+  background: var(--cwt-bg-gradient-start);
+  border: none;
+  border-radius: 16px !important;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+/* === Modal Header 漸層標題欄 === */
+#propModal .modal-header {
+  background: var(--cwt-header-gradient);
+  padding: 1.25rem 1.5rem;
+  border-bottom: none !important;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 標題欄裝飾性圖案 */
+#propModal .modal-header::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -10%;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+#propModal .modal-header::after {
+  content: '';
+  position: absolute;
+  bottom: -30%;
+  left: 10%;
+  width: 120px;
+  height: 120px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+#propModal .modal-title {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 1.35rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+#propModal .modal-title::before {
+  content: '📝';
+  font-size: 1.5rem;
+}
+
+/* 關閉按鈕 */
+#propModal .btn-close {
+  filter: brightness(0) invert(1);
+  opacity: 0.8;
+  transition: all 0.2s ease;
+  position: relative;
+  z-index: 1;
+}
+
+#propModal .btn-close:hover {
+  opacity: 1;
+  transform: rotate(90deg);
+}
+
+/* === Modal Body 漸層背景 === */
+#propModal .modal-body {
+  background: linear-gradient(180deg, #f1f5f9 0%, #f8fafc 30%, #ffffff 100%);
+  padding: 1.5rem;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+/* 自訂捲軸 */
+#propModal .modal-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+#propModal .modal-body::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+#propModal .modal-body::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #94a3b8, #64748b);
+  border-radius: 4px;
+}
+
+#propModal .modal-body::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #64748b, #475569);
+}
+
+/* === 題型選擇區塊 (頂部橫條) === */
+#propModal .top-section {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+  padding: 1.25rem 1.5rem !important;
+  border-bottom: 1px solid var(--cwt-border-subtle) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+/* === 區塊卡片 (一、二、三區塊) === */
+#propModal .section-card {
+  background: var(--cwt-section-bg) !important;
+  border: 1px solid rgba(37, 99, 235, 0.12) !important;
+  border-radius: 12px !important;
+  box-shadow: var(--cwt-shadow-card);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+#propModal .section-card:hover {
+  box-shadow: 0 4px 20px rgba(37, 99, 235, 0.12), 0 2px 6px rgba(0, 0, 0, 0.06);
+  transform: translateY(-1px);
+}
+
+/* 區塊左側裝飾條 */
+#propModal .section-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, #3b82f6 0%, #06b6d4 100%);
+  border-radius: 12px 0 0 12px;
+}
+
+/* === 區塊標題 (一、二、三...) === */
+#propModal .section-title {
+  color: #1e40af !important;
+  font-size: 1rem;
+  font-weight: 700;
+  padding-left: 0.5rem;
+  margin-bottom: 1rem !important;
+  padding-bottom: 0.75rem !important;
+  border-bottom: 2px solid transparent !important;
+  border-image: linear-gradient(90deg, #3b82f6 0%, #06b6d4 50%, transparent 100%) 1 !important;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+#propModal .section-title i {
+  color: #3b82f6;
+  font-size: 1.1rem;
+}
+
+/* === 表單標籤美化 === */
+#propModal .form-label {
+  color: #475569;
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.02em;
+}
+
+/* === 下拉選單 & 輸入框美化 === */
+#propModal .form-select,
+#propModal .form-control {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.95rem;
+  background-color: #ffffff;
+  transition: all 0.2s ease;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+#propModal .form-select:hover,
+#propModal .form-control:hover {
+  border-color: #94a3b8;
+}
+
+#propModal .form-select:focus,
+#propModal .form-control:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15), inset 0 1px 2px rgba(0, 0, 0, 0.04);
+  outline: none;
+}
+
+/* 唯讀欄位 */
+#propModal .form-control.readonly-field,
+#propModal .form-control:disabled,
+#propModal .form-select:disabled {
+  background-color: #f8fafc;
+  color: #64748b;
+  border-color: #e2e8f0;
+  cursor: not-allowed;
+}
+
+/* === 選項卡片 (ABCD) 進階美化 === */
+#propModal .option-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px !important;
+  background: linear-gradient(145deg, #ffffff 0%, #fafbfc 100%);
+  transition: all 0.25s ease;
+  overflow: hidden;
+}
+
+#propModal .option-card:hover {
+  border-color: #94a3b8;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+/* 選項標頭 */
+#propModal .option-header-styled {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-bottom: 1px solid #e5e7eb;
+  padding: 0.65rem 1rem;
+  border-radius: 10px 10px 0 0 !important;
+}
+
+/* 選中狀態的選項卡片 */
+#propModal .option-card:has(input[type="radio"]:checked) {
+  border-color: #10b981 !important;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2), 0 4px 12px rgba(16, 185, 129, 0.1);
+}
+
+#propModal .option-card:has(input[type="radio"]:checked) .option-header-styled {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border-bottom-color: #a7f3d0;
+}
+
+#propModal .option-card:has(input[type="radio"]:checked) .badge {
+  background-color: #10b981 !important;
+}
+
+/* === 選項 Badge (A/B/C/D 標籤) === */
+#propModal .option-header-styled .badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.35em 0.75em;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #6b7280, #4b5563) !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  letter-spacing: 0.5px;
+}
+
+/* === 提示區塊美化 === */
+#propModal .alert-hint {
+  background: linear-gradient(135deg, #fef3c7 0%, #fef9c3 100%) !important;
+  border: 1px solid #fde68a !important;
+  border-left: 4px solid #f59e0b !important;
+  border-radius: 8px !important;
+  color: #92400e !important;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+#propModal .alert-hint i {
+  color: #f59e0b !important;
+}
+
+/* === Quill 編輯器美化 === */
+#propModal .ql-toolbar.ql-snow {
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px 8px 0 0 !important;
+  background: linear-gradient(180deg, #fafbfc 0%, #f1f5f9 100%) !important;
+  padding: 8px 12px !important;
+}
+
+#propModal .ql-container.ql-snow {
+  border: 1px solid #e2e8f0 !important;
+  border-top: none !important;
+  border-radius: 0 0 8px 8px !important;
+  background: #ffffff !important;
+  font-family: "Noto Sans TC", sans-serif;
+  font-size: 1rem;
+}
+
+#propModal .ql-editor {
+  min-height: 120px;
+  max-height: 200px;
+  overflow-y: auto;
+  line-height: 1.7;
+  color: #334155;
+}
+
+#propModal .ql-editor.ql-blank::before {
+  color: #94a3b8;
+  font-style: normal;
+}
+
+/* Quill Focus 狀態 */
+#propModal .ql-container.ql-snow:focus-within {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+#propModal .quill-wrapper:focus-within .ql-toolbar.ql-snow {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* 選項內的 Quill 編輯器 (較矮 + 無上圓角) */
+#propModal .option-card .ql-editor {
+  min-height: 60px;
+}
+
+#propModal .option-card .ql-toolbar.ql-snow {
+  padding: 6px 10px !important;
+  border-radius: 0 !important;
+  border-top: none !important;
+}
+
+#propModal .option-card .ql-container.ql-snow {
+  border-radius: 0 0 10px 10px !important;
+}
+
+/* Quill 工具列按鈕 Hover */
+#propModal .ql-snow.ql-toolbar button:hover,
+#propModal .ql-snow .ql-toolbar button:hover,
+#propModal .ql-snow.ql-toolbar button.ql-active,
+#propModal .ql-snow .ql-toolbar button.ql-active {
+  color: #2563eb;
+  background-color: #e0e7ff;
+  border-radius: 4px;
+}
+
+/* === Modal Footer === */
+#propModal .modal-footer {
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #e2e8f0 !important;
+  gap: 0.75rem;
+}
+
+/* 按鈕美化 */
+#propModal .modal-footer .btn {
+  padding: 0.6rem 1.5rem;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+#propModal .modal-footer .btn-light {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #64748b;
+}
+
+#propModal .modal-footer .btn-light:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+
+#propModal .modal-footer .btn-outline-primary {
+  border: 2px solid #3b82f6;
+  color: #2563eb;
+  background: transparent;
+}
+
+#propModal .modal-footer .btn-outline-primary:hover {
+  background: rgba(59, 130, 246, 0.08);
+  border-color: #2563eb;
+}
+
+#propModal .modal-footer .btn-primary {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  border: none;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+}
+
+#propModal .modal-footer .btn-primary:hover {
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.45);
+  transform: translateY(-1px);
+}
+
+#propModal .modal-footer .btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+}
+
+/* === 檔案上傳區塊 === */
+#propModal .form-control[type="file"] {
+  padding: 0.5rem 0.75rem;
+}
+
+#propModal .form-control[type="file"]::file-selector-button {
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  border: none;
+  border-right: 1px solid #e2e8f0;
+  padding: 0.5rem 1rem;
+  margin-right: 1rem;
+  color: #475569;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+#propModal .form-control[type="file"]::file-selector-button:hover {
+  background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+}
+
+/* === 子題容器 (閱讀/聽力題組) === */
+#propModal .sub-question-container {
+  background: linear-gradient(145deg, #f8fafc 0%, #f1f5f9 100%) !important;
+  border: 1px dashed #cbd5e1 !important;
+  border-radius: 10px !important;
+  padding: 1rem;
+}
+
+/* === 狀態 Badge === */
+#propModal .badge-outline {
+  padding: 0.4em 1em;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+#propModal .badge-draft {
+  background: linear-gradient(135deg, rgba(253, 126, 20, 0.12) 0%, rgba(253, 126, 20, 0.08) 100%);
+  border: 1px solid rgba(253, 126, 20, 0.3);
+}
+
+#propModal .badge-confirmed {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(16, 185, 129, 0.08) 100%);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+#propModal .badge-sent {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.12) 0%, rgba(37, 99, 235, 0.08) 100%);
+  border: 1px solid rgba(37, 99, 235, 0.3);
+}
+
+/* === 動畫效果 === */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+#propModal.show .modal-content {
+  animation: fadeInUp 0.35s ease-out;
+}
+
+/* 區塊依序淡入 */
+#propModal .section-card {
+  animation: fadeInUp 0.4s ease-out both;
+}
+
+#propModal .section-card:nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+#propModal .section-card:nth-child(2) {
+  animation-delay: 0.12s;
+}
+
+#propModal .section-card:nth-child(3) {
+  animation-delay: 0.18s;
+}
+
+/* === RWD 響應式調整 === */
+@media (max-width: 768px) {
+  #propModal .modal-header {
+    padding: 1rem;
+  }
+  
+  #propModal .modal-title {
+    font-size: 1.15rem;
+  }
+  
+  #propModal .modal-body {
+    padding: 1rem;
+  }
+  
+  #propModal .modal-footer {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  #propModal .modal-footer .btn {
+    width: 100%;
+  }
+}
