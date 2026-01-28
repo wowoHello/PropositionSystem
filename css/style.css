@@ -25,6 +25,10 @@ body {
    ========================================= */
 
 /* 1. 修正 Quill 字體選單寬度不足的問題 */
+.ql-editor.ql-blank:focus::before {
+    opacity: 0;
+}
+
 .ql-snow .ql-picker.ql-font {
     width: 160px !important;
 }
