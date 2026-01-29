@@ -31,6 +31,29 @@ const ListenHandler = (function () {
         }
     };
 
+    // 更新選項卡片的正確答案標示
+    function updateCorrectAnswerDisplay(selectedValue) {
+        ['A', 'B', 'C', 'D'].forEach(opt => {
+            const card = document.getElementById(`liOptionCard${opt}`);
+            if (card) {
+                if (opt === selectedValue) {
+                    card.classList.add('is-correct-answer');
+                } else {
+                    card.classList.remove('is-correct-answer');
+                }
+            }
+        });
+
+        const dropdown = document.getElementById('liCorrectAnswer');
+        if (dropdown) {
+            if (selectedValue) {
+                dropdown.classList.add('has-answer');
+            } else {
+                dropdown.classList.remove('has-answer');
+            }
+        }
+    }
+
     return {
         init: function () {
             // 1. 初始化 Quill 編輯器
@@ -100,6 +123,14 @@ const ListenHandler = (function () {
                     }
                 });
             }
+
+            // 綁定答案下拉選單的 change 事件
+            const answerSelect = document.getElementById('liCorrectAnswer');
+            if (answerSelect) {
+                answerSelect.addEventListener('change', function () {
+                    updateCorrectAnswerDisplay(this.value);
+                });
+            }
         },
 
         clear: function () {
@@ -127,8 +158,12 @@ const ListenHandler = (function () {
             // 清空 Quills
             Object.values(quills).forEach(q => { if (q) q.setText(''); });
 
-            // 清空 Radio
-            document.querySelectorAll('input[name="liCorrectAnswer"]').forEach(el => el.checked = false);
+            // 清空下拉選單並重置視覺標示
+            const answerSelect = document.getElementById('liCorrectAnswer');
+            if (answerSelect) {
+                answerSelect.value = '';
+                updateCorrectAnswerDisplay('');
+            }
 
             this.toggleEditable(true);
         },
@@ -178,9 +213,12 @@ const ListenHandler = (function () {
                 safePaste(quills[`opt${opt}`], data[`opt${opt}`]);
             });
 
-            // Radio
-            const radio = document.querySelector(`input[name="liCorrectAnswer"][value="${data.ans}"]`);
-            if (radio) radio.checked = true;
+            // 回填下拉選單並更新視覺標示
+            const answerSelect = document.getElementById('liCorrectAnswer');
+            if (answerSelect) {
+                answerSelect.value = data.ans || '';
+                updateCorrectAnswerDisplay(data.ans || '');
+            }
 
             this.toggleEditable(!isViewMode);
         },
@@ -206,7 +244,9 @@ const ListenHandler = (function () {
                 }
             }
 
-            const ansEl = document.querySelector('input[name="liCorrectAnswer"]:checked');
+            // 從下拉選單取得答案
+            const answerSelect = document.getElementById('liCorrectAnswer');
+            const selectedAnswer = answerSelect ? answerSelect.value : '';
             const contentText = quills.content.getText().trim();
             const refAnswerText = quills.refAnswer ? quills.refAnswer.getText().trim() : '';
 
@@ -220,7 +260,7 @@ const ListenHandler = (function () {
                 if (!material) err.push("請選擇素材分類");
                 if (!topic) err.push("請輸入題目");
                 if (contentText.length === 0) err.push("請輸入語音內容...");
-                if (!ansEl) err.push("請設定正確答案");
+                if (!selectedAnswer) err.push("請設定正確答案");
 
                 // 難度五特殊驗證
                 if (level === '難度五' && refAnswerText.length === 0) {
@@ -256,7 +296,7 @@ const ListenHandler = (function () {
                 optB: encodeURIComponent(quills.optB.root.innerHTML),
                 optC: encodeURIComponent(quills.optC.root.innerHTML),
                 optD: encodeURIComponent(quills.optD.root.innerHTML),
-                ans: ansEl ? ansEl.value : '',
+                ans: selectedAnswer,
                 summary: topic
             };
         },
@@ -287,6 +327,12 @@ const ListenHandler = (function () {
             puncBtns.forEach(btn => {
                 btn.disabled = !editable;
             });
+
+            // 答案下拉選單的禁用控制
+            const answerSelect = document.getElementById('liCorrectAnswer');
+            if (answerSelect) {
+                answerSelect.disabled = !editable;
+            }
         }
     };
 })();

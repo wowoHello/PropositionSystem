@@ -602,8 +602,6 @@
       padding: 0.5rem 0.75rem;
       background-color: #f9fafb;
       border-bottom: 0;
-      cursor: pointer;
-      /* 整條可點 */
       transition: background-color 0.2s;
       border-top-left-radius: 8px !important;
       border-top-right-radius: 8px !important;
@@ -1377,12 +1375,8 @@
                   </div>
                   <div class="row g-3">
                     <div class="col-md-12">
-                      <div class="card option-card">
+                      <div class="card option-card" id="optionCardA" data-option="A">
                         <div class="option-header-styled">
-                          <div class="form-check m-0">
-                            <input class="form-check-input" type="radio" name="correctAnswer" value="A" id="radioA">
-                            <label class="form-check-label small fw-bold text-secondary" for="radioA">設為正確答案</label>
-                          </div>
                           <span class="badge bg-secondary">選項 A</span>
                         </div>
                         <div class="quill-master-container border">
@@ -1423,12 +1417,8 @@
                       </div>
                     </div>
                     <div class="col-md-12">
-                      <div class="card option-card">
+                      <div class="card option-card" id="optionCardB" data-option="B">
                         <div class="option-header-styled">
-                          <div class="form-check m-0">
-                            <input class="form-check-input" type="radio" name="correctAnswer" value="B" id="radioB">
-                            <label class="form-check-label small fw-bold text-secondary" for="radioB">設為正確答案</label>
-                          </div>
                           <span class="badge bg-secondary">選項 B</span>
                         </div>
                         <div class="quill-master-container border">
@@ -1469,12 +1459,8 @@
                       </div>
                     </div>
                     <div class="col-md-12">
-                      <div class="card option-card h-100">
+                      <div class="card option-card" id="optionCardC" data-option="C">
                         <div class="option-header-styled">
-                          <div class="form-check m-0">
-                            <input class="form-check-input" type="radio" name="correctAnswer" value="C" id="radioC">
-                            <label class="form-check-label small fw-bold text-secondary" for="radioC">設為正確答案</label>
-                          </div>
                           <span class="badge bg-secondary">選項 C</span>
                         </div>
                         <div class="quill-master-container border">
@@ -1515,12 +1501,8 @@
                       </div>
                     </div>
                     <div class="col-md-12">
-                      <div class="card option-card h-100">
+                      <div class="card option-card" id="optionCardD" data-option="D">
                         <div class="option-header-styled">
-                          <div class="form-check m-0">
-                            <input class="form-check-input" type="radio" name="correctAnswer" value="D" id="radioD">
-                            <label class="form-check-label small fw-bold text-secondary" for="radioD">設為正確答案</label>
-                          </div>
                           <span class="badge bg-secondary">選項 D</span>
                         </div>
                         <div class="quill-master-container border">
@@ -1560,6 +1542,24 @@
                         </div>
                       </div>
                     </div>
+                  </div>
+                  <!-- 答案選擇區塊 -->
+                  <div class="answer-selector-section">
+                    <span class="selector-label">
+                      <i class="bi bi-check-circle"></i>
+                      正確答案
+                    </span>
+                    <select class="answer-dropdown" id="gCorrectAnswer">
+                      <option value="">請選擇...</option>
+                      <option value="A">選項 A</option>
+                      <option value="B">選項 B</option>
+                      <option value="C">選項 C</option>
+                      <option value="D">選項 D</option>
+                    </select>
+                    <span class="selector-hint">
+                      <i class="bi bi-info-circle me-1"></i>
+                      選擇後會在對應選項顯示標記
+                    </span>
                   </div>
                 </div>
 
@@ -2104,14 +2104,10 @@
                   </div>
                   <div class="row g-3">
                     <div class="col-md-12">
-                      <div class="card option-card h-100">
-                        <label class="option-header-styled" for="liRadioA">
-                          <div class="form-check m-0">
-                            <input class="form-check-input" type="radio" name="liCorrectAnswer" value="A" id="liRadioA">
-                            <span class="form-check-label small fw-bold text-secondary">設為正確答案</span>
-                          </div>
+                      <div class="card option-card" id="liOptionCardA" data-option="A">
+                        <div class="option-header-styled">
                           <span class="badge bg-secondary">選項 A</span>
-                        </label>
+                        </div>
                         <div class="quill-master-container border-0">
                           <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light">
                             <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
@@ -2148,14 +2144,10 @@
                       </div>
                     </div>
                     <div class="col-md-12">
-                      <div class="card option-card h-100">
-                        <label class="option-header-styled" for="liRadioB">
-                          <div class="form-check m-0">
-                            <input class="form-check-input" type="radio" name="liCorrectAnswer" value="B" id="liRadioB">
-                            <span class="form-check-label small fw-bold text-secondary">設為正確答案</span>
-                          </div>
+                      <div class="card option-card" id="liOptionCardB" data-option="B">
+                        <div class="option-header-styled">
                           <span class="badge bg-secondary">選項 B</span>
-                        </label>
+                        </div>
                         <div class="quill-master-container border-0">
                           <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light">
                             <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
@@ -2192,14 +2184,10 @@
                       </div>
                     </div>
                     <div class="col-md-12">
-                      <div class="card option-card h-100">
-                        <label class="option-header-styled" for="liRadioC">
-                          <div class="form-check m-0">
-                            <input class="form-check-input" type="radio" name="liCorrectAnswer" value="C" id="liRadioC">
-                            <span class="form-check-label small fw-bold text-secondary">設為正確答案</span>
-                          </div>
+                      <div class="card option-card" id="liOptionCardC" data-option="C">
+                        <div class="option-header-styled">
                           <span class="badge bg-secondary">選項 C</span>
-                        </label>
+                        </div>
                         <div class="quill-master-container border-0">
                           <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light">
                             <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
@@ -2236,14 +2224,10 @@
                       </div>
                     </div>
                     <div class="col-md-12">
-                      <div class="card option-card h-100">
-                        <label class="option-header-styled" for="liRadioD">
-                          <div class="form-check m-0">
-                            <input class="form-check-input" type="radio" name="liCorrectAnswer" value="D" id="liRadioD">
-                            <span class="form-check-label small fw-bold text-secondary">設為正確答案</span>
-                          </div>
+                      <div class="card option-card" id="liOptionCardD" data-option="D">
+                        <div class="option-header-styled">
                           <span class="badge bg-secondary">選項 D</span>
-                        </label>
+                        </div>
                         <div class="quill-master-container border-0">
                           <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light">
                             <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
@@ -2279,6 +2263,24 @@
                         </div>
                       </div>
                     </div>
+                  </div>
+                  <!-- 答案選擇區塊 -->
+                  <div class="answer-selector-section">
+                    <span class="selector-label">
+                      <i class="bi bi-check-circle"></i>
+                      正確答案
+                    </span>
+                    <select class="answer-dropdown" id="liCorrectAnswer">
+                      <option value="">請選擇...</option>
+                      <option value="A">選項 A</option>
+                      <option value="B">選項 B</option>
+                      <option value="C">選項 C</option>
+                      <option value="D">選項 D</option>
+                    </select>
+                    <span class="selector-hint">
+                      <i class="bi bi-info-circle me-1"></i>
+                      選擇後會在對應選項顯示標記
+                    </span>
                   </div>
                 </div>
 

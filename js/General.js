@@ -14,7 +14,7 @@ const GeneralHandler = (function () {
         "文意判讀": ["段義辨析"]
     };
 
-    // --- 新增：內部輔助函式 ---
+    // --- 內部輔助函式 ---
     function setupQuillAddons(quill, containerId) {
         const el = document.getElementById(containerId);
         if (!el) return;
@@ -32,9 +32,7 @@ const GeneralHandler = (function () {
             btn.onclick = function (e) {
                 e.preventDefault();
 
-                if (!quill.isEnabled()) {
-                    return;
-                }
+                if (!quill.isEnabled()) return;
 
                 // 1. 取得要插入的符號 (例如 "「」")
                 const char = this.getAttribute('data-char');
@@ -67,6 +65,29 @@ const GeneralHandler = (function () {
                 countDisplay.innerText = length;
             }
         });
+    }
+
+    // 更新選項卡片的正確答案標示
+    function updateCorrectAnswerDisplay(selectedValue) {
+        ['A', 'B', 'C', 'D'].forEach(opt => {
+            const card = document.getElementById(`optionCard${opt}`);
+            if (card) {
+                if (opt === selectedValue) {
+                    card.classList.add('is-correct-answer');
+                } else {
+                    card.classList.remove('is-correct-answer');
+                }
+            }
+        });
+
+        const dropdown = document.getElementById('gCorrectAnswer');
+        if (dropdown) {
+            if (selectedValue) {
+                dropdown.classList.add('has-answer');
+            } else {
+                dropdown.classList.remove('has-answer');
+            }
+        }
     }
 
     return {
@@ -125,21 +146,16 @@ const GeneralHandler = (function () {
                     // 重要：立即綁定輔助功能
                     setupQuillAddons(quills[config.key], config.id);
 
-                    // 如果是選項 A-D，額外加上點擊 Header 觸發 Radio 的邏輯
-                    if (config.key.startsWith('opt')) {
-                        const opt = config.key.replace('opt', '');
-                        const container = el.closest('.option-card');
-                        const header = container?.querySelector('.option-header-styled');
-                        if (header) {
-                            header.onclick = function (e) {
-                                if (e.target.type !== 'radio') {
-                                    document.getElementById(`radio${opt}`).click();
-                                }
-                            };
-                        }
-                    }
                 }
             });
+
+            // ★ 綁定答案下拉選單的 change 事件
+            const answerSelect = document.getElementById('gCorrectAnswer');
+            if (answerSelect) {
+                answerSelect.addEventListener('change', function () {
+                    updateCorrectAnswerDisplay(this.value);
+                });
+            }
         },
 
         // 2. 清空表單
@@ -181,7 +197,13 @@ const GeneralHandler = (function () {
 
             ['A', 'B', 'C', 'D'].forEach(opt => { if (quills[`opt${opt}`]) quills[`opt${opt}`].setText(''); });
 
-            document.querySelectorAll('input[name="correctAnswer"]').forEach(el => el.checked = false);
+            // 清空下拉選單並重置視覺標示
+            const answerSelect = document.getElementById('gCorrectAnswer');
+            if (answerSelect) {
+                answerSelect.value = '';
+                updateCorrectAnswerDisplay('');
+            }
+
             this.toggleEditable(true);
         },
 
@@ -242,8 +264,12 @@ const GeneralHandler = (function () {
                 setQuillContent(quills[`opt${opt}`], data[`opt${opt}`]);
             });
 
-            const radio = document.querySelector(`input[name="correctAnswer"][value="${data.ans}"]`);
-            if (radio) radio.checked = true;
+            // 回填下拉選單並更新視覺標示
+            const answerSelect = document.getElementById('gCorrectAnswer');
+            if (answerSelect) {
+                answerSelect.value = data.ans || '';
+                updateCorrectAnswerDisplay(data.ans || '');
+            }
 
             this.toggleEditable(!isViewMode);
         },
@@ -272,7 +298,9 @@ const GeneralHandler = (function () {
                 }
             }
 
-            const answerEl = document.querySelector('input[name="correctAnswer"]:checked');
+            // 從下拉選單取得答案
+            const answerSelect = document.getElementById('gCorrectAnswer');
+            const selectedAnswer = answerSelect ? answerSelect.value : '';
 
             if (status === '已確認') {
                 let errorMsg = [];
@@ -280,25 +308,17 @@ const GeneralHandler = (function () {
                 if (!mainCat) errorMsg.push("請選擇「主題」");
                 if (!subCat) errorMsg.push("請選擇「次類」");
                 if (contentText.length === 0) errorMsg.push("請輸入「題幹」");
-                if (!answerEl) errorMsg.push("請設定「正確答案」");
+                if (!selectedAnswer) errorMsg.push("請設定「正確答案」");
 
                 // 解析非必填，但如果有填也可以驗證
 
                 if (errorMsg.length > 0) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: '資料不完整',
-                        html: errorMsg.join("<br>")
-                    });
-                    return null; // 回傳 null 代表失敗
+                    Swal.fire({ icon: 'error', title: '資料不完整', html: errorMsg.join("<br>") });
+                    return null;
                 }
             } else {
                 if (contentText.length === 0 && !mainCat) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: '提示',
-                        text: '請至少輸入題幹或選擇主題。'
-                    });
+                    Swal.fire({ icon: 'warning', title: '提示', text: '請至少輸入題幹或選擇主題。' });
                     return null;
                 }
             }
@@ -318,15 +338,13 @@ const GeneralHandler = (function () {
                 optB: encodeURIComponent(quills.optB.root.innerHTML),
                 optC: encodeURIComponent(quills.optC.root.innerHTML),
                 optD: encodeURIComponent(quills.optD.root.innerHTML),
-                ans: answerEl ? answerEl.value : ''
+                ans: selectedAnswer
             };
         },
 
         // 輔助：切換唯讀
         toggleEditable: function (editable) {
-            Object.values(quills).forEach(q => {
-                if (q) q.enable(editable);
-            });
+            Object.values(quills).forEach(q => { if (q) q.enable(editable); });
             // Input 鎖定邏輯
             const formInputs = document.querySelectorAll('#form-general input, #form-general select, #form-general textarea');
             formInputs.forEach(input => {
@@ -353,6 +371,12 @@ const GeneralHandler = (function () {
             puncBtns.forEach(btn => {
                 btn.disabled = !editable; // 當 editable 為 false 時，disabled 為 true
             });
+
+            // 答案下拉選單的禁用控制
+            const answerSelect = document.getElementById('gCorrectAnswer');
+            if (answerSelect) {
+                answerSelect.disabled = !editable;
+            }
         }
     };
 })();

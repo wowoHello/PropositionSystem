@@ -3,6 +3,60 @@ const ReadingHandler = (function () {
     const quills = { main: null, subs: {} };
     let subQuestionCounter = 0;
 
+    // ★ 更新子題選項卡片的正確答案標示
+    function updateSubCorrectAnswerDisplay(uid, selectedValue) {
+        ['A', 'B', 'C', 'D'].forEach(opt => {
+            const card = document.getElementById(`optCard-${uid}-${opt}`);
+            if (card) {
+                if (opt === selectedValue) {
+                    card.classList.add('is-correct-answer');
+                } else {
+                    card.classList.remove('is-correct-answer');
+                }
+            }
+        });
+
+        const dropdown = document.getElementById(`ans-select-${uid}`);
+        if (dropdown) {
+            if (selectedValue) {
+                dropdown.classList.add('has-answer');
+            } else {
+                dropdown.classList.remove('has-answer');
+            }
+        }
+    }
+
+    // 產生選項 HTML (抽出成函式避免重複)
+    function generateOptionHTML(uid, opt) {
+        return `
+            <div class="card option-card mb-2" id="optCard-${uid}-${opt}" data-option="${opt}">
+                <div class="option-header-styled">
+                    <span class="badge bg-secondary">選項 ${opt}</span>
+                </div>
+                <div class="quill-master-container border-0">
+                    <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light">
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="？">？</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="！">！</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="：">：</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="；">；</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」" data-back="1">「」</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』" data-back="1">『』</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）" data-back="1">（）</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】" data-back="1">【】</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="……">……</button>
+                    </div>
+                    <div id="q-${uid}-opt${opt}" class="option-editor border-0"></div>
+                    <div class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
+                        <span>字數：<span class="count-num" id="count-q-${uid}-opt${opt}">0</span></span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
     return {
         init: function () {
             // 母題 Quill
@@ -81,18 +135,21 @@ const ReadingHandler = (function () {
             const mainText = quills.main.getText().trim();
             const subKeys = Object.keys(quills.subs);
 
+            // 篩選出「未刪除」的子題 key，用於驗證
+            const activeSubKeys = subKeys.filter(uid => {
+                const card = document.getElementById(`card-${uid}`);
+                return card && !card.classList.contains('sub-is-deleted');
+            });
+
             if (status === '已確認') {
                 let err = [];
                 if (!level) err.push("請選擇等級");
                 if (!genre) err.push("請選擇文體");
                 if (mainText.length === 0) err.push("請輸入文章");
-                if (subKeys.length === 0) err.push("至少要有一題子題");
+                // 驗證：至少要有一題「未刪除」的子題
+                if (activeSubKeys.length === 0) err.push("至少要有一題子題");
                 if (err.length > 0) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: '錯誤',
-                        html: err.join('<br>')
-                    });
+                    Swal.fire({ icon: 'error', title: '錯誤', html: err.join('<br>') });
                     return null;
                 }
             } else {
@@ -106,20 +163,37 @@ const ReadingHandler = (function () {
                 }
             }
 
-            // 收集子題
+            // 收集子題 (包含已刪除的，但在物件中標記)
             const subsData = subKeys.map(uid => {
-                const q = quills.subs[uid];
                 const card = document.getElementById(`card-${uid}`);
-                const ansEl = card.querySelector(`input[type="radio"]:checked`);
+                const isDeleted = card.classList.contains('sub-is-deleted'); // 判斷是否軟刪除
+
+                // 如果已刪除，我們仍收集資料，但可以跳過必填檢查
+                // 或者直接回傳簡易物件告訴後端 update status
+                
+                const q = quills.subs[uid];
+                const ansSelect = document.getElementById(`ans-select-${uid}`);
+                const selectedAns = ansSelect ? ansSelect.value : '';
+
+                // 驗證單一子題 (只驗證未刪除的)
+                if (status === '已確認' && !isDeleted) {
+                    // 這裡可以加子題內部的防呆 (如 content, ans 必填)
+                    if(q.content.getText().trim().length === 0) {
+                        // err... 但這裡架構是回傳物件，通常在上方 activeSubKeys 檢查
+                    }
+                }
                 return {
                     content: encodeURIComponent(q.content.root.innerHTML),
                     optA: encodeURIComponent(q.optA.root.innerHTML),
                     optB: encodeURIComponent(q.optB.root.innerHTML),
                     optC: encodeURIComponent(q.optC.root.innerHTML),
                     optD: encodeURIComponent(q.optD.root.innerHTML),
-                    ans: ansEl ? ansEl.value : '',
+                    ans: selectedAns,
                     explanation: encodeURIComponent(q.explanation.root.innerHTML),
-                    isCompleted: card.classList.contains('sub-completed') // 簡單標記是否完成，可選
+                    isCompleted: card.classList.contains('sub-completed'),
+                    
+                    // ★ 新增標記：告訴後端這題被刪了
+                    isDeleted: isDeleted 
                 };
             });
 
@@ -212,50 +286,23 @@ const ReadingHandler = (function () {
                             請避免選項長短、語氣明顯差異，以免影響鑑別度
                         </div>
                         <div class="d-flex flex-column gap-2 mb-4">
-                            ${['A', 'B', 'C', 'D'].map(opt => `
-                                <div class="card option-card mb-2">
-                                    <label class="option-header-styled w-100" for="radio-${uid}-${opt}">
-                                        
-                                        <div class="form-check m-0 d-flex align-items-center gap-2">
-                                            <input class="form-check-input" type="radio" 
-                                                name="ans-${uid}" 
-                                                value="${opt}" 
-                                                id="radio-${uid}-${opt}" 
-                                                style="cursor:pointer">
-                                            
-                                            <span class="small text-secondary fw-bold" style="cursor:pointer">
-                                                設為正確答案
-                                            </span>
-                                        </div>
-
-                                        <span class="badge bg-secondary">選項 ${opt}</span>
-                                    </label>
-                                    
-                                    <div class="quill-master-container border-0">
-                                        <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light">
-                                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
-                                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
-                                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
-                                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="？">？</button>
-                                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="！">！</button>
-                                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="：">：</button>
-                                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="；">；</button>
-                                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」" data-back="1">「」</button>
-                                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』" data-back="1">『』</button>
-                                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）" data-back="1">（）</button>
-                                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】" data-back="1">【】</button>
-                                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="……">……</button>
-                                        </div>
-                                        <div id="q-${uid}-opt${opt}" class="option-editor border-0"></div>
-                                        <div class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
-                                            <span>字數：<span class="count-num" id="count-q-${uid}-opt${opt}">0</span></span>
-                                        </div>
-                                    </div>
-                                </div>
-                            `).join('')}
+                            ${['A', 'B', 'C', 'D'].map(opt => generateOptionHTML(uid, opt)).join('')}
                         </div>
 
-                        <div class="mb-2">
+                        <!-- 答案選擇區 -->
+                        <div class="answer-selector-section">
+                            <span class="selector-label"><i class="bi bi-check-circle"></i> 正確答案</span>
+                            <select class="answer-dropdown" id="ans-select-${uid}">
+                                <option value="">請選擇...</option>
+                                <option value="A">選項 A</option>
+                                <option value="B">選項 B</option>
+                                <option value="C">選項 C</option>
+                                <option value="D">選項 D</option>
+                            </select>
+                            <span class="selector-hint"><i class="bi bi-info-circle me-1"></i>選擇後會在對應選項顯示標記</span>
+                        </div>
+
+                        <div class="mb-2 mt-4">
                              <label class="form-label fw-bold text-muted">解析(紀錄答案理由)</label>
                              <div class="quill-master-container border rounded-3 bg-white">
                                 <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light rounded-top-3">
@@ -312,11 +359,14 @@ const ReadingHandler = (function () {
                 q.on('text-change', checkFn);
             });
 
-            // 監聽 Radio change (使用事件代理或直接綁定)
-            const radios = card.querySelectorAll(`input[name="ans-${uid}"]`);
-            radios.forEach(radio => {
-                radio.addEventListener('change', checkFn);
-            });
+            // 綁定答案下拉選單 change 事件
+            const ansSelect = document.getElementById(`ans-select-${uid}`);
+            if (ansSelect) {
+                ansSelect.addEventListener('change', function () {
+                    updateSubCorrectAnswerDisplay(uid, this.value);
+                    checkFn();
+                });
+            }
 
             // 回填資料
             if (data) {
@@ -333,8 +383,11 @@ const ReadingHandler = (function () {
                 safePaste(quills.subs[uid].optD, data.optD);
                 safePaste(quills.subs[uid].explanation, data.explanation);
 
-                const radio = card.querySelector(`input[value="${data.ans}"]`);
-                if (radio) radio.checked = true;
+                // 回填下拉選單
+                if (ansSelect && data.ans) {
+                    ansSelect.value = data.ans;
+                    updateSubCorrectAnswerDisplay(uid, data.ans);
+                }
 
                 // 回填後檢查一次狀態
                 checkFn();
@@ -353,25 +406,22 @@ const ReadingHandler = (function () {
             }).then((result) => {
                 if (result.isConfirmed) {
                     const card = document.getElementById(`card-${uid}`);
-                    if (card) card.remove();
-                    delete quills.subs[uid];
-
-                    // 檢查空狀態
-                    const container = document.getElementById('sub-questions-container');
-                    if (container && container.children.length === 0) {
-                        document.getElementById('sub-questions-empty').classList.remove('d-none');
-                    } else {
-                        // 移除後重新排序流水號 (1, 2, 3...)
-                        this.reindexSubQuestions();
+                    if (card) {
+                        // A. 視覺上隱藏
+                        card.classList.add('d-none'); 
+                        
+                        // B. 加上刪除標記 (讓 collect 知道它被刪了)
+                        card.classList.add('sub-is-deleted');
+                        
+                        // C. 顯示空狀態提示 (如果全部都刪光了)
+                        // 計算「未刪除」的子題數量
+                        const container = document.getElementById('sub-questions-container');
+                        const visibleCount = container.querySelectorAll('.sub-question-card:not(.sub-is-deleted)').length;
+                        if (visibleCount === 0) {
+                            document.getElementById('sub-questions-empty').classList.remove('d-none');
+                        }
                     }
                 }
-            });
-        },
-
-        reindexSubQuestions: function () {
-            const labels = document.querySelectorAll('.sub-index-label');
-            labels.forEach((label, index) => {
-                label.innerText = `子題代碼：${index + 1}`;
             });
         },
 
@@ -388,12 +438,13 @@ const ReadingHandler = (function () {
             const hasOptD = q.optD.getText().trim().length > 0;
             const hasExp = q.explanation.getText().trim().length > 0;
 
-            // 檢查是否選取答案
-            const card = document.getElementById(`card-${uid}`);
-            const hasAns = card.querySelector(`input[name="ans-${uid}"]:checked`) !== null;
+            // 從下拉選單檢查是否有選答案
+            const ansSelect = document.getElementById(`ans-select-${uid}`);
+            const hasAns = ansSelect && ansSelect.value !== '';
 
             const isComplete = hasContent && hasOptA && hasOptB && hasOptC && hasOptD && hasExp && hasAns;
 
+            const card = document.getElementById(`card-${uid}`);
             const cardHeader = document.getElementById(`header-${uid}`);
             const checkIcon = document.getElementById(`check-icon-${uid}`);
 
@@ -405,18 +456,6 @@ const ReadingHandler = (function () {
                 card.classList.remove('sub-completed');
                 cardHeader.classList.remove('bg-success', 'bg-opacity-10');
                 if (checkIcon) checkIcon.classList.add('d-none');
-            }
-        },
-
-        // 切換選項編輯器顯示/隱藏 (簡單的 JS toggle)
-        toggleOptionBody: function (containerId) {
-            const el = document.getElementById(containerId);
-            if (el) {
-                if (el.style.display === 'none') {
-                    el.style.display = 'block';
-                } else {
-                    el.style.display = 'none';
-                }
             }
         },
 
@@ -452,6 +491,10 @@ const ReadingHandler = (function () {
             puncBtns.forEach(btn => {
                 btn.disabled = !editable;
             });
+
+            // 答案下拉選單的禁用控制
+            const ansSelects = document.querySelectorAll('#form-reading .answer-dropdown');
+            ansSelects.forEach(sel => { sel.disabled = !editable; });
         }
     };
 })();

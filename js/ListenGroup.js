@@ -23,6 +23,60 @@ const ListenGroupHandler = (function () {
         }
     ];
 
+    // 更新子題選項卡片的正確答案標示
+    function updateSubCorrectAnswerDisplay(uid, selectedValue) {
+        ['A', 'B', 'C', 'D'].forEach(opt => {
+            const card = document.getElementById(`lgOptCard-${uid}-${opt}`);
+            if (card) {
+                if (opt === selectedValue) {
+                    card.classList.add('is-correct-answer');
+                } else {
+                    card.classList.remove('is-correct-answer');
+                }
+            }
+        });
+
+        const dropdown = document.getElementById(`lg-ans-select-${uid}`);
+        if (dropdown) {
+            if (selectedValue) {
+                dropdown.classList.add('has-answer');
+            } else {
+                dropdown.classList.remove('has-answer');
+            }
+        }
+    }
+
+    // 產生選項 HTML
+    function generateOptionHTML(uid, opt) {
+        return `
+            <div class="card option-card mb-2" id="lgOptCard-${uid}-${opt}" data-option="${opt}">
+                <div class="option-header-styled">
+                    <span class="badge bg-secondary">選項 ${opt}</span>
+                </div>
+                <div class="quill-master-container border-0">
+                    <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light">
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="？">？</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="！">！</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="：">：</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="；">；</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」" data-back="1">「」</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』" data-back="1">『』</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）" data-back="1">（）</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】" data-back="1">【】</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="……">……</button>
+                    </div>
+                    <div id="q-${uid}-opt${opt}" class="option-editor border-0"></div>
+                    <div class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
+                        <span>字數：<span class="count-num" id="count-q-${uid}-opt${opt}">0</span></span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
     return {
         init: function () {
             // 1. 初始化母題 Quill
@@ -139,56 +193,44 @@ const ListenGroupHandler = (function () {
                                 請避免選項長短、語氣明顯差異，以免影響鑑別度
                             </div>
                             <div class="d-flex flex-column gap-2 mb-4">
-                                ${['A', 'B', 'C', 'D'].map(opt => `
-                                    <div class="card option-card mb-2">
-                                        <label class="option-header-styled w-100" for="radio-${uid}-${opt}">
-                                            <div class="form-check m-0 d-flex align-items-center gap-2">
-                                                <input class="form-check-input" type="radio" 
-                                                    name="ans-${uid}" value="${opt}" id="radio-${uid}-${opt}" style="cursor:pointer">
-                                                <span class="form-check-label small text-secondary fw-bold" style="cursor:pointer">設為正確答案</span>
-                                            </div>
-                                            <span class="badge bg-secondary">選項 ${opt}</span>
-                                        </label>
-                                        <div class="quill-master-container border-0">
-                                            <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light">
-                                                <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
-                                                <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
-                                                <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
-                                                <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="？">？</button>
-                                                <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="！">！</button>
-                                                <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="：">：</button>
-                                                <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="；">；</button>
-                                                <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」"
-                                                data-back="1">「」</button>
-                                                <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』"
-                                                data-back="1">『』</button>
-                                                <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）"
-                                                data-back="1">（）</button>
-                                                <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】"
-                                                data-back="1">【】</button>
-                                                <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                                                data-char="……">……</button>
-                                            </div>
-                                            <div id="q-${uid}-opt${opt}" class="option-editor border-0"></div>
-                                            <div class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
-                                                <span>字數：<span class="count-num" id="count-q-${uid}-opt${opt}">0</span></span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                `).join('')}
+                                ${['A', 'B', 'C', 'D'].map(opt => generateOptionHTML(uid, opt)).join('')}
+                            </div>
+
+                            <!-- 答案選擇區 -->
+                            <div class="answer-selector-section">
+                                <span class="selector-label"><i class="bi bi-check-circle"></i> 正確答案</span>
+                                <select class="answer-dropdown" id="lg-ans-select-${uid}">
+                                    <option value="">請選擇...</option>
+                                    <option value="A">選項 A</option>
+                                    <option value="B">選項 B</option>
+                                    <option value="C">選項 C</option>
+                                    <option value="D">選項 D</option>
+                                </select>
+                                <span class="selector-hint"><i class="bi bi-info-circle me-1"></i>選擇後會在對應選項顯示標記</span>
                             </div>
 
                             <!-- Explanation Section (Moved here from global) -->
-                            <div class="mb-2">
+                            <div class="mb-2 mt-4">
                                  <label class="form-label fw-bold text-muted">解析(紀錄答案理由)</label>
                                  <div class="quill-master-container border rounded-3 bg-white">
                                     <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light rounded-top-3">
                                         <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
                                         <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
                                         <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」" data-back="1">「」</button>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）" data-back="1">（）</button>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="……">……</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="？">？</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="！">！</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="：">：</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="；">；</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」"
+                                        data-back="1">「」</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』"
+                                        data-back="1">『』</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）"
+                                        data-back="1">（）</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】"
+                                        data-back="1">【】</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                                        data-char="……">……</button>
                                     </div>
                                     <div id="q-${uid}-explanation"></div>
                                     <div class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
@@ -221,6 +263,15 @@ const ListenGroupHandler = (function () {
                     bindQuillHelpers(quills.subs[uid].explanation, `q-${uid}-explanation`);
                 }
 
+                // 綁定答案下拉選單 change 事件
+                const ansSelect = document.getElementById(`lg-ans-select-${uid}`);
+                if (ansSelect) {
+                    ansSelect.addEventListener('change', function () {
+                        updateSubCorrectAnswerDisplay(uid, this.value);
+                        checkFn();
+                    });
+                }
+
                 // Events
                 const checkFn = () => this.checkCompletion(uid);
                 Object.values(quills.subs[uid]).forEach(q => q.on('text-change', checkFn));
@@ -242,24 +293,25 @@ const ListenGroupHandler = (function () {
             const hasOptC = q.optC.getText().trim().length > 0;
             const hasOptD = q.optD.getText().trim().length > 0;
 
-            const card = document.getElementById(document.querySelector(`[data-bs-target="#collapse-${uid}"]`).parentElement.id); // Hacky way to find card or just use closure
-            // Better way:
             const headerBtn = document.querySelector(`[data-bs-target="#collapse-${uid}"]`);
             const checkIcon = headerBtn ? headerBtn.querySelector('.bi-check-circle-fill') : null;
 
-            const ansEl = document.querySelector(`input[name="ans-${uid}"]:checked`);
-            const core = document.getElementById(`lg-core-${uid}`).value;
-            const ind = document.getElementById(`lg-ind-${uid}`).value;
+            // 從下拉選單檢查答案
+            const ansSelect = document.getElementById(`lg-ans-select-${uid}`);
+            const hasAns = ansSelect && ansSelect.value !== '';
 
-            const isComplete = hasContent && hasExp && hasOptA && hasOptB && hasOptC && hasOptD && ansEl && core && ind;
+            const coreVal = document.getElementById(`lg-core-${uid}`).value;
+            const indVal = document.getElementById(`lg-ind-${uid}`).value;
 
-            if (headerBtn && checkIcon) {
+            const isComplete = hasContent && hasExp && hasOptA && hasOptB && hasOptC && hasOptD && hasAns && coreVal && indVal;
+
+            if (headerBtn) {
                 if (isComplete) {
                     headerBtn.classList.add('bg-success', 'bg-opacity-10');
-                    checkIcon.classList.remove('d-none');
+                    if (checkIcon) checkIcon.classList.remove('d-none');
                 } else {
                     headerBtn.classList.remove('bg-success', 'bg-opacity-10');
-                    checkIcon.classList.add('d-none');
+                    if (checkIcon) checkIcon.classList.add('d-none');
                 }
             }
         },
@@ -290,18 +342,25 @@ const ListenGroupHandler = (function () {
             // 清空子題 (2題)
             subConfigs.forEach(config => {
                 const uid = `lgsub-${config.index}`;
-                // 清空下拉
-                document.getElementById(`lg-core-${uid}`).value = '';
-                document.getElementById(`lg-ind-${uid}`).value = '';
-                // 清空 Radio
-                const radios = document.querySelectorAll(`input[name="ans-${uid}"]`);
-                radios.forEach(r => r.checked = false);
                 // 清空 Quill
                 if (quills.subs[uid]) {
                     Object.values(quills.subs[uid]).forEach(q => q.setText(''));
                 }
-                // Check status update
-                this.checkCompletion(uid);
+
+                document.getElementById(`lg-core-${uid}`).value = '';
+                document.getElementById(`lg-ind-${uid}`).value = '';
+
+                // 清空下拉選單並重置視覺標示
+                const ansSelect = document.getElementById(`lg-ans-select-${uid}`);
+                if (ansSelect) {
+                    ansSelect.value = '';
+                    updateSubCorrectAnswerDisplay(uid, '');
+                }
+
+                const checkIcon = document.getElementById(`check-icon-${uid}`);
+                if (checkIcon) checkIcon.classList.add('d-none');
+                const header = document.getElementById(`header-${uid}`);
+                if (header) header.classList.remove('bg-success', 'bg-opacity-10');
             });
 
             this.toggleEditable(true);
@@ -313,7 +372,9 @@ const ListenGroupHandler = (function () {
             document.getElementById('lgMaterial').value = data.material || '';
 
             const propInput = document.getElementById('lgPropositioner');
-            if (propInput) propInput.value = data.propositioner || '系統管理員';
+            if (propInput) {
+                propInput.value = data.propositioner || (document.querySelector('.user-name')?.innerText.trim() || '系統管理員');
+            }
 
             // 附檔
             const attachLabel = document.getElementById('lgAttachmentName');
@@ -328,13 +389,12 @@ const ListenGroupHandler = (function () {
 
             // 母題內容
             const safePaste = (q, html) => {
-                if (q) {
-                    q.setText('');
-                    if (html) q.clipboard.dangerouslyPasteHTML(0, decodeURIComponent(html));
-                }
+                if (!q) return;
+                q.setText('');
+                if (html) q.clipboard.dangerouslyPasteHTML(0, decodeURIComponent(html));
             };
+
             safePaste(quills.main, data.content);
-            // GLOBAL EXPLANATION REMOVED
 
             // 子題回填
             if (data.subQuestions && data.subQuestions.length > 0) {
@@ -350,10 +410,14 @@ const ListenGroupHandler = (function () {
                         safePaste(quills.subs[uid].optB, sub.optB);
                         safePaste(quills.subs[uid].optC, sub.optC);
                         safePaste(quills.subs[uid].optD, sub.optD);
-                        safePaste(quills.subs[uid].explanation, sub.explanation); // Added Explanation
+                        safePaste(quills.subs[uid].explanation, sub.explanation);
 
-                        const radio = document.querySelector(`input[name="ans-${uid}"][value="${sub.ans}"]`);
-                        if (radio) radio.checked = true;
+                        // 回填下拉選單
+                        const ansSelect = document.getElementById(`lg-ans-select-${uid}`);
+                        if (ansSelect && sub.ans) {
+                            ansSelect.value = sub.ans;
+                            updateSubCorrectAnswerDisplay(uid, sub.ans);
+                        }
 
                         this.checkCompletion(uid);
                     }
@@ -390,7 +454,9 @@ const ListenGroupHandler = (function () {
                 const uid = `lgsub-${config.index}`;
                 const core = document.getElementById(`lg-core-${uid}`).value;
                 const ind = document.getElementById(`lg-ind-${uid}`).value;
-                const ansEl = document.querySelector(`input[name="ans-${uid}"]:checked`);
+                // 從下拉選單取得答案
+                const ansSelect = document.getElementById(`lg-ans-select-${uid}`);
+                const selectedAns = ansSelect ? ansSelect.value : '';
 
                 const qObj = quills.subs[uid];
                 const qText = qObj.content.getText().trim();
@@ -400,7 +466,7 @@ const ListenGroupHandler = (function () {
                     if (!core) err.push(`[${config.title}] 請選擇核心能力`);
                     if (!ind) err.push(`[${config.title}] 請選擇細目指標`);
                     if (qText.length === 0) err.push(`[${config.title}] 請輸入題目內容`);
-                    if (!ansEl) err.push(`[${config.title}] 請設定正確答案`);
+                    if (!selectedAns) err.push(`[${config.title}] 請設定正確答案`);
                 }
 
                 subsData.push({
@@ -412,8 +478,8 @@ const ListenGroupHandler = (function () {
                     optB: encodeURIComponent(qObj.optB.root.innerHTML),
                     optC: encodeURIComponent(qObj.optC.root.innerHTML),
                     optD: encodeURIComponent(qObj.optD.root.innerHTML),
-                    explanation: encodeURIComponent(qObj.explanation.root.innerHTML), // Added Explanation
-                    ans: ansEl ? ansEl.value : ''
+                    explanation: encodeURIComponent(qObj.explanation.root.innerHTML),
+                    ans: selectedAns
                 });
             });
 
@@ -442,7 +508,6 @@ const ListenGroupHandler = (function () {
                 material: material,
                 propositioner: propositioner,
                 content: encodeURIComponent(quills.main.root.innerHTML),
-                // explanation: encodeURIComponent(quills.explanation.root.innerHTML), // REMOVED GLOBAL
                 attachment: attachName,
                 summary: contentText.substring(0, 15) + '...',
                 subQuestions: subsData
@@ -462,6 +527,10 @@ const ListenGroupHandler = (function () {
                 // 鎖定子題的下拉
                 document.getElementById(`lg-core-${uid}`).disabled = !editable;
                 document.getElementById(`lg-ind-${uid}`).disabled = !editable;
+
+                // 答案下拉選單的禁用控制
+                const ansSelect = document.getElementById(`lg-ans-select-${uid}`);
+                if (ansSelect) ansSelect.disabled = !editable;
             });
 
             // 母題 Inputs
@@ -476,9 +545,7 @@ const ListenGroupHandler = (function () {
 
             // 切換標點符號按鈕
             const puncBtns = document.querySelectorAll('#form-listengroup .punc-btn');
-            puncBtns.forEach(btn => {
-                btn.disabled = !editable;
-            });
+            puncBtns.forEach(btn => { btn.disabled = !editable; });
         }
     };
 })();

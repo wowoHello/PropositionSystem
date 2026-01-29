@@ -230,6 +230,7 @@
   background: linear-gradient(145deg, #ffffff 0%, #fafbfc 100%);
   transition: all 0.25s ease;
   overflow: hidden;
+  position: relative;
 }
 
 #propModal .option-card:hover {
@@ -241,23 +242,41 @@
 #propModal .option-header-styled {
   background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
   border-bottom: 1px solid #e5e7eb;
-  padding: 0.65rem 1rem;
+  padding: 0.5rem 1rem;
   border-radius: 10px 10px 0 0 !important;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
 }
 
-/* 選中狀態的選項卡片 */
-#propModal .option-card:has(input[type="radio"]:checked) {
-  border-color: #10b981 !important;
-  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2), 0 4px 12px rgba(16, 185, 129, 0.1);
+/* === 正確答案選項樣式 - 低調版 === */
+#propModal .option-card.is-correct-answer {
+  border-color: #94a3b8 !important;
 }
 
-#propModal .option-card:has(input[type="radio"]:checked) .option-header-styled {
-  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
-  border-bottom-color: #a7f3d0;
+#propModal .option-card.is-correct-answer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+  border-radius: 10px 0 0 10px;
 }
 
-#propModal .option-card:has(input[type="radio"]:checked) .badge {
-  background-color: #10b981 !important;
+#propModal .option-card.is-correct-answer .option-header-styled {
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  border-bottom-color: #bbf7d0;
+}
+
+#propModal .option-card.is-correct-answer .option-header-styled .badge {
+  background: linear-gradient(135deg, #10b981, #059669) !important;
+}
+
+#propModal .option-card.is-correct-answer .option-header-styled .badge::before {
+  content: '✓ ';
+  font-size: 0.7rem;
 }
 
 /* === 選項 Badge (A/B/C/D 標籤) === */
@@ -269,6 +288,71 @@
   background: linear-gradient(135deg, #6b7280, #4b5563) !important;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   letter-spacing: 0.5px;
+  transition: all 0.25s ease;
+}
+
+/* === 答案選擇區塊（置於選項區下方）=== */
+.answer-selector-section {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  margin-top: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.answer-selector-section .selector-label {
+  font-weight: 600;
+  color: #475569;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.answer-selector-section .selector-label i {
+  color: #3b82f6;
+}
+
+/* 下拉選單樣式 */
+.answer-selector-section .answer-dropdown {
+  min-width: 140px;
+  padding: 0.5rem 2rem 0.5rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border: 2px solid #cbd5e1;
+  border-radius: 8px;
+  background-color: #fff;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.answer-selector-section .answer-dropdown:hover {
+  border-color: #94a3b8;
+}
+
+.answer-selector-section .answer-dropdown:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* 已選擇答案時的下拉選單狀態 */
+.answer-selector-section .answer-dropdown.has-answer {
+  border-color: #10b981;
+  background-color: #f0fdf4;
+  color: #166534;
+}
+
+.answer-selector-section .selector-hint {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin-left: auto;
 }
 
 /* === 提示區塊美化 === */
@@ -276,7 +360,6 @@
   background: linear-gradient(135deg, #fef3c7 0%, #fef9c3 100%) !important;
   border: 1px solid #fde68a !important;
   border-left: 4px solid #f59e0b !important;
-  /* border-radius: 8px !important; */
   color: #92400e !important;
   padding: 0.75rem 1rem;
   margin-bottom: 1rem;
@@ -284,6 +367,7 @@
   align-items: center;
   gap: 0.5rem;
   font-size: 0.875rem;
+  border-radius: 0 8px 8px 0;
 }
 
 #propModal .alert-hint i {
@@ -513,6 +597,20 @@
   #propModal .modal-footer .btn {
     width: 100%;
   }
+
+  .answer-selector-section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .answer-selector-section .selector-hint {
+    margin-left: 0;
+  }
+
+  .answer-selector-section .answer-dropdown {
+    width: 100%;
+  }
 }
 
 /* 讓 Quill 邊框消失，改由外層容器控制 */
@@ -536,8 +634,3 @@
   background-color: #e9ecef;
   color: #0d6efd;
 }
-
-/* .word-count-bar {
-  border-bottom-left-radius: 8px;
-  border-bottom-right-radius: 8px;
-} */

@@ -144,13 +144,20 @@ const ShortArticleHandler = (function () {
 
             const subKeys = Object.keys(quills.subs);
 
+            // 篩選有效子題
+            const activeSubKeys = subKeys.filter(uid => {
+                const card = document.getElementById(`card-${uid}`);
+                return card && !card.classList.contains('sub-is-deleted');
+            });
+
             if (status === '已確認') {
                 let err = [];
                 if (!level) err.push("請選擇等級");
                 if (!genre) err.push("請選擇文體");
                 if (topic.length === 0) err.push("請輸入題目");
                 if (mainText.length === 0) err.push("請輸入內容");
-                if (subKeys.length === 0) err.push("至少要有一題子題");
+                // 只檢查有效子題
+                if (activeSubKeys.length === 0) err.push("至少要有一題子題");
                 if (err.length > 0) {
                     Swal.fire({ icon: 'error', title: '錯誤', html: err.join('<br>') });
                     return null;
@@ -165,7 +172,7 @@ const ShortArticleHandler = (function () {
             const subsData = subKeys.map(uid => {
                 const q = quills.subs[uid];
                 const card = document.getElementById(`card-${uid}`);
-                const ansEl = card.querySelector(`input[type="radio"]:checked`);
+                const isDeleted = card.classList.contains('sub-is-deleted');
 
                 // 抓取 Metadata
                 const dimEl = document.getElementById(`dim-${uid}`);
@@ -183,7 +190,8 @@ const ShortArticleHandler = (function () {
                     optD: '',
                     ans: '',
                     explanation: encodeURIComponent(q.explanation.root.innerHTML),
-                    isCompleted: card.classList.contains('sub-completed')
+                    isCompleted: card.classList.contains('sub-completed'),
+                    isDeleted: isDeleted // 加上刪除標記
                 };
             });
 
@@ -399,17 +407,15 @@ const ShortArticleHandler = (function () {
             }).then((result) => {
                 if (result.isConfirmed) {
                     const card = document.getElementById(`card-${uid}`);
-                    if (card) card.remove();
-                    delete quills.subs[uid];
+                    if (card) {
+                        card.classList.add('d-none');
+                        card.classList.add('sub-is-deleted'); // 標記刪除
 
-                    const container = document.getElementById('short-sub-container');
-                    if (container && container.children.length === 0) {
-                        document.getElementById('short-sub-empty').classList.remove('d-none');
-                    } else {
-                        // Reindex
-                        document.querySelectorAll('#short-sub-container .sub-index-label').forEach((el, idx) => {
-                            el.innerText = `子題代碼：${idx + 1}`;
-                        });
+                        const container = document.getElementById('short-sub-container');
+                        const visibleCount = container.querySelectorAll('.sub-question-card:not(.sub-is-deleted)').length;
+                        if (visibleCount === 0) {
+                            document.getElementById('short-sub-empty').classList.remove('d-none');
+                        }
                     }
                 }
             });
