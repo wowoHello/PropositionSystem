@@ -11,6 +11,10 @@ const LongArticleHandler = (function () {
                     modules: { toolbar: window.mainToolbar },
                     placeholder: '請輸入文章內容...'
                 });
+
+                if (typeof bindQuillHelpers === 'function') {
+                    bindQuillHelpers(quills.content, 'q-long-content');
+                }
             }
 
             if (document.getElementById('q-long-explanation')) {
@@ -19,6 +23,10 @@ const LongArticleHandler = (function () {
                     modules: { toolbar: window.mainToolbar },
                     placeholder: '請簡要說明正確答案的判斷依據，並簡述其他選項錯誤原因...'
                 });
+
+                if (typeof bindQuillHelpers === 'function') {
+                    bindQuillHelpers(quills.explanation, 'q-long-explanation');
+                }
             }
         },
 
@@ -162,6 +170,11 @@ const LongArticleHandler = (function () {
                 } else {
                     input.disabled = !editable;
                 }
+            });
+
+            const puncBtns = document.querySelectorAll('#form-longarticle .punc-btn');
+            puncBtns.forEach(btn => {
+                btn.disabled = !editable;
             });
         }
     };

@@ -276,7 +276,7 @@
   background: linear-gradient(135deg, #fef3c7 0%, #fef9c3 100%) !important;
   border: 1px solid #fde68a !important;
   border-left: 4px solid #f59e0b !important;
-  border-radius: 8px !important;
+  /* border-radius: 8px !important; */
   color: #92400e !important;
   padding: 0.75rem 1rem;
   margin-bottom: 1rem;
@@ -292,18 +292,15 @@
 
 /* === Quill 編輯器美化 === */
 #propModal .ql-toolbar.ql-snow {
-  border: 1px solid #e2e8f0 !important;
-  border-radius: 8px 8px 0 0 !important;
+  border-bottom: 1px solid #e2e8f0 !important;
   background: linear-gradient(180deg, #fafbfc 0%, #f1f5f9 100%) !important;
   padding: 8px 12px !important;
 }
 
 #propModal .ql-container.ql-snow {
-  border: 1px solid #e2e8f0 !important;
-  border-top: none !important;
-  border-radius: 0 0 8px 8px !important;
+  min-height: 120px;
+  max-height: 200px;
   background: #ffffff !important;
-  font-family: "Noto Sans TC", sans-serif;
   font-size: 1rem;
 }
 
@@ -333,17 +330,13 @@
 
 /* 選項內的 Quill 編輯器 (較矮 + 無上圓角) */
 #propModal .option-card .ql-editor {
-  min-height: 60px;
+  min-height: 120px;
 }
 
 #propModal .option-card .ql-toolbar.ql-snow {
   padding: 6px 10px !important;
   border-radius: 0 !important;
   border-top: none !important;
-}
-
-#propModal .option-card .ql-container.ql-snow {
-  border-radius: 0 0 10px 10px !important;
 }
 
 /* Quill 工具列按鈕 Hover */
@@ -470,6 +463,7 @@
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -502,21 +496,48 @@
   #propModal .modal-header {
     padding: 1rem;
   }
-  
+
   #propModal .modal-title {
     font-size: 1.15rem;
   }
-  
+
   #propModal .modal-body {
     padding: 1rem;
   }
-  
+
   #propModal .modal-footer {
     flex-direction: column;
     gap: 0.5rem;
   }
-  
+
   #propModal .modal-footer .btn {
     width: 100%;
   }
 }
+
+/* 讓 Quill 邊框消失，改由外層容器控制 */
+.quill-master-container .ql-toolbar.ql-snow,
+.quill-master-container .ql-container.ql-snow {
+  border: none !important;
+}
+
+.punctuation-toolbar .punc-btn {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  background: white;
+}
+
+.punctuation-toolbar .punc-btn:hover {
+  background-color: #e9ecef;
+  color: #0d6efd;
+}
+
+/* .word-count-bar {
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+} */

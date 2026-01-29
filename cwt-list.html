@@ -23,43 +23,49 @@
 
     /* 1. 設定外層容器：讓它高度自動，不要寫死 */
     #q-editor-content,
-    #q-reading-main {
+    #q-editor-explanation,
+    #q-reading-main,
+    #q-long-content,
+    #q-long-explanation,
+    #q-short-main,
+    #q-listen-content,
+    #q-listen-explanation,
+    #q-listen-ref-answer,
+    #q-listengroup-content,
+    #q-listengroup-explanation {
       height: auto !important;
-      /* 移除寫死的高度，讓它可以包住內部的編輯區 */
+      /* 高度自動 */
+      max-height: none !important;
+      /* ★ 關鍵：解除外層的高度限制 */
+      border: none !important;
+      /* 邊框交給 quill-master-container */
     }
 
     /* 2. 設定內層編輯區 (.ql-editor)：控制卷軸邏輯 */
     #q-editor-content .ql-editor,
-    /* 一般題目、精選題目-內容 */
+    #q-editor-explanation .ql-editor,
     #q-reading-main .ql-editor,
-    /* 閱讀題組-內容 */
     #q-long-content .ql-editor,
-    /* 長文題目-內容 */
     #q-long-explanation .ql-editor,
-    /* 短文題組-內容 */
     #q-short-main .ql-editor,
-    /* 聽力題目-內容 */
     #q-listen-content .ql-editor,
-    /* 聽力題目-解析 */
     #q-listen-explanation .ql-editor,
-    /* 聽力題目-參考答案 */
     #q-listen-ref-answer .ql-editor,
-    /* 聽力題組-內容 */
     #q-listengroup-content .ql-editor,
-    /* 聽力題組-解析 */
     #q-listengroup-explanation .ql-editor {
-      /* A. 預設高度 (最矮 200px) */
       min-height: 150px;
-      /* B. 最大高度 (超過 400px 就停住) */
-      max-height: 300px;
-      /* C. 超過最大高度時，出現垂直卷軸 */
+      /* 預設高度 */
+      max-height: 200px;
+      /* ★ 這裡設定您要的最大高度 (例如 300px) */
       overflow-y: auto;
+      /* ★ 超過 300px 時，卷軸出現在這裡 */
     }
 
     /* 選項的高度 (比較矮) */
     .option-editor {
       min-height: 100px;
       max-height: 150px;
+      height: auto !important;
     }
 
     /* 調整選項區塊的標頭 */
@@ -663,8 +669,6 @@
       font-family: "Times New Roman", "Microsoft JhengHei", serif;
       /* 符合您之前的字體需求 */
       font-size: 1.1rem;
-      border-bottom-left-radius: 8px;
-      border-bottom-right-radius: 8px;
     }
 
     /* 移除按鈕滑過的強烈顏色，改為柔和的灰色 */
@@ -1235,7 +1239,7 @@
       </div>
     </div>
   </div>
-  <!-- 一般題型 -->
+  <!-- 表單區塊 -->
   <div class="modal fade" id="propModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
     <div class="modal-dialog modal-xl modal-dialog-centered">
       <div class="modal-content border-0 rounded-4 shadow">
@@ -1328,7 +1332,34 @@
                   </h6>
                   <div class="mb-3">
                     <label class="form-label fw-bold small text-secondary required-star">題幹內容</label>
-                    <div id="q-editor-content"></div>
+                    <div class="quill-master-container border rounded-3">
+                      <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light rounded-top-3">
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="？">？</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="！">！</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="：">：</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="；">；</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」"
+                          data-back="1">「」</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』"
+                          data-back="1">『』</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）"
+                          data-back="1">（）</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】"
+                          data-back="1">【】</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                          data-char="……">……</button>
+                      </div>
+
+                      <div id="q-editor-content"></div>
+
+                      <div
+                        class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
+                        <span>字數：<span class="count-num" id="count-q-editor-content">0</span></span>
+                      </div>
+                    </div>
                   </div>
                   <div class="mb-4">
                     <label class="form-label fw-bold small text-secondary">題目附檔 (圖片/PNG)</label>
@@ -1346,7 +1377,7 @@
                   </div>
                   <div class="row g-3">
                     <div class="col-md-12">
-                      <div class="card option-card h-100">
+                      <div class="card option-card">
                         <div class="option-header-styled">
                           <div class="form-check m-0">
                             <input class="form-check-input" type="radio" name="correctAnswer" value="A" id="radioA">
@@ -1354,11 +1385,45 @@
                           </div>
                           <span class="badge bg-secondary">選項 A</span>
                         </div>
-                        <div id="q-editor-optA" class="option-editor border-0"></div>
+                        <div class="quill-master-container border">
+                          <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light">
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="，">，</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="。">。</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="、">、</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="？">？</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="！">！</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="：">：</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="；">；</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」"
+                              data-back="1">「」</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』"
+                              data-back="1">『』</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）"
+                              data-back="1">（）</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】"
+                              data-back="1">【】</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="……">……</button>
+                          </div>
+
+                          <div id="q-editor-optA"></div>
+
+                          <div
+                            class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
+                            <span>字數：<span class="count-num" id="count-q-editor-optA">0</span></span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                     <div class="col-md-12">
-                      <div class="card option-card h-100">
+                      <div class="card option-card">
                         <div class="option-header-styled">
                           <div class="form-check m-0">
                             <input class="form-check-input" type="radio" name="correctAnswer" value="B" id="radioB">
@@ -1366,7 +1431,41 @@
                           </div>
                           <span class="badge bg-secondary">選項 B</span>
                         </div>
-                        <div id="q-editor-optB" class="option-editor border-0"></div>
+                        <div class="quill-master-container border">
+                          <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light">
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="，">，</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="。">。</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="、">、</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="？">？</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="！">！</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="：">：</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="；">；</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」"
+                              data-back="1">「」</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』"
+                              data-back="1">『』</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）"
+                              data-back="1">（）</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】"
+                              data-back="1">【】</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="……">……</button>
+                          </div>
+
+                          <div id="q-editor-optB" class="option-editor"></div>
+
+                          <div
+                            class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
+                            <span>字數：<span class="count-num" id="count-q-editor-optB">0</span></span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                     <div class="col-md-12">
@@ -1378,7 +1477,41 @@
                           </div>
                           <span class="badge bg-secondary">選項 C</span>
                         </div>
-                        <div id="q-editor-optC" class="option-editor border-0"></div>
+                        <div class="quill-master-container border">
+                          <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light">
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="，">，</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="。">。</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="、">、</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="？">？</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="！">！</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="：">：</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="；">；</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」"
+                              data-back="1">「」</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』"
+                              data-back="1">『』</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）"
+                              data-back="1">（）</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】"
+                              data-back="1">【】</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="……">……</button>
+                          </div>
+
+                          <div id="q-editor-optC" class="option-editor"></div>
+
+                          <div
+                            class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
+                            <span>字數：<span class="count-num" id="count-q-editor-optC">0</span></span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                     <div class="col-md-12">
@@ -1390,7 +1523,41 @@
                           </div>
                           <span class="badge bg-secondary">選項 D</span>
                         </div>
-                        <div id="q-editor-optD" class="option-editor border-0"></div>
+                        <div class="quill-master-container border">
+                          <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light">
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="，">，</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="。">。</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="、">、</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="？">？</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="！">！</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="：">：</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="；">；</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」"
+                              data-back="1">「」</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』"
+                              data-back="1">『』</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）"
+                              data-back="1">（）</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】"
+                              data-back="1">【】</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="……">……</button>
+                          </div>
+
+                          <div id="q-editor-optD" class="option-editor"></div>
+
+                          <div
+                            class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
+                            <span>字數：<span class="count-num" id="count-q-editor-optD">0</span></span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1405,7 +1572,34 @@
 
                   <div class="mb-3">
                     <label class="form-label fw-bold small text-secondary">解析 (紀錄答案理由)</label>
-                    <div id="q-editor-explanation" style="height: 150px;"></div>
+                    <div class="quill-master-container border rounded-3">
+                      <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light rounded-top-3">
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="？">？</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="！">！</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="：">：</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="；">；</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」"
+                          data-back="1">「」</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』"
+                          data-back="1">『』</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）"
+                          data-back="1">（）</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】"
+                          data-back="1">【】</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                          data-char="……">……</button>
+                      </div>
+
+                      <div id="q-editor-explanation"></div>
+
+                      <div
+                        class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
+                        <span>字數：<span class="count-num" id="count-q-editor-explanation">0</span></span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1465,7 +1659,32 @@
 
                   <div class="mb-3">
                     <label class="form-label fw-bold small text-secondary required-star">內容</label>
-                    <div id="q-long-content"></div>
+                    <div class="quill-master-container border rounded-3">
+                      <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light rounded-top-3">
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="？">？</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="！">！</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="：">：</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="；">；</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」"
+                          data-back="1">「」</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』"
+                          data-back="1">『』</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）"
+                          data-back="1">（）</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】"
+                          data-back="1">【】</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                          data-char="……">……</button>
+                      </div>
+                      <div id="q-long-content"></div>
+                      <div
+                        class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
+                        <span>字數：<span class="count-num" id="count-q-long-content">0</span></span>
+                      </div>
+                    </div>
                   </div>
 
                   <div class="mb-4">
@@ -1484,7 +1703,32 @@
                   </h6>
                   <div class="mb-3">
                     <label class="form-label fw-bold small text-secondary">解析 (紀錄答案理由)</label>
-                    <div id="q-long-explanation"></div>
+                    <div class="quill-master-container border rounded-3">
+                      <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light rounded-top-3">
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="？">？</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="！">！</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="：">：</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="；">；</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」"
+                          data-back="1">「」</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』"
+                          data-back="1">『』</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）"
+                          data-back="1">（）</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】"
+                          data-back="1">【】</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                          data-char="……">……</button>
+                      </div>
+                      <div id="q-long-explanation"></div>
+                      <div
+                        class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
+                        <span>字數：<span class="count-num" id="count-q-long-explanation">0</span></span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1553,7 +1797,32 @@
 
                   <div class="mb-3">
                     <label class="form-label fw-bold small text-secondary required-star">母題文章內容</label>
-                    <div id="q-short-main"></div>
+                    <div class="quill-master-container border rounded-3">
+                      <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light rounded-top-3">
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="？">？</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="！">！</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="：">：</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="；">；</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」"
+                          data-back="1">「」</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』"
+                          data-back="1">『』</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）"
+                          data-back="1">（）</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】"
+                          data-back="1">【】</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                          data-char="……">……</button>
+                      </div>
+                      <div id="q-short-main"></div>
+                      <div
+                        class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
+                        <span>字數：<span class="count-num" id="count-q-short-main">0</span></span>
+                      </div>
+                    </div>
                   </div>
 
                   <div class="mb-4">
@@ -1650,7 +1919,32 @@
 
                   <div class="mb-3">
                     <label class="form-label fw-bold small text-secondary required-star">母題文章內容</label>
-                    <div id="q-reading-main"></div>
+                    <div class="quill-master-container border rounded-3">
+                      <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light rounded-top-3">
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="？">？</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="！">！</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="：">：</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="；">；</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」"
+                          data-back="1">「」</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』"
+                          data-back="1">『』</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）"
+                          data-back="1">（）</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】"
+                          data-back="1">【】</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                          data-char="……">……</button>
+                      </div>
+                      <div id="q-reading-main"></div>
+                      <div
+                        class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
+                        <span>字數：<span class="count-num" id="count-q-reading-main">0</span></span>
+                      </div>
+                    </div>
                   </div>
 
                   <div class="mb-4">
@@ -1767,7 +2061,32 @@
 
                   <div class="mb-3">
                     <label class="form-label fw-bold small text-secondary required-star">語音內容</label>
-                    <div id="q-listen-content"></div>
+                    <div class="quill-master-container border rounded-3">
+                      <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light rounded-top-3">
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="？">？</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="！">！</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="：">：</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="；">；</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」"
+                          data-back="1">「」</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』"
+                          data-back="1">『』</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）"
+                          data-back="1">（）</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】"
+                          data-back="1">【】</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                          data-char="……">……</button>
+                      </div>
+                      <div id="q-listen-content"></div>
+                      <div
+                        class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
+                        <span>字數：<span class="count-num" id="count-q-listen-content">0</span></span>
+                      </div>
+                    </div>
                   </div>
 
                   <div class="mb-4">
@@ -1793,7 +2112,39 @@
                           </div>
                           <span class="badge bg-secondary">選項 A</span>
                         </label>
-                        <div id="q-listen-optA" class="option-editor border-0"></div>
+                        <div class="quill-master-container border-0">
+                          <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light">
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="，">，</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="。">。</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="、">、</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="？">？</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="！">！</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="：">：</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="；">；</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」"
+                              data-back="1">「」</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』"
+                              data-back="1">『』</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）"
+                              data-back="1">（）</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】"
+                              data-back="1">【】</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="……">……</button>
+                          </div>
+                          <div id="q-listen-optA" class="option-editor"></div>
+                          <div
+                            class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
+                            <span>字數：<span class="count-num" id="count-q-listen-optA">0</span></span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                     <div class="col-md-12">
@@ -1805,7 +2156,39 @@
                           </div>
                           <span class="badge bg-secondary">選項 B</span>
                         </label>
-                        <div id="q-listen-optB" class="option-editor border-0"></div>
+                        <div class="quill-master-container border-0">
+                          <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light">
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="，">，</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="。">。</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="、">、</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="？">？</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="！">！</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="：">：</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="；">；</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」"
+                              data-back="1">「」</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』"
+                              data-back="1">『』</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）"
+                              data-back="1">（）</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】"
+                              data-back="1">【】</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="……">……</button>
+                          </div>
+                          <div id="q-listen-optB" class="option-editor"></div>
+                          <div
+                            class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
+                            <span>字數：<span class="count-num" id="count-q-listen-optB">0</span></span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                     <div class="col-md-12">
@@ -1817,7 +2200,39 @@
                           </div>
                           <span class="badge bg-secondary">選項 C</span>
                         </label>
-                        <div id="q-listen-optC" class="option-editor border-0"></div>
+                        <div class="quill-master-container border-0">
+                          <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light">
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="，">，</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="。">。</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="、">、</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="？">？</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="！">！</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="：">：</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="；">；</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」"
+                              data-back="1">「」</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』"
+                              data-back="1">『』</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）"
+                              data-back="1">（）</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】"
+                              data-back="1">【】</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="……">……</button>
+                          </div>
+                          <div id="q-listen-optC" class="option-editor"></div>
+                          <div
+                            class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
+                            <span>字數：<span class="count-num" id="count-q-listen-optC">0</span></span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                     <div class="col-md-12">
@@ -1829,7 +2244,39 @@
                           </div>
                           <span class="badge bg-secondary">選項 D</span>
                         </label>
-                        <div id="q-listen-optD" class="option-editor border-0"></div>
+                        <div class="quill-master-container border-0">
+                          <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light">
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="，">，</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="。">。</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="、">、</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="？">？</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="！">！</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="：">：</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="；">；</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」"
+                              data-back="1">「」</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』"
+                              data-back="1">『』</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）"
+                              data-back="1">（）</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】"
+                              data-back="1">【】</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                              data-char="……">……</button>
+                          </div>
+                          <div id="q-listen-optD" class="option-editor"></div>
+                          <div
+                            class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
+                            <span>字數：<span class="count-num" id="count-q-listen-optD">0</span></span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1843,12 +2290,62 @@
 
                   <div class="mb-3">
                     <label class="form-label fw-bold small text-secondary">解析 (紀錄答案理由)</label>
-                    <div id="q-listen-explanation"></div>
+                    <div class="quill-master-container border rounded-3">
+                      <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light rounded-top-3">
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="？">？</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="！">！</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="：">：</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="；">；</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」"
+                          data-back="1">「」</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』"
+                          data-back="1">『』</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）"
+                          data-back="1">（）</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】"
+                          data-back="1">【】</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                          data-char="……">……</button>
+                      </div>
+                      <div id="q-listen-explanation"></div>
+                      <div
+                        class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
+                        <span>字數：<span class="count-num" id="count-q-listen-explanation">0</span></span>
+                      </div>
+                    </div>
                   </div>
 
                   <div id="div-ref-answer" class="mb-3 d-none">
                     <label class="form-label fw-bold small text-secondary required-star">參考答案 (難度五必填)</label>
-                    <div id="q-listen-ref-answer"></div>
+                    <div class="quill-master-container border rounded-3">
+                      <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light rounded-top-3">
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="？">？</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="！">！</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="：">：</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="；">；</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」"
+                          data-back="1">「」</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』"
+                          data-back="1">『』</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）"
+                          data-back="1">（）</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】"
+                          data-back="1">【】</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                          data-char="……">……</button>
+                      </div>
+                      <div id="q-listen-ref-answer"></div>
+                      <div
+                        class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
+                        <span>字數：<span class="count-num" id="count-q-listen-ref-answer">0</span></span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1907,7 +2404,32 @@
 
                   <div class="mb-3">
                     <label class="form-label fw-bold small text-secondary required-star">語音內容</label>
-                    <div id="q-listengroup-content"></div>
+                    <div class="quill-master-container border rounded-3">
+                      <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light rounded-top-3">
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="？">？</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="！">！</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="：">：</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="；">；</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」"
+                          data-back="1">「」</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』"
+                          data-back="1">『』</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）"
+                          data-back="1">（）</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】"
+                          data-back="1">【】</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                          data-char="……">……</button>
+                      </div>
+                      <div id="q-listengroup-content"></div>
+                      <div
+                        class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
+                        <span>字數：<span class="count-num" id="count-q-listengroup-content">0</span></span>
+                      </div>
+                    </div>
                   </div>
 
                   <div class="mb-4">

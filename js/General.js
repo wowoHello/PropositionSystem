@@ -14,6 +14,61 @@ const GeneralHandler = (function () {
         "文意判讀": ["段義辨析"]
     };
 
+    // --- 新增：內部輔助函式 ---
+    function setupQuillAddons(quill, containerId) {
+        const el = document.getElementById(containerId);
+        if (!el) return;
+
+        // 向上尋找包裹容器
+        const wrapper = el.closest('.quill-master-container');
+        if (!wrapper) {
+            console.warn(`ID 為 ${containerId} 的編輯器缺少 .quill-master-container 外層，輔助功能將失效。`);
+            return;
+        }
+
+        // 標點符號按鈕點擊
+        const puncButtons = wrapper.querySelectorAll('.punc-btn');
+        puncButtons.forEach(btn => {
+            btn.onclick = function (e) {
+                e.preventDefault();
+
+                if (!quill.isEnabled()) {
+                    return;
+                }
+
+                // 1. 取得要插入的符號 (例如 "「」")
+                const char = this.getAttribute('data-char');
+
+                // 2. 取得要「往回退」的格數，預設為 0
+                const moveBack = parseInt(this.getAttribute('data-back') || '0');
+
+                // 3. 取得當前游標位置
+                const range = quill.getSelection(true);
+
+                if (range) {
+                    // 4. 插入文字
+                    quill.insertText(range.index, char);
+
+                    // 5. 設定新游標位置： (原位置 + 插入長度 - 往回退的格數)
+                    // 範例：插入 "「」" (長度2)，back 為 1。
+                    // 游標會變成： 原index + 2 - 1 = 原index + 1 (即符號中間)
+                    quill.setSelection(range.index + char.length - moveBack);
+                }
+            };
+        });
+
+        // 字數偵測監聽
+        const countDisplay = wrapper.querySelector('.count-num');
+        quill.on('text-change', function () {
+            // getText() 會多計入一個末尾換行符，所以 trim 後計算
+            const text = quill.getText().trim();
+            const length = (quill.getLength() <= 1 && text === '') ? 0 : text.length;
+            if (countDisplay) {
+                countDisplay.innerText = length;
+            }
+        });
+    }
+
     return {
         // 1. 初始化
         init: function () {
@@ -48,41 +103,43 @@ const GeneralHandler = (function () {
                 });
             }
 
-            // 初始化 Quill (如果有定義全域 toolbar 設定，可直接用，或是這裡再定義一次)
-            // 假設 mainToolbar 和 optionToolbar 在 app.js 定義為全域
-            if (document.getElementById('q-editor-content')) {
-                quills.content = new Quill('#q-editor-content', { theme: 'snow', modules: { toolbar: window.mainToolbar }, placeholder: '請輸入題幹內容...' });
+            const quillConfigs = [
+                { id: 'q-editor-content', key: 'content', placeholder: '請輸入題幹內容...', toolbar: window.mainToolbar },
+                { id: 'q-editor-explanation', key: 'explanation', placeholder: '請輸入題目解析...', toolbar: window.mainToolbar },
+                { id: 'q-editor-optA', key: 'optA', placeholder: '選項 A...', toolbar: window.optionToolbar },
+                { id: 'q-editor-optB', key: 'optB', placeholder: '選項 B...', toolbar: window.optionToolbar },
+                { id: 'q-editor-optC', key: 'optC', placeholder: '選項 C...', toolbar: window.optionToolbar },
+                { id: 'q-editor-optD', key: 'optD', placeholder: '選項 D...', toolbar: window.optionToolbar }
+            ];
 
-                // ★ 初始化解析編輯器 ★
-                if (document.getElementById('q-editor-explanation')) {
-                    quills.explanation = new Quill('#q-editor-explanation', {
+            quillConfigs.forEach(config => {
+                const el = document.getElementById(config.id);
+                if (el) {
+                    // 建立實例並存入私有變數 quills
+                    quills[config.key] = new Quill(`#${config.id}`, {
                         theme: 'snow',
-                        modules: { toolbar: window.mainToolbar }, // 解析也可以用完整工具列，或改用簡化版
-                        placeholder: '請簡要說明正確答案的判斷依據，並簡述其他選項錯誤原因...'
+                        modules: { toolbar: config.toolbar },
+                        placeholder: config.placeholder
                     });
-                }
 
-                ['A', 'B', 'C', 'D'].forEach(opt => {
-                    quills[`opt${opt}`] = new Quill(`#q-editor-opt${opt}`, { theme: 'snow', modules: { toolbar: window.optionToolbar }, placeholder: `選項 ${opt}` });
+                    // 重要：立即綁定輔助功能
+                    setupQuillAddons(quills[config.key], config.id);
 
-                    // UI 重繪邏輯
-                    const editorEl = document.getElementById(`q-editor-opt${opt}`);
-                    const container = editorEl.closest('.option-card'); // 修正 selector 抓取方式
-
-                    if (container) {
-                        const header = container.querySelector('.option-header-styled');
+                    // 如果是選項 A-D，額外加上點擊 Header 觸發 Radio 的邏輯
+                    if (config.key.startsWith('opt')) {
+                        const opt = config.key.replace('opt', '');
+                        const container = el.closest('.option-card');
+                        const header = container?.querySelector('.option-header-styled');
                         if (header) {
-                            // ★★★ 新增：點擊整個 Header 時觸發 Radio ★★★
                             header.onclick = function (e) {
-                                // 如果點到的不是 radio 本身 (避免重複觸發)，就手動點擊 radio
                                 if (e.target.type !== 'radio') {
                                     document.getElementById(`radio${opt}`).click();
                                 }
                             };
                         }
                     }
-                });
-            }
+                }
+            });
         },
 
         // 2. 清空表單
@@ -292,6 +349,10 @@ const GeneralHandler = (function () {
                     subSelect.disabled = true;
                 }
             }
+            const puncBtns = document.querySelectorAll('#form-general .punc-btn');
+            puncBtns.forEach(btn => {
+                btn.disabled = !editable; // 當 editable 為 false 時，disabled 為 true
+            });
         }
     };
 })();

@@ -30,6 +30,10 @@ const ListenGroupHandler = (function () {
                 quills.main = new Quill('#q-listengroup-content', {
                     theme: 'snow', modules: { toolbar: window.mainToolbar }, placeholder: '請輸入語音內容...'
                 });
+
+                if (typeof bindQuillHelpers === 'function') {
+                    bindQuillHelpers(quills.main, 'q-listengroup-content');
+                }
             }
             // 移除全域解析初始化
 
@@ -101,7 +105,31 @@ const ListenGroupHandler = (function () {
 
                             <div class="mb-4">
                                 <label class="form-label fw-bold text-dark required-star">題目</label>
-                                <div id="q-${uid}-content" class="bg-white" style="height:120px"></div>
+                                <div class="quill-master-container border rounded-3 bg-white">
+                                    <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light rounded-top-3">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="？">？</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="！">！</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="：">：</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="；">；</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」"
+                                        data-back="1">「」</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』"
+                                        data-back="1">『』</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）"
+                                        data-back="1">（）</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】"
+                                        data-back="1">【】</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                                        data-char="……">……</button>
+                                    </div>
+                                    <div id="q-${uid}-content"></div>
+                                    <div class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
+                                        <span>字數：<span class="count-num" id="count-q-${uid}-content">0</span></span>
+                                    </div>
+                                </div>
                             </div>
                             
                             <!-- Options Section (Updated styling to match Reading.js somewhat but keep user request) -->
@@ -121,7 +149,31 @@ const ListenGroupHandler = (function () {
                                             </div>
                                             <span class="badge bg-secondary">選項 ${opt}</span>
                                         </label>
-                                        <div id="q-${uid}-opt${opt}" class="border-0" style="min-height:80px;"></div>
+                                        <div class="quill-master-container border-0">
+                                            <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="？">？</button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="！">！</button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="：">：</button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="；">；</button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」"
+                                                data-back="1">「」</button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』"
+                                                data-back="1">『』</button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）"
+                                                data-back="1">（）</button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】"
+                                                data-back="1">【】</button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                                                data-char="……">……</button>
+                                            </div>
+                                            <div id="q-${uid}-opt${opt}" class="option-editor border-0"></div>
+                                            <div class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
+                                                <span>字數：<span class="count-num" id="count-q-${uid}-opt${opt}">0</span></span>
+                                            </div>
+                                        </div>
                                     </div>
                                 `).join('')}
                             </div>
@@ -129,7 +181,20 @@ const ListenGroupHandler = (function () {
                             <!-- Explanation Section (Moved here from global) -->
                             <div class="mb-2">
                                  <label class="form-label fw-bold text-muted">解析(紀錄答案理由)</label>
-                                 <div id="q-${uid}-explanation" class="bg-white" style="height:120px"></div>
+                                 <div class="quill-master-container border rounded-3 bg-white">
+                                    <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light rounded-top-3">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」" data-back="1">「」</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）" data-back="1">（）</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="……">……</button>
+                                    </div>
+                                    <div id="q-${uid}-explanation"></div>
+                                    <div class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
+                                        <span>字數：<span class="count-num" id="count-q-${uid}-explanation">0</span></span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -146,8 +211,17 @@ const ListenGroupHandler = (function () {
                     optD: new Quill(`#q-${uid}-optD`, { theme: 'snow', modules: { toolbar: toolbar }, placeholder: '選項 D' }),
                     explanation: new Quill(`#q-${uid}-explanation`, { theme: 'snow', modules: { toolbar: toolbar }, placeholder: '請輸入試題解析與答案理由...' })
                 };
+                // 綁定子題輔助功能
+                if (typeof bindQuillHelpers === 'function') {
+                    bindQuillHelpers(quills.subs[uid].content, `q-${uid}-content`);
+                    bindQuillHelpers(quills.subs[uid].optA, `q-${uid}-optA`);
+                    bindQuillHelpers(quills.subs[uid].optB, `q-${uid}-optB`);
+                    bindQuillHelpers(quills.subs[uid].optC, `q-${uid}-optC`);
+                    bindQuillHelpers(quills.subs[uid].optD, `q-${uid}-optD`);
+                    bindQuillHelpers(quills.subs[uid].explanation, `q-${uid}-explanation`);
+                }
 
-                // Bind Events for Auto-Check (Optional but good for UX)
+                // Events
                 const checkFn = () => this.checkCompletion(uid);
                 Object.values(quills.subs[uid]).forEach(q => q.on('text-change', checkFn));
                 const radios = card.querySelectorAll(`input[name="ans-${uid}"]`);
@@ -398,6 +472,12 @@ const ListenGroupHandler = (function () {
                 } else {
                     input.disabled = !editable;
                 }
+            });
+
+            // 切換標點符號按鈕
+            const puncBtns = document.querySelectorAll('#form-listengroup .punc-btn');
+            puncBtns.forEach(btn => {
+                btn.disabled = !editable;
             });
         }
     };

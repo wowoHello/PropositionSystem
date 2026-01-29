@@ -8,6 +8,10 @@ const ReadingHandler = (function () {
             // 母題 Quill
             if (document.getElementById('q-reading-main')) {
                 quills.main = new window.Quill('#q-reading-main', { theme: 'snow', modules: { toolbar: window.mainToolbar }, placeholder: '文章內容...' });
+
+                if (typeof bindQuillHelpers === 'function') {
+                    bindQuillHelpers(quills.main, 'q-reading-main');
+                }
             }
 
             // 綁定全域函式
@@ -125,7 +129,7 @@ const ReadingHandler = (function () {
                 difficulty: difficulty,
                 propositioner: propositioner,
                 content: encodeURIComponent(quills.main.root.innerHTML),
-                summary: `[閱讀] ${mainText.substring(0, 15)}... (${subsData.length}子題)`,
+                summary: `${mainText.substring(0, 15)}... (${subsData.length}子題)`,
                 subQuestions: subsData
             };
         },
@@ -180,7 +184,26 @@ const ReadingHandler = (function () {
                     <div class="card-body bg-light">
                         <div class="mb-4">
                             <label class="form-label fw-bold text-dark required-star">子題內容(題目)</label>
-                            <div id="q-${uid}-content" class="bg-white" style="min-height:120px"></div>
+                            <div class="quill-master-container border rounded-3 bg-white">
+                                <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light rounded-top-3">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="？">？</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="！">！</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="：">：</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="；">；</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」" data-back="1">「」</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』" data-back="1">『』</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）" data-back="1">（）</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】" data-back="1">【】</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="……">……</button>
+                                </div>
+                                <div id="q-${uid}-content"></div>
+                                <div class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
+                                    <span>字數：<span class="count-num" id="count-q-${uid}-content">0</span></span>
+                                </div>
+                            </div>
                         </div>
                         
                         <label class="form-label fw-bold text-secondary mb-2 required-star">選項與正確答案</label>
@@ -208,14 +231,52 @@ const ReadingHandler = (function () {
                                         <span class="badge bg-secondary">選項 ${opt}</span>
                                     </label>
                                     
-                                    <div id="q-${uid}-opt${opt}" style="min-height:80px;"></div>
+                                    <div class="quill-master-container border-0">
+                                        <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="？">？</button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="！">！</button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="：">：</button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="；">；</button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」" data-back="1">「」</button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』" data-back="1">『』</button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）" data-back="1">（）</button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】" data-back="1">【】</button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="……">……</button>
+                                        </div>
+                                        <div id="q-${uid}-opt${opt}" class="option-editor border-0"></div>
+                                        <div class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
+                                            <span>字數：<span class="count-num" id="count-q-${uid}-opt${opt}">0</span></span>
+                                        </div>
+                                    </div>
                                 </div>
                             `).join('')}
                         </div>
 
                         <div class="mb-2">
                              <label class="form-label fw-bold text-muted">解析(紀錄答案理由)</label>
-                             <div id="q-${uid}-explanation" class="bg-white" style="min-height:120px"></div>
+                             <div class="quill-master-container border rounded-3 bg-white">
+                                <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light rounded-top-3">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="？">？</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="！">！</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="：">：</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="；">；</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」" data-back="1">「」</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』" data-back="1">『』</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）" data-back="1">（）</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】" data-back="1">【】</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="……">……</button>
+                                </div>
+                                <div id="q-${uid}-explanation"></div>
+                                <div class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
+                                    <span>字數：<span class="count-num" id="count-q-${uid}-explanation">0</span></span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -232,6 +293,16 @@ const ReadingHandler = (function () {
                 optD: new Quill(`#q-${uid}-optD`, { theme: 'snow', modules: { toolbar: toolbar }, placeholder: '選項 D' }),
                 explanation: new Quill(`#q-${uid}-explanation`, { theme: 'snow', modules: { toolbar: toolbar }, placeholder: '請簡要說明正確答案的判斷依據，並簡述其他選項錯誤原因...' })
             };
+
+            // 綁定子題輔助功能
+            if (typeof bindQuillHelpers === 'function') {
+                bindQuillHelpers(quills.subs[uid].content, `q-${uid}-content`);
+                bindQuillHelpers(quills.subs[uid].optA, `q-${uid}-optA`);
+                bindQuillHelpers(quills.subs[uid].optB, `q-${uid}-optB`);
+                bindQuillHelpers(quills.subs[uid].optC, `q-${uid}-optC`);
+                bindQuillHelpers(quills.subs[uid].optD, `q-${uid}-optD`);
+                bindQuillHelpers(quills.subs[uid].explanation, `q-${uid}-explanation`);
+            }
 
             // 綁定自動檢查事件
             const checkFn = () => this.checkCompletion(uid);
@@ -375,6 +446,11 @@ const ReadingHandler = (function () {
                 if (input.id !== 'rPropositioner') {
                     input.disabled = !editable;
                 }
+            });
+            // 新增：切換標點符號按鈕
+            const puncBtns = document.querySelectorAll('#form-reading .punc-btn');
+            puncBtns.forEach(btn => {
+                btn.disabled = !editable;
             });
         }
     };

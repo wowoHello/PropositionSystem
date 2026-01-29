@@ -34,27 +34,37 @@ const ListenHandler = (function () {
     return {
         init: function () {
             // 1. 初始化 Quill 編輯器
+            // 語音內容
             if (document.getElementById('q-listen-content')) {
                 quills.content = new Quill('#q-listen-content', {
                     theme: 'snow', modules: { toolbar: window.mainToolbar }, placeholder: '請輸入語音內容...'
                 });
+                if (typeof bindQuillHelpers === 'function') bindQuillHelpers(quills.content, 'q-listen-content');
             }
+
+            // 解析
             if (document.getElementById('q-listen-explanation')) {
                 quills.explanation = new Quill('#q-listen-explanation', {
                     theme: 'snow', modules: { toolbar: window.mainToolbar }, placeholder: '請簡要說明正確答案的判斷依據，並簡述其他選項錯誤原因...'
                 });
+                if (typeof bindQuillHelpers === 'function') bindQuillHelpers(quills.explanation, 'q-listen-explanation');
             }
+
+            // 參考答案 (隱藏欄位)
             if (document.getElementById('q-listen-ref-answer')) {
                 quills.refAnswer = new Quill('#q-listen-ref-answer', {
                     theme: 'snow', modules: { toolbar: window.mainToolbar }, placeholder: '請輸入參考答案...'
                 });
+                if (typeof bindQuillHelpers === 'function') bindQuillHelpers(quills.refAnswer, 'q-listen-ref-answer');
             }
 
+            // 選項 A-D
             ['A', 'B', 'C', 'D'].forEach(opt => {
                 if (document.getElementById(`q-listen-opt${opt}`)) {
                     quills[`opt${opt}`] = new Quill(`#q-listen-opt${opt}`, {
                         theme: 'snow', modules: { toolbar: window.optionToolbar }, placeholder: `選項 ${opt}`
                     });
+                    if (typeof bindQuillHelpers === 'function') bindQuillHelpers(quills[`opt${opt}`], `q-listen-opt${opt}`);
                 }
             });
 
@@ -80,15 +90,8 @@ const ListenHandler = (function () {
                     if (val && levelData[val]) {
                         coreSelect.disabled = false;
                         indSelect.disabled = false;
-
-                        // 填入核心能力
-                        levelData[val].cores.forEach(c => {
-                            coreSelect.add(new Option(c, c));
-                        });
-                        // 填入細目指標
-                        levelData[val].indicators.forEach(i => {
-                            indSelect.add(new Option(i, i));
-                        });
+                        levelData[val].cores.forEach(c => coreSelect.add(new Option(c, c)));
+                        levelData[val].indicators.forEach(i => indSelect.add(new Option(i, i)));
                     } else {
                         coreSelect.disabled = true;
                         indSelect.disabled = true;
@@ -278,6 +281,12 @@ const ListenHandler = (function () {
                     document.getElementById('liIndicator').disabled = true;
                 }
             }
+
+            // 鎖定標點符號按鈕
+            const puncBtns = document.querySelectorAll('#form-listen .punc-btn');
+            puncBtns.forEach(btn => {
+                btn.disabled = !editable;
+            });
         }
     };
 })();

@@ -32,6 +32,10 @@ const ShortArticleHandler = (function () {
             // 母題 Quill
             if (document.getElementById('q-short-main')) {
                 quills.main = new window.Quill('#q-short-main', { theme: 'snow', modules: { toolbar: window.mainToolbar }, placeholder: '請輸入文章內容...' });
+
+                if (typeof bindQuillHelpers === 'function') {
+                    bindQuillHelpers(quills.main, 'q-short-main');
+                }
             }
 
             // 綁定全域新增子題函式
@@ -258,14 +262,62 @@ const ShortArticleHandler = (function () {
 
                         <div class="mb-4">
                             <label class="form-label fw-bold text-dark required-star">子題內容(題目)</label>
-                            <div id="qs-${uid}-content" class="bg-white" style="height:120px"></div>
+                            <div class="quill-master-container border rounded-3 bg-white">
+                                <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light rounded-top-3">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="？">？</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="！">！</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="：">：</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="；">；</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」"
+                                    data-back="1">「」</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』"
+                                    data-back="1">『』</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）"
+                                    data-back="1">（）</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】"
+                                    data-back="1">【】</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                                    data-char="……">……</button>
+                                </div>
+                                <div id="qs-${uid}-content"></div>
+                                <div class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
+                                    <span>字數：<span class="count-num" id="count-qs-${uid}-content">0</span></span>
+                                </div>
+                            </div>
                         </div>
                         
                         <!-- 選項設定已移除 -->
 
                         <div class="mb-2">
                              <label class="form-label fw-bold text-muted">批說(可略)</label>
-                             <div id="qs-${uid}-explanation" class="bg-white" style="height:120px"></div>
+                             <div class="quill-master-container border rounded-3 bg-white">
+                                <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light rounded-top-3">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="？">？</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="！">！</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="：">：</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="；">；</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」"
+                                    data-back="1">「」</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』"
+                                    data-back="1">『』</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）"
+                                    data-back="1">（）</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】"
+                                    data-back="1">【】</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                                    data-char="……">……</button>
+                                </div>
+                                <div id="qs-${uid}-explanation"></div>
+                                <div class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
+                                    <span>字數：<span class="count-num" id="count-qs-${uid}-explanation">0</span></span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -278,6 +330,11 @@ const ShortArticleHandler = (function () {
                 content: new Quill(`#qs-${uid}-content`, { theme: 'snow', modules: { toolbar: toolbar }, placeholder: '子題敘述...' }),
                 explanation: new Quill(`#qs-${uid}-explanation`, { theme: 'snow', modules: { toolbar: toolbar }, placeholder: '請輸入批說...' })
             };
+
+            if (typeof bindQuillHelpers === 'function') {
+                bindQuillHelpers(quills.subs[uid].content, `qs-${uid}-content`);
+                bindQuillHelpers(quills.subs[uid].explanation, `qs-${uid}-explanation`);
+            }
 
             // 綁定 Cascading Dropdown
             const dimSelect = document.getElementById(`dim-${uid}`);
@@ -420,6 +477,11 @@ const ShortArticleHandler = (function () {
                     if (!dimVal) indSel.disabled = true;
                 });
             }
+
+            const puncBtns = document.querySelectorAll('#form-shortarticle .punc-btn');
+            puncBtns.forEach(btn => {
+                btn.disabled = !editable;
+            });
         }
     };
 })();

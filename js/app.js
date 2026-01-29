@@ -26,7 +26,51 @@ if (typeof Quill !== 'undefined') {
 }
 
 // --- 統一的 Toolbar 設定 ---
+function bindQuillHelpers(quillInstance, containerId) {
+    const wrapper = document.getElementById(containerId).closest('.quill-master-container');
+    if (!wrapper) return;
 
+    // 1. 標點符號插入邏輯
+    const puncButtons = wrapper.querySelectorAll('.punc-btn');
+    puncButtons.forEach(btn => {
+        btn.onclick = function (e) {
+            e.preventDefault(); // 防止按鈕觸發 form submit
+
+            if (!quillInstance.isEnabled()) {
+                return;
+            }
+
+            // 1. 取得要插入的符號
+            const char = this.getAttribute('data-char');
+
+            // ★★★ 2. 新增：取得要「往回退」的格數 (修正點) ★★★
+            const moveBack = parseInt(this.getAttribute('data-back') || '0');
+
+            const range = quillInstance.getSelection(true);
+
+            if (range) {
+                // 3. 插入文字
+                quillInstance.insertText(range.index, char);
+
+                // ★★★ 4. 設定新游標位置 (修正點) ★★★
+                // 原本是： range.index + char.length
+                // 改為：   range.index + char.length - moveBack
+                quillInstance.setSelection(range.index + char.length - moveBack);
+            }
+        };
+    });
+
+    // 2. 字數偵測邏輯
+    const countDisplay = wrapper.querySelector('.count-num');
+    quillInstance.on('text-change', function () {
+        const text = quillInstance.getText().trim();
+        // Quill 空白時會回傳 \n，所以要排除
+        const length = text.length === 0 ? 0 : text.length;
+        if (countDisplay) {
+            countDisplay.innerText = length;
+        }
+    });
+}
 // 設定 A：全功能 (用於：系統公告、命題題幹、閱讀題組文章)
 window.mainToolbar = [
     [{ 'size': ['small', false, 'large', 'huge'] }],  // 文字大小
@@ -994,7 +1038,7 @@ function resetSelection() {
     if (typeof updateMasterCheckboxState === 'function') {
         updateMasterCheckboxState();
     }
-    
+
     // (選用) 如果有 Toast 提示，可以顯示一下
     showToast('已重置所有選取', 'secondary');
 }
