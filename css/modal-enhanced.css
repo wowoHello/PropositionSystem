@@ -620,14 +620,21 @@
 }
 
 .punctuation-toolbar .punc-btn {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
   background: white;
+}
+
+.punctuation-toolbar .punc-btn[data-char="……"] {
+  width: auto !important;
+  min-width: 36px;
+  padding: 0 4px !important;
+  /* 左右留點空隙 */
 }
 
 .punctuation-toolbar .punc-btn:hover {

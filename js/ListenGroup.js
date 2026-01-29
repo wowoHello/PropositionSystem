@@ -54,7 +54,7 @@ const ListenGroupHandler = (function () {
                     <span class="badge bg-secondary">選項 ${opt}</span>
                 </div>
                 <div class="quill-master-container border-0">
-                    <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light">
+                    <div class="punctuation-toolbar d-flex flex-wrap gap-2 p-2 border-bottom bg-light">
                         <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
                         <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
                         <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
@@ -160,7 +160,7 @@ const ListenGroupHandler = (function () {
                             <div class="mb-4">
                                 <label class="form-label fw-bold text-dark required-star">題目</label>
                                 <div class="quill-master-container border rounded-3 bg-white">
-                                    <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light rounded-top-3">
+                                    <div class="punctuation-toolbar d-flex flex-wrap gap-2 p-2 border-bottom bg-light rounded-top-3">
                                         <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
                                         <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
                                         <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
@@ -213,7 +213,7 @@ const ListenGroupHandler = (function () {
                             <div class="mb-2 mt-4">
                                  <label class="form-label fw-bold text-muted">解析(紀錄答案理由)</label>
                                  <div class="quill-master-container border rounded-3 bg-white">
-                                    <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light rounded-top-3">
+                                    <div class="punctuation-toolbar d-flex flex-wrap gap-2 p-2 border-bottom bg-light rounded-top-3">
                                         <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
                                         <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
                                         <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>

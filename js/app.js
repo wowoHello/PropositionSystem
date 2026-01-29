@@ -932,6 +932,8 @@ function debouncedCheck(select) {
 
 function checkAndSelect(select) {
     if (!select) return;
+    // 避免 auto-select 干擾 mType 選單開啟
+    if (select.id === 'mType' || document.activeElement === select) return;
     // 忽略多選選單
     if (select.multiple) return;
 

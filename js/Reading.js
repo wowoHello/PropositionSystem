@@ -34,7 +34,7 @@ const ReadingHandler = (function () {
                     <span class="badge bg-secondary">選項 ${opt}</span>
                 </div>
                 <div class="quill-master-container border-0">
-                    <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light">
+                    <div class="punctuation-toolbar d-flex flex-wrap gap-2 p-2 border-bottom bg-light">
                         <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
                         <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
                         <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
@@ -170,7 +170,7 @@ const ReadingHandler = (function () {
 
                 // 如果已刪除，我們仍收集資料，但可以跳過必填檢查
                 // 或者直接回傳簡易物件告訴後端 update status
-                
+
                 const q = quills.subs[uid];
                 const ansSelect = document.getElementById(`ans-select-${uid}`);
                 const selectedAns = ansSelect ? ansSelect.value : '';
@@ -178,7 +178,7 @@ const ReadingHandler = (function () {
                 // 驗證單一子題 (只驗證未刪除的)
                 if (status === '已確認' && !isDeleted) {
                     // 這裡可以加子題內部的防呆 (如 content, ans 必填)
-                    if(q.content.getText().trim().length === 0) {
+                    if (q.content.getText().trim().length === 0) {
                         // err... 但這裡架構是回傳物件，通常在上方 activeSubKeys 檢查
                     }
                 }
@@ -191,9 +191,9 @@ const ReadingHandler = (function () {
                     ans: selectedAns,
                     explanation: encodeURIComponent(q.explanation.root.innerHTML),
                     isCompleted: card.classList.contains('sub-completed'),
-                    
+
                     // ★ 新增標記：告訴後端這題被刪了
-                    isDeleted: isDeleted 
+                    isDeleted: isDeleted
                 };
             });
 
@@ -259,7 +259,7 @@ const ReadingHandler = (function () {
                         <div class="mb-4">
                             <label class="form-label fw-bold text-dark required-star">子題內容(題目)</label>
                             <div class="quill-master-container border rounded-3 bg-white">
-                                <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light rounded-top-3">
+                                <div class="punctuation-toolbar d-flex flex-wrap gap-2 p-2 border-bottom bg-light rounded-top-3">
                                     <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
                                     <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
                                     <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
@@ -305,7 +305,7 @@ const ReadingHandler = (function () {
                         <div class="mb-2 mt-4">
                              <label class="form-label fw-bold text-muted">解析(紀錄答案理由)</label>
                              <div class="quill-master-container border rounded-3 bg-white">
-                                <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light rounded-top-3">
+                                <div class="punctuation-toolbar d-flex flex-wrap gap-2 p-2 border-bottom bg-light rounded-top-3">
                                     <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
                                     <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
                                     <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
@@ -408,11 +408,11 @@ const ReadingHandler = (function () {
                     const card = document.getElementById(`card-${uid}`);
                     if (card) {
                         // A. 視覺上隱藏
-                        card.classList.add('d-none'); 
-                        
+                        card.classList.add('d-none');
+
                         // B. 加上刪除標記 (讓 collect 知道它被刪了)
                         card.classList.add('sub-is-deleted');
-                        
+
                         // C. 顯示空狀態提示 (如果全部都刪光了)
                         // 計算「未刪除」的子題數量
                         const container = document.getElementById('sub-questions-container');

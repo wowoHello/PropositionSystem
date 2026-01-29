@@ -271,7 +271,7 @@ const ShortArticleHandler = (function () {
                         <div class="mb-4">
                             <label class="form-label fw-bold text-dark required-star">子題內容(題目)</label>
                             <div class="quill-master-container border rounded-3 bg-white">
-                                <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light rounded-top-3">
+                                <div class="punctuation-toolbar d-flex flex-wrap gap-2 p-2 border-bottom bg-light rounded-top-3">
                                     <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
                                     <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
                                     <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
@@ -302,7 +302,7 @@ const ShortArticleHandler = (function () {
                         <div class="mb-2">
                              <label class="form-label fw-bold text-muted">批說(可略)</label>
                              <div class="quill-master-container border rounded-3 bg-white">
-                                <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 border-bottom bg-light rounded-top-3">
+                                <div class="punctuation-toolbar d-flex flex-wrap gap-2 p-2 border-bottom bg-light rounded-top-3">
                                     <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
                                     <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
                                     <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
