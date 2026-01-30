@@ -14,6 +14,7 @@
 var reviewModal = null;
 var reviewToastInstance = null;  // 改名避免與 app.js 衝突
 var currentReviewStage = 'mutual'; // mutual, expert, final
+var similarityThreshold = 0.8;
 
 // Quill 編輯器實例
 var reviewQuillEditors = {
@@ -352,6 +353,169 @@ function updateStats() {
 // ==========================================
 //  審題 Modal 開啟
 // ==========================================
+function getSimilarityElements() {
+    return {
+        panel: document.getElementById('similarityPanel'),
+        list: document.getElementById('similarityList'),
+        warning: document.getElementById('similarityWarning'),
+        error: document.getElementById('similarityError'),
+        loading: document.getElementById('similarityLoading'),
+        empty: document.getElementById('similarityEmpty'),
+        statusBadge: document.getElementById('similarityStatusBadge')
+    };
+}
+
+function resetSimilarityPanel() {
+    const elements = getSimilarityElements();
+    if (elements.list) elements.list.innerHTML = '';
+    if (elements.warning) elements.warning.classList.add('d-none');
+    if (elements.error) elements.error.classList.add('d-none');
+    if (elements.loading) elements.loading.classList.add('d-none');
+    if (elements.empty) elements.empty.classList.remove('d-none');
+    if (elements.statusBadge) elements.statusBadge.classList.add('d-none');
+}
+
+function setSimilarityLoading(isLoading) {
+    const elements = getSimilarityElements();
+    if (elements.loading) {
+        elements.loading.classList.toggle('d-none', !isLoading);
+    }
+    if (elements.statusBadge) {
+        elements.statusBadge.classList.toggle('d-none', !isLoading);
+    }
+}
+
+function showSimilarityError(message) {
+    const elements = getSimilarityElements();
+    if (elements.error) {
+        if (message) {
+            elements.error.innerText = message;
+        }
+        elements.error.classList.remove('d-none');
+    }
+}
+
+function normalizeSimilarityItems(data) {
+    if (!data) return [];
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data.results)) return data.results;
+    if (Array.isArray(data.matches)) return data.matches;
+    return [];
+}
+
+function renderSimilarityResults(result) {
+    const elements = getSimilarityElements();
+    if (!elements.list) return;
+
+    const items = (result && result.items) ? result.items : normalizeSimilarityItems(result);
+    const normalized = items.map((item, index) => ({
+        title: item.title || item.stem || item.question || `相似題 ${index + 1}`,
+        detail: item.detail || item.summary || item.excerpt || '',
+        score: Number(item.score ?? item.similarity ?? 0),
+        id: item.id
+    }));
+    const maxScore = normalized.reduce((max, item) => Math.max(max, item.score || 0), 0);
+
+    elements.list.innerHTML = '';
+    if (elements.empty) {
+        elements.empty.classList.toggle('d-none', normalized.length > 0);
+    }
+    if (elements.warning) {
+        elements.warning.classList.toggle('d-none', maxScore < similarityThreshold);
+        if (maxScore >= similarityThreshold) {
+            elements.warning.innerHTML = `偵測到相似度 <strong>${Math.round(maxScore * 100)}%</strong> 的題目，請確認是否重複。`;
+        }
+    }
+
+    normalized.forEach(item => {
+        const li = document.createElement('li');
+        li.className = 'list-group-item d-flex justify-content-between align-items-start gap-3';
+        const detailHtml = item.detail ? `<div class="small text-muted mt-1">${item.detail}</div>` : '';
+        const scorePercent = Number.isFinite(item.score) ? Math.round(item.score * 100) : 0;
+        li.innerHTML = `
+            <div class="flex-grow-1">
+                <div class="fw-semibold">${item.title}</div>
+                ${detailHtml}
+            </div>
+            <span class="badge ${scorePercent >= similarityThreshold * 100 ? 'bg-danger' : 'bg-secondary'} similarity-score">
+                ${scorePercent}%
+            </span>
+        `;
+        elements.list.appendChild(li);
+    });
+
+    return { items: normalized, maxScore };
+}
+
+function buildQuestionPayload(row) {
+    if (!row) return null;
+    const rawJson = row.getAttribute('data-json');
+    let payload = null;
+    if (rawJson) {
+        try {
+            payload = JSON.parse(rawJson);
+        } catch (error) {
+            console.warn('data-json 解析失敗', error);
+        }
+    }
+
+    if (!payload) {
+        payload = {};
+    }
+
+    payload.type = payload.type || row.getAttribute('data-type') || '';
+    payload.grade = payload.grade || row.getAttribute('data-level') || '';
+
+    return payload;
+}
+
+function fetchSimilarity(questionPayload) {
+    const elements = getSimilarityElements();
+    if (!questionPayload) {
+        showSimilarityError('缺少比對資料，請確認題目內容。');
+        return Promise.resolve(null);
+    }
+
+    if (elements.warning) elements.warning.classList.add('d-none');
+    if (elements.error) elements.error.classList.add('d-none');
+    if (elements.list) elements.list.innerHTML = '';
+    if (elements.empty) elements.empty.classList.add('d-none');
+
+    setSimilarityLoading(true);
+
+    const requestBody = {
+        stem: questionPayload.stem || '',
+        options: questionPayload.options || [],
+        analysis: questionPayload.analysis || '',
+        type: questionPayload.type || '',
+        grade: questionPayload.grade || ''
+    };
+
+    return fetch('/api/similarity', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody)
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`比對失敗 (${response.status})`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            const result = renderSimilarityResults({ items: normalizeSimilarityItems(data) });
+            setSimilarityLoading(false);
+            return result;
+        })
+        .catch(error => {
+            console.error('相似度比對失敗', error);
+            setSimilarityLoading(false);
+            showSimilarityError('比對服務暫時無法使用，請稍後再試或先完成審題。');
+            if (elements.empty) elements.empty.classList.remove('d-none');
+            return null;
+        });
+}
+
 /**
  * 開啟審題 Modal
  * @param {HTMLElement} btn - 觸發按鈕
@@ -395,6 +559,25 @@ function openReviewModal(btn, stage) {
     // 清空輸入框
     clearOpinionTextareas();
 
+    // 試題比對
+    resetSimilarityPanel();
+    const row = btn ? btn.closest('tr') : null;
+    const questionPayload = buildQuestionPayload(row);
+    if (row && row.dataset.similarityCache) {
+        try {
+            const cached = JSON.parse(row.dataset.similarityCache);
+            renderSimilarityResults(cached);
+        } catch (error) {
+            console.warn('相似題快取解析失敗', error);
+        }
+    } else {
+        fetchSimilarity(questionPayload).then(result => {
+            if (row && result) {
+                row.dataset.similarityCache = JSON.stringify(result);
+            }
+        });
+    }
+    
     // 開啟 Modal
     if (reviewModal) reviewModal.show();
 }
