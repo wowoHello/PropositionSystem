@@ -736,6 +736,7 @@
 
         .history-stage {
             flex-shrink: 0;
+            align-self: flex-start;
             padding: 0.25rem 0.75rem;
             border-radius: 20px;
             font-size: 0.8rem;
@@ -762,10 +763,36 @@
         }
 
         .history-reviewer {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
             font-weight: 600;
             color: #374151;
             margin-bottom: 0.25rem;
             font-size: 0.9rem;
+        }
+
+        .history-decision {
+            display: inline-block;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .history-decision.decision-adopt {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .history-decision.decision-adopt-modify {
+            background: #ffedd5;
+            color: #9a3412;
+        }
+
+        .history-decision.decision-reject {
+            background: #fee2e2;
+            color: #991b1b;
         }
 
         .history-text {

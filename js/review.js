@@ -419,12 +419,23 @@ function renderDecisionHistory(history) {
         const commentText = item.comment || '未提供審題意見摘要。';
         const timeText = item.time || '';
 
+        // 決策 badge class 對應
+        const decisionClassMap = {
+            '採用': 'decision-adopt',
+            '改後採用': 'decision-adopt-modify',
+            '不採用': 'decision-reject'
+        };
+        const decisionClass = decisionClassMap[decisionText] || '';
+
         const wrapper = document.createElement('div');
         wrapper.className = 'history-item';
         wrapper.innerHTML = `
             <div class="history-stage ${stageClass}">${stageLabel}</div>
             <div class="history-content">
-                <div class="history-reviewer">${reviewerText} · ${decisionText}</div>
+                <div class="history-reviewer">
+                    <span class="reviewer-name">${reviewerText}</span>
+                    <span class="history-decision ${decisionClass}">${decisionText}</span>
+                </div>
                 <div class="history-text">${commentText}</div>
                 <div class="history-time">${timeText}</div>
             </div>
@@ -758,62 +769,41 @@ function configureSectionVisibility(stage) {
     const expertSection = document.getElementById('expertOpinionSection');
     const finalSection = document.getElementById('finalOpinionSection');
 
-    const mutualEdit = document.getElementById('mutualOpinionEdit');
-    const mutualReadonly = document.getElementById('mutualOpinionReadonly');
-    const mutualBadge = document.getElementById('mutualOpinionBadge');
-
-    const expertEdit = document.getElementById('expertOpinionEdit');
-    const expertReadonly = document.getElementById('expertOpinionReadonly');
-    const expertBadge = document.getElementById('expertOpinionBadge');
-
-    // 重置所有區塊
-    if (mutualSection) mutualSection.classList.remove('d-none');
+    // 重置：全部隱藏
+    if (mutualSection) mutualSection.classList.add('d-none');
     if (expertSection) expertSection.classList.add('d-none');
     if (finalSection) finalSection.classList.add('d-none');
 
     if (stage === 'mutual') {
         // 互審：只顯示互審意見（可編輯）
+        if (mutualSection) mutualSection.classList.remove('d-none');
+        const mutualEdit = document.getElementById('mutualOpinionEdit');
+        const mutualReadonly = document.getElementById('mutualOpinionReadonly');
         if (mutualEdit) mutualEdit.classList.remove('d-none');
         if (mutualReadonly) mutualReadonly.classList.add('d-none');
+        const mutualBadge = document.getElementById('mutualOpinionBadge');
         if (mutualBadge) {
             mutualBadge.innerHTML = '<i class="bi bi-pen-fill me-1"></i>必填';
             mutualBadge.className = 'badge bg-purple text-white ms-2';
         }
 
     } else if (stage === 'expert') {
-        // 專審：互審意見唯讀 + 專審意見可編輯
-        if (mutualEdit) mutualEdit.classList.add('d-none');
-        if (mutualReadonly) mutualReadonly.classList.remove('d-none');
-        if (mutualBadge) {
-            mutualBadge.innerHTML = '<i class="bi bi-lock-fill me-1"></i>唯讀';
-            mutualBadge.className = 'badge bg-primary text-white ms-2';
-        }
-
+        // 專審：隱藏互審 section，只顯示專審意見（可編輯）
+        // 前階段記錄由「審題決策紀錄」區塊呈現
         if (expertSection) expertSection.classList.remove('d-none');
+        const expertEdit = document.getElementById('expertOpinionEdit');
+        const expertReadonly = document.getElementById('expertOpinionReadonly');
         if (expertEdit) expertEdit.classList.remove('d-none');
         if (expertReadonly) expertReadonly.classList.add('d-none');
+        const expertBadge = document.getElementById('expertOpinionBadge');
         if (expertBadge) {
             expertBadge.innerHTML = '<i class="bi bi-pen-fill me-1"></i>必填';
             expertBadge.className = 'badge bg-warning text-white ms-2';
         }
 
     } else if (stage === 'final') {
-        // 總審：互審/專審意見唯讀 + 總審意見可編輯
-        if (mutualEdit) mutualEdit.classList.add('d-none');
-        if (mutualReadonly) mutualReadonly.classList.remove('d-none');
-        if (mutualBadge) {
-            mutualBadge.innerHTML = '<i class="bi bi-lock-fill me-1"></i>唯讀';
-            mutualBadge.className = 'badge bg-primary text-white ms-2';
-        }
-
-        if (expertSection) expertSection.classList.remove('d-none');
-        if (expertEdit) expertEdit.classList.add('d-none');
-        if (expertReadonly) expertReadonly.classList.remove('d-none');
-        if (expertBadge) {
-            expertBadge.innerHTML = '<i class="bi bi-lock-fill me-1"></i>唯讀';
-            expertBadge.className = 'badge bg-primary text-white ms-2';
-        }
-
+        // 總審：隱藏互審+專審 section，只顯示總審意見（可編輯）
+        // 前階段記錄由「審題決策紀錄」區塊呈現
         if (finalSection) finalSection.classList.remove('d-none');
     }
 }
