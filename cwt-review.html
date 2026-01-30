@@ -411,6 +411,35 @@
             background: linear-gradient(180deg, #94a3b8 0%, #cbd5e1 100%);
         }
 
+        /* 試題比對區塊 */
+        #reviewModal .section-card.similarity-section::before {
+            background: linear-gradient(180deg, #38bdf8 0%, #22d3ee 100%);
+        }
+
+        #similarityPanel .similarity-loading {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #475569;
+            font-size: 0.95rem;
+        }
+
+        #similarityPanel .similarity-loading .spinner-border {
+            width: 1.1rem;
+            height: 1.1rem;
+        }
+
+        #similarityWarning {
+            background-color: #fff7ed;
+            border: 1px solid #fdba74;
+            color: #9a3412;
+        }
+
+        #similarityList .similarity-score {
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
         /* 互審意見區塊 */
         #reviewModal .section-card.mutual-section::before {
             background: linear-gradient(180deg, #8b5cf6 0%, #a78bfa 100%);
@@ -1199,7 +1228,8 @@
                         </thead>
                         <tbody id="reviewTableBody">
                             <!-- 互審中 - 範例1 -->
-                            <tr class="data-row" data-status="互審中" data-type="一般題目" data-level="初級">
+                            <tr class="data-row" data-status="互審中" data-type="一般題目" data-level="初級"
+                                data-json="{&quot;stem&quot;:&quot;下列「」中的注音，何者正確？&quot;,&quot;options&quot;:[&quot;「踽」踽獨行：ㄐㄩˇ&quot;,&quot;「躊」躇滿志：ㄔㄡˊ&quot;,&quot;「躑」躅不前：ㄓˊ&quot;,&quot;「蹣」跚學步：ㄇㄢˊ&quot;],&quot;analysis&quot;:&quot;正確答案：B。辨識正確注音。&quot;,&quot;type&quot;:&quot;一般題目&quot;,&quot;grade&quot;:&quot;初級&quot;}">
                                 <td class="text-dark fw-medium">
                                     下列「」中的注音，何者正確？<br>
                                     <small class="text-muted">題幹：(A)「踽」踽獨行 (B)「躊」躇滿志...</small>
@@ -1218,7 +1248,8 @@
                             </tr>
 
                             <!-- 互審中 - 範例2 -->
-                            <tr class="data-row" data-status="互審中" data-type="精選題目" data-level="中級">
+                            <tr class="data-row" data-status="互審中" data-type="精選題目" data-level="中級"
+                                data-json="{&quot;stem&quot;:&quot;「醉翁之意不在酒」使用了哪種修辭技巧？&quot;,&quot;options&quot;:[&quot;誇飾&quot;,&quot;轉化&quot;,&quot;借代&quot;,&quot;映襯&quot;],&quot;analysis&quot;:&quot;關鍵在於語意轉指與借代差異。&quot;,&quot;type&quot;:&quot;精選題目&quot;,&quot;grade&quot;:&quot;中級&quot;}">
                                 <td class="text-dark fw-medium">
                                     「醉翁之意不在酒」使用了哪種修辭技巧？<br>
                                     <small class="text-muted">題幹：(A)誇飾 (B)轉化 (C)借代 (D)映襯</small>
@@ -1237,7 +1268,8 @@
                             </tr>
 
                             <!-- 互審中 - 範例3 -->
-                            <tr class="data-row" data-status="互審中" data-type="閱讀題組" data-level="中高級">
+                            <tr class="data-row" data-status="互審中" data-type="閱讀題組" data-level="中高級"
+                                data-json="{&quot;stem&quot;:&quot;閱讀下列短文，回答問題。&quot;,&quot;options&quot;:[&quot;子題1：指出作者立場&quot;,&quot;子題2：摘錄文中關鍵句&quot;,&quot;子題3：推論語意&quot;],&quot;analysis&quot;:&quot;閱讀題組依據短文內容作答。&quot;,&quot;type&quot;:&quot;閱讀題組&quot;,&quot;grade&quot;:&quot;中高級&quot;}">
                                 <td class="text-dark fw-medium">
                                     [閱讀題組] 閱讀下列短文，回答問題...<br>
                                     <small class="text-muted">包含 3 個子題</small>
@@ -1256,7 +1288,8 @@
                             </tr>
 
                             <!-- 專審中 - 範例1 -->
-                            <tr class="data-row" data-status="專審中" data-type="一般題目" data-level="高級">
+                            <tr class="data-row" data-status="專審中" data-type="一般題目" data-level="高級"
+                                data-json="{&quot;stem&quot;:&quot;下列文句的語氣，何者與其他三者不同？&quot;,&quot;options&quot;:[&quot;多麼美好的一天啊&quot;,&quot;這是誰的傑作&quot;,&quot;你真是太厲害了&quot;,&quot;請把窗戶關上&quot;],&quot;analysis&quot;:&quot;比對感嘆句與祈使句差異。&quot;,&quot;type&quot;:&quot;一般題目&quot;,&quot;grade&quot;:&quot;高級&quot;}">
                                 <td class="text-dark fw-medium">
                                     下列文句的語氣，何者與其他三者不同？<br>
                                     <small class="text-muted">題幹：(A)多麼美好的一天啊 (B)這是誰的傑作...</small>
@@ -1275,7 +1308,8 @@
                             </tr>
 
                             <!-- 專審中 - 範例2 -->
-                            <tr class="data-row" data-status="專審中" data-type="聽力題目" data-level="中級">
+                            <tr class="data-row" data-status="專審中" data-type="聽力題目" data-level="中級"
+                                data-json="{&quot;stem&quot;:&quot;請聽完錄音後，選出最適當的回應。&quot;,&quot;options&quot;:[&quot;好的，我馬上處理。&quot;,&quot;我不太確定。&quot;,&quot;謝謝你的提醒。&quot;,&quot;抱歉，請再說一次。&quot;],&quot;analysis&quot;:&quot;依聽力內容選擇最恰當回應。&quot;,&quot;type&quot;:&quot;聽力題目&quot;,&quot;grade&quot;:&quot;中級&quot;}">
                                 <td class="text-dark fw-medium">
                                     [聽力] 請聽完錄音後，選出最適當的回應...<br>
                                     <small class="text-muted">語音類型：對話 | 素材：生活</small>
@@ -1294,7 +1328,8 @@
                             </tr>
 
                             <!-- 專審中 - 範例3 -->
-                            <tr class="data-row" data-status="專審中" data-type="短文題組" data-level="中高級">
+                            <tr class="data-row" data-status="專審中" data-type="短文題組" data-level="中高級"
+                                data-json="{&quot;stem&quot;:&quot;根據以下圖表資料，回答問題。&quot;,&quot;options&quot;:[&quot;子題1：比較成長率&quot;,&quot;子題2：推估趨勢&quot;,&quot;子題3：分析原因&quot;],&quot;analysis&quot;:&quot;需依圖表資料判讀。&quot;,&quot;type&quot;:&quot;短文題組&quot;,&quot;grade&quot;:&quot;中高級&quot;}">
                                 <td class="text-dark fw-medium">
                                     [短文題組] 根據以下圖表資料，回答問題...<br>
                                     <small class="text-muted">包含 3 個子題</small>
@@ -1313,7 +1348,8 @@
                             </tr>
 
                             <!-- 總審中 - 範例1 -->
-                            <tr class="data-row" data-status="總審中" data-type="精選題目" data-level="優級">
+                            <tr class="data-row" data-status="總審中" data-type="精選題目" data-level="優級"
+                                data-json="{&quot;stem&quot;:&quot;下列對於「賦」這種文體的敘述，何者錯誤？&quot;,&quot;options&quot;:[&quot;源於詩經&quot;,&quot;講究聲韻對仗&quot;,&quot;內容多為敘事&quot;,&quot;常用鋪陳描寫&quot;],&quot;analysis&quot;:&quot;辨別文體特徵。&quot;,&quot;type&quot;:&quot;精選題目&quot;,&quot;grade&quot;:&quot;優級&quot;}">
                                 <td class="text-dark fw-medium">
                                     下列對於「賦」這種文體的敘述，何者錯誤？<br>
                                     <small class="text-muted">題幹：(A)源於詩經 (B)講究聲韻對仗...</small>
@@ -1332,7 +1368,8 @@
                             </tr>
 
                             <!-- 總審中 - 範例2 -->
-                            <tr class="data-row" data-status="總審中" data-type="長文題目" data-level="高級">
+                            <tr class="data-row" data-status="總審中" data-type="長文題目" data-level="高級"
+                                data-json="{&quot;stem&quot;:&quot;請以「科技與人文的平衡」為題，撰寫一篇論說文。&quot;,&quot;options&quot;:[],&quot;analysis&quot;:&quot;需完整論述立場並提出論據。&quot;,&quot;type&quot;:&quot;長文題目&quot;,&quot;grade&quot;:&quot;高級&quot;}">
                                 <td class="text-dark fw-medium">
                                     [長文] 請以「科技與人文的平衡」為題，撰寫一篇論說文...<br>
                                     <small class="text-muted">字數要求：800-1000字</small>
@@ -1461,6 +1498,34 @@
                                 </ul>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- 試題比對 -->
+                    <div class="section-card similarity-section" id="similarityPanel">
+                        <h6 class="section-title">
+                            <i class="bi bi-diagram-3"></i>
+                            試題比對
+                            <span class="badge bg-info text-white ms-2 d-none" id="similarityStatusBadge">
+                                <i class="bi bi-hourglass-split me-1"></i>比對中
+                            </span>
+                        </h6>
+
+                        <div class="alert alert-warning d-none mb-3" id="similarityWarning"></div>
+                        <div class="alert alert-danger d-none mb-3" id="similarityError">
+                            比對服務暫時無法使用，請稍後再試或先完成審題。
+                        </div>
+
+                        <div class="similarity-loading d-none mb-3" id="similarityLoading">
+                            <span class="spinner-border spinner-border-sm text-info" role="status"
+                                aria-hidden="true"></span>
+                            <span>比對中，請稍候…</span>
+                        </div>
+
+                        <div class="text-muted small mb-2" id="similarityEmpty">
+                            尚未取得相似題目，會在開啟審題時自動比對。
+                        </div>
+
+                        <ul class="list-group" id="similarityList"></ul>
                     </div>
 
                     <!-- 二、互審意見 -->
