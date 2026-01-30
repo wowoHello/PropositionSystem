@@ -1,0 +1,500 @@
+/**
+ * js/review.js
+ * 審題清單頁面專屬邏輯 (重構版)
+ * 
+ * 此檔案負責管理 cwt-review.html 頁面的審題專屬 JavaScript 邏輯，
+ * 包含篩選、統計、Modal 開啟與審題提交等功能。
+ * 
+ * 注意：專案切換、字體縮放等共用功能由 app.js 處理
+ */
+
+// ==========================================
+//  全域變數 (使用 var 避免與 app.js 衝突)
+// ==========================================
+var reviewModal = null;
+var reviewToastInstance = null;  // 改名避免與 app.js 衝突
+var currentReviewStage = 'mutual'; // mutual, expert, final
+
+// ==========================================
+//  初始化入口
+// ==========================================
+document.addEventListener("DOMContentLoaded", function () {
+    initReviewBootstrapComponents();
+    initReviewFilter();
+    updateReviewStats();
+    initReviewProjectHeader();
+});
+
+/**
+ * 初始化 Bootstrap 元件 (Modal, Toast)
+ */
+function initReviewBootstrapComponents() {
+    const modalEl = document.getElementById('reviewModal');
+    if (modalEl) {
+        reviewModal = new bootstrap.Modal(modalEl);
+    }
+
+    const toastEl = document.getElementById('liveToast');
+    if (toastEl) {
+        reviewToastInstance = new bootstrap.Toast(toastEl);
+    }
+}
+
+/**
+ * 初始化專案切換 Header (審題頁面版本)
+ */
+function initReviewProjectHeader() {
+    const projectToggle = document.getElementById("projectToggle");
+    const projectDropdown = document.getElementById("projectDropdown");
+    const closeDropdown = document.getElementById("closeDropdown");
+    const projectSearchInput = document.getElementById("projectSearchInput");
+    const projectItems = document.querySelectorAll(".project-item");
+
+    if (!projectToggle || !projectDropdown) return;
+
+    // Toggle 下拉選單
+    projectToggle.addEventListener("click", function () {
+        projectDropdown.classList.toggle("show");
+        projectToggle.classList.toggle("active");
+    });
+
+    if (closeDropdown) {
+        closeDropdown.addEventListener("click", function (e) {
+            e.stopPropagation();
+            projectDropdown.classList.remove("show");
+            projectToggle.classList.remove("active");
+        });
+    }
+
+    // 點擊外部關閉
+    document.addEventListener("click", function (e) {
+        if (!projectToggle.contains(e.target) && !projectDropdown.contains(e.target)) {
+            projectDropdown.classList.remove("show");
+            projectToggle.classList.remove("active");
+        }
+    });
+
+    // 搜尋功能
+    if (projectSearchInput) {
+        projectSearchInput.addEventListener("input", function () {
+            const keyword = this.value.toLowerCase();
+            projectItems.forEach((item) => {
+                const name = item.getAttribute("data-name")?.toLowerCase() || '';
+                item.style.display = name.includes(keyword) ? "flex" : "none";
+            });
+        });
+    }
+
+    // 選擇專案
+    projectItems.forEach((item) => {
+        item.addEventListener("click", function () {
+            projectItems.forEach((i) => i.classList.remove("active"));
+            this.classList.add("active");
+
+            const year = this.getAttribute("data-year");
+            const name = this.getAttribute("data-name");
+            const role = this.getAttribute("data-role");
+
+            const yearEl = document.getElementById("currentProjectYear");
+            const nameEl = document.getElementById("currentProjectName");
+            if (yearEl) yearEl.innerText = year + "年度";
+            if (nameEl) nameEl.innerText = name;
+
+            const roleMapping = { admin: "系統管理員", reviewer: "審題委員", teacher: "命題教師" };
+            const roleClassMapping = { admin: "role-admin", reviewer: "role-reviewer", teacher: "role-teacher" };
+
+            const roleEl = document.getElementById("currentUserRole");
+            if (roleEl) {
+                roleEl.innerText = roleMapping[role] || role;
+                roleEl.className = "role-badge " + (roleClassMapping[role] || "");
+            }
+
+            projectDropdown.classList.remove("show");
+            projectToggle.classList.remove("active");
+        });
+    });
+}
+
+// ==========================================
+//  篩選功能
+// ==========================================
+/**
+ * 初始化篩選功能
+ * 監聽篩選條件變更，並即時更新表格顯示
+ */
+function initReviewFilter() {
+    const filterStatus = document.getElementById('filterReviewStatus');
+    const filterType = document.getElementById('filterType');
+    const filterLevel = document.getElementById('filterLevel');
+    const searchInput = document.getElementById('searchInput');
+
+    const doFilter = () => {
+        const status = filterStatus?.value || 'all';
+        const type = filterType?.value || 'all';
+        const level = filterLevel?.value || 'all';
+        const keyword = searchInput?.value.toLowerCase() || '';
+
+        const rows = document.querySelectorAll('#reviewTableBody .data-row');
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const rowStatus = row.getAttribute('data-status');
+            const rowType = row.getAttribute('data-type');
+            const rowLevel = row.getAttribute('data-level');
+            const rowText = row.innerText.toLowerCase();
+
+            const matchStatus = status === 'all' || rowStatus === status;
+            const matchType = type === 'all' || rowType === type;
+            const matchLevel = level === 'all' || rowLevel === level;
+            const matchKeyword = keyword === '' || rowText.includes(keyword);
+
+            if (matchStatus && matchType && matchLevel && matchKeyword) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        // 顯示/隱藏無資料列
+        const noDataRow = document.getElementById('noDataRow');
+        if (noDataRow) {
+            noDataRow.style.display = visibleCount === 0 ? '' : 'none';
+        }
+
+        // 更新可見數量
+        const countEl = document.getElementById('visibleCount');
+        if (countEl) countEl.innerText = visibleCount;
+    };
+
+    // 綁定事件監聽 (安全檢查)
+    if (filterStatus) filterStatus.addEventListener('change', doFilter);
+    if (filterType) filterType.addEventListener('change', doFilter);
+    if (filterLevel) filterLevel.addEventListener('change', doFilter);
+    if (searchInput) searchInput.addEventListener('input', doFilter);
+}
+
+/**
+ * 透過統計卡片快速篩選
+ * @param {string} status - 審題狀態 (互審中 / 專審中 / 總審中)
+ */
+function filterByStatus(status) {
+    const filterSelect = document.getElementById('filterReviewStatus');
+    if (filterSelect) {
+        filterSelect.value = status;
+        filterSelect.dispatchEvent(new Event('change'));
+    }
+}
+
+// ==========================================
+//  統計數字更新
+// ==========================================
+/**
+ * 根據表格資料更新統計卡片數字
+ */
+function updateReviewStats() {
+    const rows = document.querySelectorAll('#reviewTableBody .data-row');
+    let total = 0, mutual = 0, expert = 0, final = 0;
+
+    rows.forEach(row => {
+        const status = row.getAttribute('data-status');
+        total++;
+        if (status === '互審中') mutual++;
+        if (status === '專審中') expert++;
+        if (status === '總審中') final++;
+    });
+
+    const elTotal = document.getElementById('stat-total');
+    const elMutual = document.getElementById('stat-mutual');
+    const elExpert = document.getElementById('stat-expert');
+    const elFinal = document.getElementById('stat-final');
+
+    if (elTotal) elTotal.innerText = total;
+    if (elMutual) elMutual.innerText = mutual;
+    if (elExpert) elExpert.innerText = expert;
+    if (elFinal) elFinal.innerText = final;
+}
+
+// 別名，保持 HTML 呼叫相容
+function updateStats() {
+    updateReviewStats();
+}
+
+// ==========================================
+//  審題 Modal 開啟
+// ==========================================
+/**
+ * 開啟審題 Modal
+ * @param {HTMLElement} btn - 觸發按鈕
+ * @param {string} stage - 審題階段 (mutual / expert / final)
+ */
+function openReviewModal(btn, stage) {
+    currentReviewStage = stage;
+
+    // 更新 Header 樣式和標題
+    const header = document.getElementById('reviewModalHeader');
+    const title = document.getElementById('reviewModalTitle');
+
+    if (!header || !title) return;
+
+    header.className = 'modal-header';
+
+    const stageConfig = {
+        mutual: {
+            headerClass: 'review-mutual',
+            titleHtml: '<i class="bi bi-people"></i> 審題 - 互審階段'
+        },
+        expert: {
+            headerClass: 'review-expert',
+            titleHtml: '<i class="bi bi-person-badge"></i> 審題 - 專審階段'
+        },
+        final: {
+            headerClass: 'review-final',
+            titleHtml: '<i class="bi bi-shield-check"></i> 審題 - 總審階段'
+        }
+    };
+
+    const config = stageConfig[stage];
+    if (config) {
+        header.classList.add(config.headerClass);
+        title.innerHTML = config.titleHtml;
+    }
+
+    // 控制各區塊顯示
+    configureSectionVisibility(stage);
+
+    // 清空輸入框
+    clearOpinionTextareas();
+
+    // 開啟 Modal
+    if (reviewModal) reviewModal.show();
+}
+
+/**
+ * 根據審題階段配置區塊可見性
+ * @param {string} stage - 審題階段
+ */
+function configureSectionVisibility(stage) {
+    const mutualSection = document.getElementById('mutualOpinionSection');
+    const expertSection = document.getElementById('expertOpinionSection');
+    const finalSection = document.getElementById('finalOpinionSection');
+
+    const mutualEdit = document.getElementById('mutualOpinionEdit');
+    const mutualReadonly = document.getElementById('mutualOpinionReadonly');
+    const mutualBadge = document.getElementById('mutualOpinionBadge');
+
+    const expertEdit = document.getElementById('expertOpinionEdit');
+    const expertReadonly = document.getElementById('expertOpinionReadonly');
+    const expertBadge = document.getElementById('expertOpinionBadge');
+
+    // 重置所有區塊
+    if (mutualSection) mutualSection.classList.remove('d-none');
+    if (expertSection) expertSection.classList.add('d-none');
+    if (finalSection) finalSection.classList.add('d-none');
+
+    if (stage === 'mutual') {
+        // 互審：只顯示互審意見（可編輯）
+        if (mutualEdit) mutualEdit.classList.remove('d-none');
+        if (mutualReadonly) mutualReadonly.classList.add('d-none');
+        if (mutualBadge) {
+            mutualBadge.innerText = '必填';
+            mutualBadge.className = 'badge bg-purple text-white ms-2';
+        }
+
+    } else if (stage === 'expert') {
+        // 專審：互審意見唯讀 + 專審意見可編輯
+        if (mutualEdit) mutualEdit.classList.add('d-none');
+        if (mutualReadonly) mutualReadonly.classList.remove('d-none');
+        if (mutualBadge) {
+            mutualBadge.innerText = '唯讀';
+            mutualBadge.className = 'badge bg-secondary ms-2';
+        }
+
+        if (expertSection) expertSection.classList.remove('d-none');
+        if (expertEdit) expertEdit.classList.remove('d-none');
+        if (expertReadonly) expertReadonly.classList.add('d-none');
+        if (expertBadge) {
+            expertBadge.innerText = '必填';
+            expertBadge.className = 'badge bg-warning text-dark ms-2';
+        }
+
+    } else if (stage === 'final') {
+        // 總審：互審/專審意見唯讀 + 總審意見可編輯
+        if (mutualEdit) mutualEdit.classList.add('d-none');
+        if (mutualReadonly) mutualReadonly.classList.remove('d-none');
+        if (mutualBadge) {
+            mutualBadge.innerText = '唯讀';
+            mutualBadge.className = 'badge bg-secondary ms-2';
+        }
+
+        if (expertSection) expertSection.classList.remove('d-none');
+        if (expertEdit) expertEdit.classList.add('d-none');
+        if (expertReadonly) expertReadonly.classList.remove('d-none');
+        if (expertBadge) {
+            expertBadge.innerText = '唯讀';
+            expertBadge.className = 'badge bg-secondary ms-2';
+        }
+
+        if (finalSection) finalSection.classList.remove('d-none');
+    }
+}
+
+/**
+ * 清空所有意見輸入框
+ */
+function clearOpinionTextareas() {
+    const fields = ['mutualOpinionText', 'expertOpinionText', 'finalOpinionText'];
+    fields.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+}
+
+// ==========================================
+//  提交審題決策
+// ==========================================
+/**
+ * 提交審題決策
+ * @param {string} decision - 決策類型 (adopt / adopt-modify / reject)
+ */
+function submitReview(decision) {
+    // 取得當前階段的意見文字
+    const stageFieldMap = {
+        mutual: { id: 'mutualOpinionText', label: '互審意見' },
+        expert: { id: 'expertOpinionText', label: '專審意見' },
+        final: { id: 'finalOpinionText', label: '總審意見' }
+    };
+
+    const fieldConfig = stageFieldMap[currentReviewStage];
+    const opinionText = document.getElementById(fieldConfig.id)?.value.trim() || '';
+
+    // 驗證必填
+    if (!opinionText) {
+        Swal.fire({
+            icon: 'warning',
+            title: '請填寫審題意見',
+            text: `${fieldConfig.label}為必填欄位`,
+            confirmButtonColor: '#2563eb'
+        });
+        return;
+    }
+
+    // 決策設定
+    const decisionConfig = {
+        adopt: {
+            text: '採用',
+            icon: 'success',
+            color: '#10b981',
+            desc: '題目將進入下一審題階段或定稿流程'
+        },
+        'adopt-modify': {
+            text: '改後採用',
+            icon: 'warning',
+            color: '#f59e0b',
+            desc: '題目將退回命題者進行修改'
+        },
+        reject: {
+            text: '不採用',
+            icon: 'error',
+            color: '#ef4444',
+            desc: '題目將退回命題者'
+        }
+    };
+
+    const config = decisionConfig[decision];
+
+    // 確認對話框
+    Swal.fire({
+        icon: 'question',
+        title: `確定要「${config.text}」此題目？`,
+        text: config.desc,
+        showCancelButton: true,
+        confirmButtonColor: config.color,
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: `確定${config.text}`,
+        cancelButtonText: '取消'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // 模擬提交成功
+            if (reviewModal) reviewModal.hide();
+            showReviewToast(`審題決策已送出：${config.text}`, 'success');
+
+            // TODO: 實際開發時會呼叫 API
+            // updateRowStatus(currentRowId, decision);
+        }
+    });
+}
+
+// ==========================================
+//  Toast 通知
+// ==========================================
+/**
+ * 顯示 Toast 通知
+ * @param {string} msg - 訊息內容
+ * @param {string} type - 類型 (success / error / primary)
+ */
+function showReviewToast(msg, type = 'success') {
+    const toastEl = document.getElementById('liveToast');
+    if (!toastEl || !reviewToastInstance) return;
+
+    const body = toastEl.querySelector('.toast-body');
+    toastEl.classList.remove('bg-success', 'bg-danger', 'bg-primary', 'bg-secondary');
+
+    const typeClass = {
+        success: 'bg-success',
+        error: 'bg-danger',
+        primary: 'bg-primary'
+    };
+
+    toastEl.classList.add(typeClass[type] || 'bg-primary');
+    body.textContent = msg;
+    reviewToastInstance.show();
+}
+
+// 別名，保持 HTML 呼叫相容
+function showToast(msg, type) {
+    showReviewToast(msg, type);
+}
+
+// ==========================================
+//  字體大小調整
+// ==========================================
+var currentZoom = 100;
+
+/**
+ * 調整字體大小
+ * @param {number} delta - 調整幅度 (正數放大，負數縮小)
+ */
+function changeFontSize(delta) {
+    currentZoom += delta * 10;
+    if (currentZoom < 80) currentZoom = 80;
+    if (currentZoom > 150) currentZoom = 150;
+    applyZoom();
+}
+
+/**
+ * 重置字體大小為預設值
+ */
+function resetFontSize() {
+    currentZoom = 100;
+    applyZoom();
+}
+
+/**
+ * 套用縮放設定
+ */
+function applyZoom() {
+    document.body.style.zoom = currentZoom + '%';
+
+    const display = document.getElementById('fontSizeDisplay');
+    if (display) {
+        display.innerText = `${currentZoom}%`;
+        if (currentZoom === 100) {
+            display.classList.remove('text-primary');
+            display.classList.add('text-secondary');
+        } else {
+            display.classList.remove('text-secondary');
+            display.classList.add('text-primary');
+        }
+    }
+}
