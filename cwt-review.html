@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="css/style.css" />
     <link rel="stylesheet" href="css/modal-enhanced.css">
+    <link rel="stylesheet" href="css/review-fix.css">
     <link rel="stylesheet" href="css/quill.snow.css">
     <link rel="stylesheet" href="css/sweetalert2.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
@@ -27,6 +28,11 @@
             /* 專審 - 橙色 */
             --review-final: #ef4444;
             /* 總審 - 紅色 */
+        }
+
+        /* 自訂紫色背景 (Bootstrap 沒有內建) */
+        .bg-purple {
+            background-color: #8b5cf6 !important;
         }
 
         body {
@@ -95,6 +101,17 @@
             align-items: center;
             height: 100%;
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease;
+        }
+
+        .stat-card.clickable:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-color: #2563eb;
+        }
+
+        .stat-card.clickable:active {
+            transform: translateY(0);
         }
 
         .stat-icon {
@@ -424,7 +441,8 @@
             gap: 0.5rem;
         }
 
-        #reviewModal .section-title i {
+        /* 只針對 section 標題前面的圖示，不影響 badge 內的圖示 */
+        #reviewModal .section-title>i {
             color: #3b82f6;
             font-size: 1.1rem;
         }
@@ -546,6 +564,26 @@
             transform: translateY(-1px);
             box-shadow: 0 6px 20px rgba(239, 68, 68, 0.45);
             color: white;
+        }
+
+        /* 快速插入按鈕 */
+        .quick-insert-btns {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .quick-insert-btns .btn {
+            font-size: 0.8rem;
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            transition: all 0.2s;
+        }
+
+        .quick-insert-btns .btn:hover {
+            background: #6b7280;
+            color: white;
+            border-color: #6b7280;
         }
 
         /* 題目資訊區 */
@@ -1072,11 +1110,13 @@
                         d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z" />
                 </svg>
                 <div>
-                    <strong>審題說明：</strong>
-                    點擊「審題」按鈕可查看題目詳情並填寫審題意見。審題決策包含：
-                    <span class="badge bg-success ms-1">採用</span>
-                    <span class="badge bg-warning text-dark ms-1">改後採用</span>
-                    <span class="badge bg-danger ms-1">不採用</span>
+                    <strong>操作提示：</strong>
+                    點擊下方統計卡片可快速篩選對應審題狀態。
+                    <span class="badge bg-secondary ms-1">待審總計</span> 顯示全部題目、
+                    <span class="badge" style="background: #8b5cf6;">互審中</span>
+                    <span class="badge" style="background: #f59e0b;">專審中</span>
+                    <span class="badge" style="background: #ef4444;">總審中</span>
+                    分別篩選各審題階段。
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
@@ -1084,7 +1124,8 @@
             <!-- 統計卡片 -->
             <div class="row g-4 mb-4">
                 <div class="col-md-3">
-                    <div class="stat-card">
+                    <div class="stat-card clickable" onclick="filterByStatus('all')" title="顯示全部待審題目"
+                        style="cursor: pointer;">
                         <div class="stat-icon icon-gray">
                             <i class="bi bi-clipboard-check fs-4"></i>
                         </div>
@@ -1095,8 +1136,9 @@
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="stat-card">
-                        <div class="stat-icon icon-purple interactive" onclick="filterByStatus('互審中')" title="點擊篩選互審中">
+                    <div class="stat-card clickable" onclick="filterByStatus('互審中')" title="篩選互審中題目"
+                        style="cursor: pointer;">
+                        <div class="stat-icon icon-purple">
                             <i class="bi bi-people fs-4"></i>
                         </div>
                         <div class="stat-info">
@@ -1106,8 +1148,9 @@
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="stat-card">
-                        <div class="stat-icon icon-orange interactive" onclick="filterByStatus('專審中')" title="點擊篩選專審中">
+                    <div class="stat-card clickable" onclick="filterByStatus('專審中')" title="篩選專審中題目"
+                        style="cursor: pointer;">
+                        <div class="stat-icon icon-orange">
                             <i class="bi bi-person-badge fs-4"></i>
                         </div>
                         <div class="stat-info">
@@ -1117,8 +1160,9 @@
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="stat-card">
-                        <div class="stat-icon icon-red interactive" onclick="filterByStatus('總審中')" title="點擊篩選總審中">
+                    <div class="stat-card clickable" onclick="filterByStatus('總審中')" title="篩選總審中題目"
+                        style="cursor: pointer;">
+                        <div class="stat-icon icon-red">
                             <i class="bi bi-shield-check fs-4"></i>
                         </div>
                         <div class="stat-info">
@@ -1371,7 +1415,7 @@
                         <h6 class="section-title">
                             <i class="bi bi-file-text"></i>
                             一、題目內容
-                            <span class="badge bg-secondary ms-2">唯讀</span>
+                            <span class="badge bg-primary text-white ms-2"><i class="bi bi-lock-fill me-1"></i>唯讀</span>
                         </h6>
 
                         <div class="mb-3">
@@ -1424,14 +1468,64 @@
                         <h6 class="section-title">
                             <i class="bi bi-people"></i>
                             二、互審意見
-                            <span class="badge bg-purple text-white ms-2" id="mutualOpinionBadge">必填</span>
+                            <span class="badge bg-purple text-white ms-2" id="mutualOpinionBadge"><i
+                                    class="bi bi-pen-fill me-1"></i>必填</span>
                         </h6>
 
                         <!-- 互審中：可編輯 -->
                         <div id="mutualOpinionEdit">
                             <label class="form-label fw-bold small text-secondary required-star">審題意見</label>
-                            <textarea class="form-control opinion-textarea" id="mutualOpinionText"
-                                placeholder="請填寫您的審題意見，說明題目的優點或需改進之處..."></textarea>
+                            <div class="quill-master-container border rounded">
+                                <!-- 標點符號工具列 -->
+                                <div
+                                    class="punctuation-toolbar d-flex flex-wrap gap-2 p-2 border-bottom bg-light rounded-top">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                                        data-char="，">，</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                                        data-char="。">。</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                                        data-char="、">、</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                                        data-char="？">？</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                                        data-char="！">！</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                                        data-char="：">：</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                                        data-char="；">；</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                                        data-char="「」" data-back="1">「」</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                                        data-char="『』" data-back="1">『』</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                                        data-char="（）" data-back="1">（）</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                                        data-char="【】" data-back="1">【】</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                                        data-char="……">……</button>
+                                </div>
+                                <!-- Quill 編輯器 -->
+                                <div id="mutualOpinionEditor" style="min-height: 120px;"></div>
+                                <!-- 字數統計 -->
+                                <div
+                                    class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom">
+                                    <span>字數：<span class="count-num" id="count-mutualOpinion">0</span></span>
+                                </div>
+                            </div>
+                            <div class="quick-insert-btns mt-2">
+                                <button type="button" class="btn btn-sm btn-outline-secondary"
+                                    onclick="insertQuickTextQuill('mutualOpinion', '題幹敘述需修正，請確認語句通順與邏輯正確性。')">
+                                    <i class="bi bi-chat-quote me-1"></i>題幹需修正
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary"
+                                    onclick="insertQuickTextQuill('mutualOpinion', '選項內容需調整，請檢視選項間的鑑別度及正確性。')">
+                                    <i class="bi bi-chat-quote me-1"></i>選項需修正
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary"
+                                    onclick="insertQuickTextQuill('mutualOpinion', '題目與指定題型不符，請重新確認題型設定。')">
+                                    <i class="bi bi-chat-quote me-1"></i>題型不符
+                                </button>
+                            </div>
                             <div class="form-text small mt-1">
                                 <i class="bi bi-info-circle me-1"></i>
                                 請具體說明審查意見，作為命題者修改參考
@@ -1453,14 +1547,64 @@
                         <h6 class="section-title">
                             <i class="bi bi-person-badge"></i>
                             三、專審意見
-                            <span class="badge bg-warning text-dark ms-2" id="expertOpinionBadge">必填</span>
+                            <span class="badge bg-warning text-white ms-2" id="expertOpinionBadge"><i
+                                    class="bi bi-pen-fill me-1"></i>必填</span>
                         </h6>
 
                         <!-- 專審中：可編輯 -->
                         <div id="expertOpinionEdit">
                             <label class="form-label fw-bold small text-secondary required-star">審題意見</label>
-                            <textarea class="form-control opinion-textarea" id="expertOpinionText"
-                                placeholder="請填寫專業審查意見，確認題目的學科正確性與適切性..."></textarea>
+                            <div class="quill-master-container border rounded">
+                                <!-- 標點符號工具列 -->
+                                <div
+                                    class="punctuation-toolbar d-flex flex-wrap gap-2 p-2 border-bottom bg-light rounded-top">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                                        data-char="，">，</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                                        data-char="。">。</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                                        data-char="、">、</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                                        data-char="？">？</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                                        data-char="！">！</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                                        data-char="：">：</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                                        data-char="；">；</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                                        data-char="「」" data-back="1">「」</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                                        data-char="『』" data-back="1">『』</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                                        data-char="（）" data-back="1">（）</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                                        data-char="【】" data-back="1">【】</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                                        data-char="……">……</button>
+                                </div>
+                                <!-- Quill 編輯器 -->
+                                <div id="expertOpinionEditor" style="min-height: 120px;"></div>
+                                <!-- 字數統計 -->
+                                <div
+                                    class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom">
+                                    <span>字數：<span class="count-num" id="count-expertOpinion">0</span></span>
+                                </div>
+                            </div>
+                            <div class="quick-insert-btns mt-2">
+                                <button type="button" class="btn btn-sm btn-outline-secondary"
+                                    onclick="insertQuickTextQuill('expertOpinion', '題幹敘述需修正，請確認語句通順與邏輯正確性。')">
+                                    <i class="bi bi-chat-quote me-1"></i>題幹需修正
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary"
+                                    onclick="insertQuickTextQuill('expertOpinion', '選項內容需調整，請檢視選項間的鑑別度及正確性。')">
+                                    <i class="bi bi-chat-quote me-1"></i>選項需修正
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary"
+                                    onclick="insertQuickTextQuill('expertOpinion', '題目與指定題型不符，請重新確認題型設定。')">
+                                    <i class="bi bi-chat-quote me-1"></i>題型不符
+                                </button>
+                            </div>
                             <div class="form-text small mt-1">
                                 <i class="bi bi-info-circle me-1"></i>
                                 請從專業角度審查題目內容的正確性
@@ -1482,13 +1626,63 @@
                         <h6 class="section-title">
                             <i class="bi bi-shield-check"></i>
                             四、總審意見
-                            <span class="badge bg-danger ms-2" id="finalOpinionBadge">必填</span>
+                            <span class="badge bg-danger text-white ms-2" id="finalOpinionBadge"><i
+                                    class="bi bi-pen-fill me-1"></i>必填</span>
                         </h6>
 
                         <div id="finalOpinionEdit">
                             <label class="form-label fw-bold small text-secondary required-star">審題意見</label>
-                            <textarea class="form-control opinion-textarea" id="finalOpinionText"
-                                placeholder="請填寫最終審查意見，確認題目整體適切性..."></textarea>
+                            <div class="quill-master-container border rounded">
+                                <!-- 標點符號工具列 -->
+                                <div
+                                    class="punctuation-toolbar d-flex flex-wrap gap-2 p-2 border-bottom bg-light rounded-top">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                                        data-char="，">，</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                                        data-char="。">。</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                                        data-char="、">、</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                                        data-char="？">？</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                                        data-char="！">！</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                                        data-char="：">：</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                                        data-char="；">；</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                                        data-char="「」" data-back="1">「」</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                                        data-char="『』" data-back="1">『』</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                                        data-char="（）" data-back="1">（）</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                                        data-char="【】" data-back="1">【】</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
+                                        data-char="……">……</button>
+                                </div>
+                                <!-- Quill 編輯器 -->
+                                <div id="finalOpinionEditor" style="min-height: 120px;"></div>
+                                <!-- 字數統計 -->
+                                <div
+                                    class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom">
+                                    <span>字數：<span class="count-num" id="count-finalOpinion">0</span></span>
+                                </div>
+                            </div>
+                            <div class="quick-insert-btns mt-2">
+                                <button type="button" class="btn btn-sm btn-outline-secondary"
+                                    onclick="insertQuickTextQuill('finalOpinion', '題幹敘述需修正，請確認語句通順與邏輯正確性。')">
+                                    <i class="bi bi-chat-quote me-1"></i>題幹需修正
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary"
+                                    onclick="insertQuickTextQuill('finalOpinion', '選項內容需調整，請檢視選項間的鑑別度及正確性。')">
+                                    <i class="bi bi-chat-quote me-1"></i>選項需修正
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary"
+                                    onclick="insertQuickTextQuill('finalOpinion', '題目與指定題型不符，請重新確認題型設定。')">
+                                    <i class="bi bi-chat-quote me-1"></i>題型不符
+                                </button>
+                            </div>
                             <div class="form-text small mt-1">
                                 <i class="bi bi-info-circle me-1"></i>
                                 請綜合評估題目整體品質，做出最終審題決策
@@ -1535,6 +1729,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="js/quill.min.js"></script>
     <!-- 審題頁面專用邏輯 -->
     <script src="js/review.js"></script>
 </body>

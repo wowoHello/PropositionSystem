@@ -1,0 +1,58 @@
+/* === 審題 Modal 專用 Quill 樣式修復 (補強 modal-enhanced.css) === */
+
+/* 強制還原工具列樣式 (覆蓋 .quill-master-container 的無邊框設定) */
+#reviewModal .ql-toolbar.ql-snow {
+    border-bottom: 1px solid #e2e8f0 !important;
+    background: linear-gradient(180deg, #fafbfc 0%, #f1f5f9 100%) !important;
+    padding: 8px 12px !important;
+    border-top: none !important;
+    border-left: none !important;
+    border-right: none !important;
+}
+
+/* 編輯器容器樣式 */
+#reviewModal .ql-container.ql-snow {
+    min-height: 120px;
+    max-height: 200px;
+    background: #ffffff !important;
+    font-size: 1rem;
+    border: none !important;
+    /* 邊框由外層 .quill-master-container 控制 */
+}
+
+/* 編輯器內容 */
+#reviewModal .ql-editor {
+    min-height: 120px;
+    max-height: 200px;
+    overflow-y: auto;
+    line-height: 1.7;
+    color: #334155;
+}
+
+/* Placeholder 顏色 */
+#reviewModal .ql-editor.ql-blank::before {
+    color: #94a3b8;
+    font-style: normal;
+}
+
+/* Focus 狀態效果 (暈光) */
+#reviewModal .quill-master-container:focus-within {
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* 工具列按鈕 Hover 效果 */
+#reviewModal .ql-snow.ql-toolbar button:hover,
+#reviewModal .ql-snow .ql-toolbar button:hover,
+#reviewModal .ql-snow.ql-toolbar button.ql-active,
+#reviewModal .ql-snow .ql-toolbar button.ql-active {
+    color: #2563eb;
+    background-color: #e0e7ff;
+    border-radius: 4px;
+}
+
+/* 修正 Badge 內的 ICON 顏色被 override 的問題 */
+/* 避免 section-title i 的全域選取器影響到 badge 內的圖示 */
+#reviewModal .section-title .badge i {
+    color: inherit !important;
+}

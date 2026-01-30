@@ -15,11 +15,34 @@ var reviewModal = null;
 var reviewToastInstance = null;  // 改名避免與 app.js 衝突
 var currentReviewStage = 'mutual'; // mutual, expert, final
 
+// Quill 編輯器實例
+var reviewQuillEditors = {
+    mutualOpinion: null,
+    expertOpinion: null,
+    finalOpinion: null
+};
+
+// 審題意見 Quill 工具列設定 (與 app.js 的 mainToolbar 相同)
+var reviewMainToolbar = [
+    [{ 'size': ['small', false, 'large', 'huge'] }],  // 文字大小
+    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],        // 標題
+    [{ 'font': ['kaiu', 'times-new-roman'] }],        // 字體
+    [{ 'color': [] }],                                 // 顏色
+    [{ 'align': [] }],                                // 對齊
+    ['bold', 'underline', 'strike'],                  // 樣式
+    ['link'],                                          // 連結
+    [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'list': 'check' }],
+    [{ 'script': 'sub' }, { 'script': 'super' }],
+    [{ 'indent': '-1' }, { 'indent': '+1' }],
+    ['clean']
+];
+
 // ==========================================
 //  初始化入口
 // ==========================================
 document.addEventListener("DOMContentLoaded", function () {
     initReviewBootstrapComponents();
+    initReviewQuillEditors();
     initReviewFilter();
     updateReviewStats();
     initReviewProjectHeader();
@@ -38,6 +61,112 @@ function initReviewBootstrapComponents() {
     if (toastEl) {
         reviewToastInstance = new bootstrap.Toast(toastEl);
     }
+}
+
+/**
+ * 初始化審題意見 Quill 編輯器
+ */
+function initReviewQuillEditors() {
+    if (typeof Quill === 'undefined') {
+        console.warn('Quill 未載入，審題意見將無法使用富文本編輯');
+        return;
+    }
+
+    // 互審意見編輯器
+    const mutualEditorEl = document.getElementById('mutualOpinionEditor');
+    if (mutualEditorEl) {
+        reviewQuillEditors.mutualOpinion = new Quill('#mutualOpinionEditor', {
+            theme: 'snow',
+            modules: { toolbar: reviewMainToolbar },
+            placeholder: '請填寫您的審題意見，說明題目的優點或需改進之處...'
+        });
+        bindQuillHelpersReview(reviewQuillEditors.mutualOpinion, 'mutualOpinionEditor');
+    }
+
+    // 專審意見編輯器
+    const expertEditorEl = document.getElementById('expertOpinionEditor');
+    if (expertEditorEl) {
+        reviewQuillEditors.expertOpinion = new Quill('#expertOpinionEditor', {
+            theme: 'snow',
+            modules: { toolbar: reviewMainToolbar },
+            placeholder: '請填寫專業審查意見，確認題目的學科正確性與適切性...'
+        });
+        bindQuillHelpersReview(reviewQuillEditors.expertOpinion, 'expertOpinionEditor');
+    }
+
+    // 總審意見編輯器
+    const finalEditorEl = document.getElementById('finalOpinionEditor');
+    if (finalEditorEl) {
+        reviewQuillEditors.finalOpinion = new Quill('#finalOpinionEditor', {
+            theme: 'snow',
+            modules: { toolbar: reviewMainToolbar },
+            placeholder: '請填寫最終審查意見，確認題目整體適切性...'
+        });
+        bindQuillHelpersReview(reviewQuillEditors.finalOpinion, 'finalOpinionEditor');
+    }
+}
+
+/**
+ * 綁定 Quill 輔助功能 (標點符號插入 + 字數統計)
+ * @param {Quill} quillInstance - Quill 實例
+ * @param {string} containerId - 編輯器容器 ID
+ */
+function bindQuillHelpersReview(quillInstance, containerId) {
+    const wrapper = document.getElementById(containerId).closest('.quill-master-container');
+    if (!wrapper) return;
+
+    // 1. 標點符號插入邏輯
+    const puncButtons = wrapper.querySelectorAll('.punc-btn');
+    puncButtons.forEach(btn => {
+        btn.onclick = function (e) {
+            e.preventDefault();
+            if (!quillInstance.isEnabled()) return;
+
+            const char = this.getAttribute('data-char');
+            const moveBack = parseInt(this.getAttribute('data-back') || '0');
+            const range = quillInstance.getSelection(true);
+
+            if (range) {
+                quillInstance.insertText(range.index, char);
+                quillInstance.setSelection(range.index + char.length - moveBack);
+            }
+        };
+    });
+
+    // 2. 字數偵測邏輯
+    const editorName = containerId.replace('Editor', '');
+    const countDisplay = document.getElementById('count-' + editorName);
+    quillInstance.on('text-change', function () {
+        const text = quillInstance.getText().trim();
+        const length = text.length === 0 ? 0 : text.length;
+        if (countDisplay) {
+            countDisplay.innerText = length;
+        }
+    });
+}
+
+/**
+ * 插入罐頭訊息到 Quill 編輯器
+ * @param {string} editorName - 編輯器名稱 (mutualOpinion / expertOpinion / finalOpinion)
+ * @param {string} text - 要插入的文字
+ */
+function insertQuickTextQuill(editorName, text) {
+    const quill = reviewQuillEditors[editorName];
+    if (!quill) return;
+
+    const length = quill.getLength();
+    const currentText = quill.getText().trim();
+
+    // 如果已有內容，則換行後加入
+    if (currentText) {
+        quill.insertText(length - 1, '\n' + text);
+    } else {
+        quill.setText(text);
+    }
+
+    // 聚焦並滾動到底部
+    quill.focus();
+    quill.setSelection(quill.getLength());
 }
 
 /**
@@ -297,7 +426,7 @@ function configureSectionVisibility(stage) {
         if (mutualEdit) mutualEdit.classList.remove('d-none');
         if (mutualReadonly) mutualReadonly.classList.add('d-none');
         if (mutualBadge) {
-            mutualBadge.innerText = '必填';
+            mutualBadge.innerHTML = '<i class="bi bi-pen-fill me-1"></i>必填';
             mutualBadge.className = 'badge bg-purple text-white ms-2';
         }
 
@@ -306,16 +435,16 @@ function configureSectionVisibility(stage) {
         if (mutualEdit) mutualEdit.classList.add('d-none');
         if (mutualReadonly) mutualReadonly.classList.remove('d-none');
         if (mutualBadge) {
-            mutualBadge.innerText = '唯讀';
-            mutualBadge.className = 'badge bg-secondary ms-2';
+            mutualBadge.innerHTML = '<i class="bi bi-lock-fill me-1"></i>唯讀';
+            mutualBadge.className = 'badge bg-primary text-white ms-2';
         }
 
         if (expertSection) expertSection.classList.remove('d-none');
         if (expertEdit) expertEdit.classList.remove('d-none');
         if (expertReadonly) expertReadonly.classList.add('d-none');
         if (expertBadge) {
-            expertBadge.innerText = '必填';
-            expertBadge.className = 'badge bg-warning text-dark ms-2';
+            expertBadge.innerHTML = '<i class="bi bi-pen-fill me-1"></i>必填';
+            expertBadge.className = 'badge bg-warning text-white ms-2';
         }
 
     } else if (stage === 'final') {
@@ -323,16 +452,16 @@ function configureSectionVisibility(stage) {
         if (mutualEdit) mutualEdit.classList.add('d-none');
         if (mutualReadonly) mutualReadonly.classList.remove('d-none');
         if (mutualBadge) {
-            mutualBadge.innerText = '唯讀';
-            mutualBadge.className = 'badge bg-secondary ms-2';
+            mutualBadge.innerHTML = '<i class="bi bi-lock-fill me-1"></i>唯讀';
+            mutualBadge.className = 'badge bg-primary text-white ms-2';
         }
 
         if (expertSection) expertSection.classList.remove('d-none');
         if (expertEdit) expertEdit.classList.add('d-none');
         if (expertReadonly) expertReadonly.classList.remove('d-none');
         if (expertBadge) {
-            expertBadge.innerText = '唯讀';
-            expertBadge.className = 'badge bg-secondary ms-2';
+            expertBadge.innerHTML = '<i class="bi bi-lock-fill me-1"></i>唯讀';
+            expertBadge.className = 'badge bg-primary text-white ms-2';
         }
 
         if (finalSection) finalSection.classList.remove('d-none');
@@ -340,14 +469,44 @@ function configureSectionVisibility(stage) {
 }
 
 /**
- * 清空所有意見輸入框
+ * 清空所有意見 Quill 編輯器
  */
 function clearOpinionTextareas() {
-    const fields = ['mutualOpinionText', 'expertOpinionText', 'finalOpinionText'];
-    fields.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.value = '';
+    // 清空所有 Quill 編輯器內容
+    Object.keys(reviewQuillEditors).forEach(key => {
+        const quill = reviewQuillEditors[key];
+        if (quill) {
+            quill.setContents([]);  // 清空 Quill 編輯器內容
+        }
     });
+
+    // 重設字數顯示
+    ['mutualOpinion', 'expertOpinion', 'finalOpinion'].forEach(name => {
+        const countEl = document.getElementById('count-' + name);
+        if (countEl) countEl.innerText = '0';
+    });
+}
+
+/**
+ * 插入罐頭訊息到指定 textarea
+ * @param {string} textareaId - textarea 的 ID
+ * @param {string} text - 要插入的文字
+ */
+function insertQuickText(textareaId, text) {
+    const textarea = document.getElementById(textareaId);
+    if (!textarea) return;
+
+    // 如果已有內容，則換行後加入
+    if (textarea.value.trim()) {
+        textarea.value += '\n' + text;
+    } else {
+        textarea.value = text;
+    }
+
+    // 聚焦到輸入框
+    textarea.focus();
+    // 滾動到底部
+    textarea.scrollTop = textarea.scrollHeight;
 }
 
 // ==========================================
@@ -358,15 +517,17 @@ function clearOpinionTextareas() {
  * @param {string} decision - 決策類型 (adopt / adopt-modify / reject)
  */
 function submitReview(decision) {
-    // 取得當前階段的意見文字
+    // 取得當前階段的 Quill 編輯器和標籤
     const stageFieldMap = {
-        mutual: { id: 'mutualOpinionText', label: '互審意見' },
-        expert: { id: 'expertOpinionText', label: '專審意見' },
-        final: { id: 'finalOpinionText', label: '總審意見' }
+        mutual: { quillKey: 'mutualOpinion', label: '互審意見' },
+        expert: { quillKey: 'expertOpinion', label: '專審意見' },
+        final: { quillKey: 'finalOpinion', label: '總審意見' }
     };
 
     const fieldConfig = stageFieldMap[currentReviewStage];
-    const opinionText = document.getElementById(fieldConfig.id)?.value.trim() || '';
+    // 從 Quill 編輯器實例讀取純文字內容
+    const quillInstance = reviewQuillEditors[fieldConfig.quillKey];
+    const opinionText = quillInstance ? quillInstance.getText().trim() : '';
 
     // 驗證必填
     if (!opinionText) {
