@@ -577,7 +577,11 @@ function openReviewModal(btn, stage) {
             }
         });
     }
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> c38ed83e81c5cb7d8bb1ca34e340e971677f4c4c
     // 開啟 Modal
     if (reviewModal) reviewModal.show();
 }
