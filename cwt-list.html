@@ -175,7 +175,7 @@
       cursor: pointer;
     }
 
-    /* 1. 鎖定狀態 (命題送審 / Submitted) */
+    /* 1. 鎖定狀態 (命題送審 / 不採用) */
     /* 使用淺灰色背景，讓文字變淡，營造無法編輯的感覺 */
     .row-locked {
       background-color: #f8f9fa !important;
@@ -492,6 +492,26 @@
 
     .badge-sent::before {
       background-color: #0d6efd;
+    }
+
+    .badge-returned {
+      background-color: rgba(249, 115, 22, 0.1);
+      color: #f97316;
+      border-color: rgba(249, 115, 22, 0.2);
+    }
+
+    .badge-returned::before {
+      background-color: #f97316;
+    }
+
+    .badge-rejected {
+      background-color: rgba(107, 114, 128, 0.1);
+      color: #6b7280;
+      border-color: rgba(107, 114, 128, 0.2);
+    }
+
+    .badge-rejected::before {
+      background-color: #6b7280;
     }
 
     /* 操作連結 */
@@ -952,7 +972,7 @@
     <div class="container px-4">
       <h1 class="page-title">我的命題任務</h1>
       <p class="page-desc">
-        檢視和管理您的所有命題，包括命題草稿、命題完成和命題送審的試題。
+        檢視和管理您的所有命題，包括命題草稿、命題完成、命題送審、改後再審與不採用的試題。
       </p>
 
       <div class="card-box search-area">
@@ -985,6 +1005,8 @@
               <option value="命題草稿">命題草稿</option>
               <option value="命題完成">命題完成</option>
               <option value="命題送審">命題送審</option>
+              <option value="改後再審">改後再審</option>
+              <option value="不採用">不採用</option>
             </select>
           </div>
 
@@ -1042,7 +1064,7 @@
             </div>
             <div class="stat-info">
               <span>命題總計</span>
-              <h4 id="stat-total">3</h4>
+              <h4 id="stat-total">5</h4>
             </div>
           </div>
         </div>
@@ -1167,6 +1189,45 @@
                   <span class="text-muted mx-1">|</span>
                   <button class="btn btn-link p-0 text-decoration-none fw-bold text-danger"
                     onclick="deleteRow(this)">刪除</button>
+                </td>
+              </tr>
+
+              <tr class="data-row" data-type="一般題目" data-status="改後再審" data-level="中級"
+                data-json='{"type":"一般題目","status":"改後再審","time":"2026-01-30 10:10","level":"中級","mainCat":"語詞","subCat":"詞性分辨","difficulty":"中","propositioner":"沈雅茹","attachment":"","content":"%3Cp%3E%E8%AB%8B%E4%BF%AE%E6%AD%A3%E9%A1%8C%E5%B9%B9%E6%95%98%E8%BF%B0%E5%BE%8C%E5%86%8D%E9%80%81%E5%AF%A9%E3%80%82%3C%2Fp%3E","explanation":"%3Cp%3E%E8%AB%8B%E6%8A%8A%E8%A9%B3%E7%B4%B0%E8%AA%AA%E6%98%8E%E8%A3%9C%E9%BD%8A%E3%80%82%3C%2Fp%3E","summary":"題幹需要調整的改後再審題目","optA":"%3Cp%3EA%3C%2Fp%3E","optB":"%3Cp%3EB%3C%2Fp%3E","optC":"%3Cp%3EC%3C%2Fp%3E","optD":"%3Cp%3ED%3C%2Fp%3E","ans":"B"}'>
+                <td><input type="checkbox" class="form-check-input"></td>
+                <td class="text-dark fw-medium">題幹需要調整的改後再審題目</td>
+                <td><span class="badge bg-light text-dark border">中級</span></td>
+                <td>一般題目</td>
+                <td><span class="badge-outline badge-returned">改後再審</span></td>
+                <td>2026-01-30 10:10</td>
+                <td>2026-01-30 10:10</td>
+                <td class="action-links"><button class="btn btn-link p-0 text-decoration-none fw-bold"
+                    onclick="openPropModal(this, 'view')">檢視</button>
+                  <span class="text-muted mx-1">|</span>
+                  <button class="btn btn-link p-0 text-decoration-none fw-bold text-success"
+                    onclick="openPropModal(this, 'edit')">編輯</button>
+                  <span class="text-muted mx-1">|</span>
+                  <button class="btn btn-link p-0 text-decoration-none fw-bold text-danger"
+                    onclick="deleteRow(this)">刪除</button>
+                </td>
+              </tr>
+
+              <tr class="data-row row-locked" data-type="精選題目" data-status="不採用" data-level="初級"
+                data-json='{"level":"初級","mainCat":"修辭技巧","subCat":"修辭類型","content":"%3Cp%3E%E9%80%99%E6%98%AF%E4%B8%80%E7%AF%87%E7%AF%84%E4%BE%8B%E6%96%87%E7%AB%A0...%3C%2Fp%3E","subQuestions":[{"content":"%3Cp%3E%E5%AD%90%E9%A1%8C%E4%B8%80%E7%9A%84%E5%85%A7%E5%AE%B9%3C%2Fp%3E","optA":"%3Cp%3EA%3C%2Fp%3E","optB":"%3Cp%3EB%3C%2Fp%3E","optC":"%3Cp%3EC%3C%2Fp%3E","optD":"%3Cp%3ED%3C%2Fp%3E","ans":"A"}]}'>
+                <td><input type="checkbox" class="form-check-input" disabled /></td>
+                <td class="text-dark fw-medium">
+                  退回後不採用的題目範例
+                </td>
+                <td><span class="badge bg-light text-dark border">初級</span></td>
+                <td>精選題目</td>
+                <td>
+                  <span class="badge-outline badge-rejected">不採用</span>
+                </td>
+                <td>2026-01-22 13:20</td>
+                <td>2026-01-22 13:20</td>
+                <td class="action-links">
+                  <button class="btn btn-link p-0 text-decoration-none small fw-bold"
+                    onclick="openPropModal(this, 'view')">檢視</button>
                 </td>
               </tr>
 
@@ -2500,13 +2561,13 @@
       rows.forEach((row, index) => {
         // 2. 找到「狀態」那個欄位 (第 6 欄)
         // 為了避免算錯格，我們直接找裡面的 .badge
-        const badge = row.querySelector('.badge');
+        const badge = row.querySelector('.badge-outline');
 
         if (badge) {
           // 去除前後空白，確保比對正確
           const statusText = badge.innerText.trim();
-          // 3. 判斷是否為「命題送審」
-          if (statusText === '命題送審') {
+          // 3. 判斷是否為「命題送審 / 不採用」
+          if (statusText === '命題送審' || statusText === '不採用') {
 
             // A. 加上鎖定樣式 class
             row.classList.add('row-locked');

@@ -482,6 +482,14 @@ window.batchUpdateStatus = function (targetStatus) {
         text = "傳送後將進入審題階段，無法再進行編輯。";
         icon = "warning";
         confirmBtnColor = "#2563eb"; // 藍色
+    } else if (targetStatus === '不採用') {
+        text = "設為不採用後將鎖定試題，僅保留檢視。";
+        icon = "warning";
+        confirmBtnColor = "#ef4444"; // 紅色
+    } else if (targetStatus === '改後採用') {
+        text = "改後採用後可再次編輯並重新送審。";
+        icon = "info";
+        confirmBtnColor = "#f97316"; // 橘色
     } else if (targetStatus === '命題完成') {
         text = "設為命題完成代表題目已完成編輯，也還可再進行編輯。";
         icon = "info";
@@ -522,7 +530,7 @@ window.batchUpdateStatus = function (targetStatus) {
                 // ==========================================
                 // ★ 新增邏輯：動態切換鎖定樣式與 Checkbox ★
                 // ==========================================
-                if (targetStatus === '命題送審') {
+                if (isLockedStatus(targetStatus)) {
                     // 加上鎖定樣式
                     row.classList.add('row-locked');
                     // 禁用 checkbox (防止被再次選取)
@@ -614,7 +622,7 @@ function writeToTable(data) {
 
 function getActionHtml(status) {
     let html = `<button class="btn btn-link p-0 text-decoration-none fw-bold" onclick="openPropModal(this, 'view')">檢視</button>`;
-    if (status != '命題送審') {
+    if (status !== '命題送審' && status !== '不採用') {
         html += `
             <span class="text-muted mx-1">|</span>
             <button class="btn btn-link p-0 text-decoration-none fw-bold text-success" onclick="openPropModal(this, 'edit')">編輯</button>
@@ -976,7 +984,13 @@ function getStatusClass(s) {
     if (s === '命題草稿') return 'draft';
     if (s === '命題完成') return 'confirmed';
     if (s === '命題送審') return 'sent';
+    if (s === '改後採用') return 'returned';
+    if (s === '不採用') return 'rejected';
     return 'secondary';
+}
+
+function isLockedStatus(status) {
+    return status === '命題送審' || status === '不採用';
 }
 
 function getCurrentTime() {

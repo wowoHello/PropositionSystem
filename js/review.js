@@ -15,6 +15,7 @@ var reviewModal = null;
 var reviewToastInstance = null;  // 改名避免與 app.js 衝突
 var currentReviewStage = 'mutual'; // mutual, expert, final
 var similarityThreshold = 0.8;
+var currentReviewRow = null;
 
 // Quill 編輯器實例
 var reviewQuillEditors = {
@@ -345,6 +346,168 @@ function updateReviewStats() {
     if (elFinal) elFinal.innerText = final;
 }
 
+function getReviewStatusBadgeClass(status) {
+    const statusMap = {
+        '互審中': 'badge-mutual',
+        '專審中': 'badge-expert',
+        '總審中': 'badge-final',
+        '退回修正': 'badge-returned',
+        '不採用': 'badge-rejected',
+        '採用': 'badge-approved'
+    };
+    return statusMap[status] || 'badge-completed';
+}
+
+function getReviewStageLabel(stage) {
+    const stageLabelMap = { mutual: '互審', expert: '專審', final: '總審' };
+    return stageLabelMap[stage] || '審題';
+}
+
+function getCurrentTime() {
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    const hh = String(now.getHours()).padStart(2, '0');
+    const min = String(now.getMinutes()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
+}
+
+function getCurrentReviewerName() {
+    const roleEl = document.getElementById('currentUserRole');
+    const roleText = roleEl ? roleEl.innerText.trim() : '';
+    return roleText ? `${roleText}（您）` : '目前審題者';
+}
+
+function getReviewDecisionHistory(row) {
+    if (!row) return [];
+    const rawJson = row.getAttribute('data-json');
+    if (!rawJson) return [];
+    try {
+        const data = JSON.parse(rawJson);
+        return Array.isArray(data.reviewHistory) ? data.reviewHistory : [];
+    } catch (error) {
+        console.warn('審題決策紀錄解析失敗', error);
+        return [];
+    }
+}
+
+function getOpinionSummary(text, limit = 60) {
+    const normalized = (text || '').replace(/\s+/g, ' ').trim();
+    if (!normalized) return '未填寫審題意見摘要。';
+    if (normalized.length <= limit) return normalized;
+    return `${normalized.slice(0, limit)}…`;
+}
+
+function renderDecisionHistory(history) {
+    const listEl = document.getElementById('reviewDecisionHistoryList');
+    const emptyEl = document.getElementById('reviewDecisionHistoryEmpty');
+    if (!listEl) return;
+
+    listEl.innerHTML = '';
+    if (!history || history.length === 0) {
+        if (emptyEl) emptyEl.classList.remove('d-none');
+        return;
+    }
+
+    if (emptyEl) emptyEl.classList.add('d-none');
+    history.forEach(item => {
+        const stageLabel = item.stageLabel || getReviewStageLabel(item.stage);
+        const stageClass = item.stage || 'mutual';
+        const decisionText = item.decision || '已決策';
+        const reviewerText = item.reviewer || '審題委員';
+        const commentText = item.comment || '未提供審題意見摘要。';
+        const timeText = item.time || '';
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'history-item';
+        wrapper.innerHTML = `
+            <div class="history-stage ${stageClass}">${stageLabel}</div>
+            <div class="history-content">
+                <div class="history-reviewer">${reviewerText} · ${decisionText}</div>
+                <div class="history-text">${commentText}</div>
+                <div class="history-time">${timeText}</div>
+            </div>
+        `;
+        listEl.appendChild(wrapper);
+    });
+}
+
+function updateReviewRowActionButtons(row, status) {
+    if (!row) return;
+    const actionCellIndex = row.cells.length - 1;
+    if (!row.cells[actionCellIndex]) return;
+
+    const lockedStatuses = ['採用', '退回修正', '不採用'];
+    if (lockedStatuses.includes(status)) {
+        row.cells[actionCellIndex].innerHTML = `
+            <button class="btn btn-link p-0 text-decoration-none fw-bold text-secondary" disabled>
+                <i class="bi bi-check2-circle me-1"></i>已決策
+            </button>
+        `;
+        return;
+    }
+
+    const stageMap = {
+        '互審中': 'mutual',
+        '專審中': 'expert',
+        '總審中': 'final'
+    };
+    const stage = stageMap[status];
+    if (stage) {
+        row.cells[actionCellIndex].innerHTML = `
+            <button class="btn btn-link p-0 text-decoration-none fw-bold text-primary"
+                onclick="openReviewModal(this, '${stage}')">
+                <i class="bi bi-pencil-square me-1"></i>審題
+            </button>
+        `;
+    }
+}
+
+function updateReviewRowStatus(row, status, opinionText, stageKey) {
+    if (!row) return;
+    const badgeClass = getReviewStatusBadgeClass(status);
+    if (row.cells[3]) {
+        row.cells[3].innerHTML = `<span class="badge-outline ${badgeClass}">${status}</span>`;
+    }
+    row.setAttribute('data-status', status);
+
+    const decisionTime = getCurrentTime();
+    const stageLabel = getReviewStageLabel(stageKey);
+    const reviewerName = getCurrentReviewerName();
+    const historyEntry = {
+        stage: stageKey,
+        stageLabel,
+        decision: status,
+        reviewer: reviewerName,
+        comment: getOpinionSummary(opinionText),
+        time: decisionTime
+    };
+
+    let data = {};
+    try {
+        data = JSON.parse(row.getAttribute('data-json') || '{}');
+    } catch (error) {
+        console.warn('審題資料解析失敗', error);
+        data = {};
+    }
+
+    data.reviewDecision = status;
+    data.reviewStage = stageLabel;
+    data.reviewDecisionAt = decisionTime;
+    if (status === '退回修正') data.returnedAt = decisionTime;
+    if (status === '不採用') data.rejectedAt = decisionTime;
+    if (status === '採用') data.adoptedAt = decisionTime;
+
+    const history = Array.isArray(data.reviewHistory) ? data.reviewHistory : [];
+    history.push(historyEntry);
+    data.reviewHistory = history;
+
+    row.setAttribute('data-json', JSON.stringify(data));
+    updateReviewRowActionButtons(row, status);
+    renderDecisionHistory(history);
+}
+
 // 別名，保持 HTML 呼叫相容
 function updateStats() {
     updateReviewStats();
@@ -523,6 +686,7 @@ function fetchSimilarity(questionPayload) {
  */
 function openReviewModal(btn, stage) {
     currentReviewStage = stage;
+    currentReviewRow = btn ? btn.closest('tr') : null;
 
     // 更新 Header 樣式和標題
     const header = document.getElementById('reviewModalHeader');
@@ -561,7 +725,7 @@ function openReviewModal(btn, stage) {
 
     // 試題比對
     resetSimilarityPanel();
-    const row = btn ? btn.closest('tr') : null;
+    const row = currentReviewRow;
     const questionPayload = buildQuestionPayload(row);
     if (row && row.dataset.similarityCache) {
         try {
@@ -577,11 +741,10 @@ function openReviewModal(btn, stage) {
             }
         });
     }
-<<<<<<< HEAD
-    
-=======
 
->>>>>>> c38ed83e81c5cb7d8bb1ca34e340e971677f4c4c
+    const history = getReviewDecisionHistory(row);
+    renderDecisionHistory(history);
+
     // 開啟 Modal
     if (reviewModal) reviewModal.show();
 }
@@ -738,8 +901,8 @@ function submitReview(decision) {
         'adopt-modify': {
             text: '改後採用',
             icon: 'warning',
-            color: '#f59e0b',
-            desc: '題目將退回命題者進行修改'
+            color: '#f97316',
+            desc: '題目將退回命題者修正後再送審'
         },
         reject: {
             text: '不採用',
@@ -769,6 +932,14 @@ function submitReview(decision) {
 
             // TODO: 實際開發時會呼叫 API
             // updateRowStatus(currentRowId, decision);
+            const decisionStatusMap = {
+                adopt: '採用',
+                'adopt-modify': '改後採用',
+                reject: '不採用'
+            };
+            const decisionStatus = decisionStatusMap[decision] || config.text;
+            const trimmedOpinion = opinionText.replace(/\s+/g, ' ').trim();
+            updateReviewRowStatus(currentReviewRow, decisionStatus, trimmedOpinion, currentReviewStage);
         }
     });
 }

@@ -261,6 +261,39 @@
             background-color: #10b981;
         }
 
+        /* 審題決策 - 改後再審 */
+        .badge-returned {
+            background-color: rgba(249, 115, 22, 0.1);
+            color: #f97316;
+            border-color: rgba(249, 115, 22, 0.2);
+        }
+
+        .badge-returned::before {
+            background-color: #f97316;
+        }
+
+        /* 審題決策 - 不採用 */
+        .badge-rejected {
+            background-color: rgba(107, 114, 128, 0.1);
+            color: #6b7280;
+            border-color: rgba(107, 114, 128, 0.2);
+        }
+
+        .badge-rejected::before {
+            background-color: #6b7280;
+        }
+
+        /* 審題決策 - 採用 */
+        .badge-approved {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border-color: rgba(16, 185, 129, 0.2);
+        }
+
+        .badge-approved::before {
+            background-color: #10b981;
+        }
+
         /* 操作連結 */
         .action-links a,
         .action-links button {
@@ -1082,6 +1115,9 @@
                             <option value="互審中">互審中</option>
                             <option value="專審中">專審中</option>
                             <option value="總審中">總審中</option>
+                            <option value="改後再審">改後再審</option>
+                            <option value="不採用">不採用</option>
+                            <option value="採用">採用</option>
                         </select>
                     </div>
 
@@ -1308,7 +1344,7 @@
                             </tr>
 
                             <!-- 專審中 - 範例2 -->
-                            <tr class="data-row" data-status="專審中" data-type="聽力題目" data-level="中級"
+                            <tr class="data-row" data-status="改後再審" data-type="聽力題目" data-level="中級"
                                 data-json="{&quot;stem&quot;:&quot;請聽完錄音後，選出最適當的回應。&quot;,&quot;options&quot;:[&quot;好的，我馬上處理。&quot;,&quot;我不太確定。&quot;,&quot;謝謝你的提醒。&quot;,&quot;抱歉，請再說一次。&quot;],&quot;analysis&quot;:&quot;依聽力內容選擇最恰當回應。&quot;,&quot;type&quot;:&quot;聽力題目&quot;,&quot;grade&quot;:&quot;中級&quot;}">
                                 <td class="text-dark fw-medium">
                                     [聽力] 請聽完錄音後，選出最適當的回應...<br>
@@ -1316,19 +1352,19 @@
                                 </td>
                                 <td><span class="badge bg-light text-dark border">中級</span></td>
                                 <td>聽力題目</td>
-                                <td><span class="badge-outline badge-expert">專審中</span></td>
+                                <td><span class="badge-outline badge-returned">改後再審</span></td>
                                 <td><span class="proposer-hidden">***（隱藏）</span></td>
                                 <td>2026-01-26 14:30</td>
                                 <td class="action-links">
-                                    <button class="btn btn-link p-0 text-decoration-none fw-bold text-primary"
-                                        onclick="openReviewModal(this, 'expert')">
-                                        <i class="bi bi-pencil-square me-1"></i>審題
+                                    <button class="btn btn-link p-0 text-decoration-none fw-bold text-secondary"
+                                        disabled>
+                                        <i class="bi bi-check2-circle me-1"></i>已決策
                                     </button>
                                 </td>
                             </tr>
 
                             <!-- 專審中 - 範例3 -->
-                            <tr class="data-row" data-status="專審中" data-type="短文題組" data-level="中高級"
+                            <tr class="data-row" data-status="不採用" data-type="短文題組" data-level="中高級"
                                 data-json="{&quot;stem&quot;:&quot;根據以下圖表資料，回答問題。&quot;,&quot;options&quot;:[&quot;子題1：比較成長率&quot;,&quot;子題2：推估趨勢&quot;,&quot;子題3：分析原因&quot;],&quot;analysis&quot;:&quot;需依圖表資料判讀。&quot;,&quot;type&quot;:&quot;短文題組&quot;,&quot;grade&quot;:&quot;中高級&quot;}">
                                 <td class="text-dark fw-medium">
                                     [短文題組] 根據以下圖表資料，回答問題...<br>
@@ -1336,19 +1372,19 @@
                                 </td>
                                 <td><span class="badge bg-light text-dark border">中高級</span></td>
                                 <td>短文題組</td>
-                                <td><span class="badge-outline badge-expert">專審中</span></td>
+                                <td><span class="badge-outline badge-rejected">不採用</span></td>
                                 <td><span class="proposer-hidden">***（隱藏）</span></td>
                                 <td>2026-01-25 11:00</td>
                                 <td class="action-links">
-                                    <button class="btn btn-link p-0 text-decoration-none fw-bold text-primary"
-                                        onclick="openReviewModal(this, 'expert')">
-                                        <i class="bi bi-pencil-square me-1"></i>審題
+                                    <button class="btn btn-link p-0 text-decoration-none fw-bold text-secondary"
+                                        disabled>
+                                        <i class="bi bi-check2-circle me-1"></i>已決策
                                     </button>
                                 </td>
                             </tr>
 
                             <!-- 總審中 - 範例1 -->
-                            <tr class="data-row" data-status="總審中" data-type="精選題目" data-level="優級"
+                            <tr class="data-row" data-status="採用" data-type="精選題目" data-level="優級"
                                 data-json="{&quot;stem&quot;:&quot;下列對於「賦」這種文體的敘述，何者錯誤？&quot;,&quot;options&quot;:[&quot;源於詩經&quot;,&quot;講究聲韻對仗&quot;,&quot;內容多為敘事&quot;,&quot;常用鋪陳描寫&quot;],&quot;analysis&quot;:&quot;辨別文體特徵。&quot;,&quot;type&quot;:&quot;精選題目&quot;,&quot;grade&quot;:&quot;優級&quot;}">
                                 <td class="text-dark fw-medium">
                                     下列對於「賦」這種文體的敘述，何者錯誤？<br>
@@ -1356,20 +1392,20 @@
                                 </td>
                                 <td><span class="badge bg-light text-dark border">優級</span></td>
                                 <td>精選題目</td>
-                                <td><span class="badge-outline badge-final">總審中</span></td>
+                                <td><span class="badge-outline badge-approved">採用</span></td>
                                 <td><span class="proposer-hidden">***（隱藏）</span></td>
                                 <td>2026-01-24 08:15</td>
                                 <td class="action-links">
-                                    <button class="btn btn-link p-0 text-decoration-none fw-bold text-primary"
-                                        onclick="openReviewModal(this, 'final')">
-                                        <i class="bi bi-pencil-square me-1"></i>審題
+                                    <button class="btn btn-link p-0 text-decoration-none fw-bold text-secondary"
+                                        disabled>
+                                        <i class="bi bi-check2-circle me-1"></i>已決策
                                     </button>
                                 </td>
                             </tr>
 
                             <!-- 總審中 - 範例2 -->
                             <tr class="data-row" data-status="總審中" data-type="長文題目" data-level="高級"
-                                data-json="{&quot;stem&quot;:&quot;請以「科技與人文的平衡」為題，撰寫一篇論說文。&quot;,&quot;options&quot;:[],&quot;analysis&quot;:&quot;需完整論述立場並提出論據。&quot;,&quot;type&quot;:&quot;長文題目&quot;,&quot;grade&quot;:&quot;高級&quot;}">
+                                data-json="{&quot;stem&quot;:&quot;請以「科技與人文的平衡」為題，撰寫一篇論說文。&quot;,&quot;options&quot;:[],&quot;analysis&quot;:&quot;需完整論述立場並提出論據。&quot;,&quot;type&quot;:&quot;長文題目&quot;,&quot;grade&quot;:&quot;高級&quot;,&quot;reviewHistory&quot;:[{&quot;stage&quot;:&quot;mutual&quot;,&quot;stageLabel&quot;:&quot;互審&quot;,&quot;decision&quot;:&quot;採用&quot;,&quot;reviewer&quot;:&quot;王審委&quot;,&quot;comment&quot;:&quot;題幹清楚，建議略調整字數要求。&quot;,&quot;time&quot;:&quot;2026-01-23 10:05&quot;},{&quot;stage&quot;:&quot;expert&quot;,&quot;stageLabel&quot;:&quot;專審&quot;,&quot;decision&quot;:&quot;改後再審&quot;,&quot;reviewer&quot;:&quot;林教授&quot;,&quot;comment&quot;:&quot;請補充論述範例，提升引導性。&quot;,&quot;time&quot;:&quot;2026-01-23 12:40&quot;}]}">
                                 <td class="text-dark fw-medium">
                                     [長文] 請以「科技與人文的平衡」為題，撰寫一篇論說文...<br>
                                     <small class="text-muted">字數要求：800-1000字</small>
@@ -1527,6 +1563,22 @@
 
                         <ul class="list-group" id="similarityList"></ul>
                     </div>
+
+                    <!-- 審題決策紀錄 -->
+                    <div class="section-card readonly-section" id="reviewDecisionHistorySection">
+                        <h6 class="section-title">
+                            <i class="bi bi-clock-history"></i>
+                            審題決策紀錄
+                            <span class="badge bg-primary text-white ms-2">
+                                <i class="bi bi-lock-fill me-1"></i>唯讀
+                            </span>
+                        </h6>
+                        <div class="review-history" id="reviewDecisionHistoryList"></div>
+                        <div class="text-muted small" id="reviewDecisionHistoryEmpty">
+                            尚無審題決策紀錄，提交後會顯示在這裡。
+                        </div>
+                    </div>
+
                     <!-- 二、互審意見 -->
                     <div class="section-card mutual-section" id="mutualOpinionSection">
                         <h6 class="section-title">
@@ -1767,7 +1819,7 @@
                             <i class="bi bi-check-circle me-1"></i>採用
                         </button>
                         <button type="button" class="btn btn-adopt-modify" onclick="submitReview('adopt-modify')">
-                            <i class="bi bi-pencil me-1"></i>改後採用
+                            <i class="bi bi-pencil me-1"></i>改後再審
                         </button>
                         <button type="button" class="btn btn-reject" onclick="submitReview('reject')">
                             <i class="bi bi-x-circle me-1"></i>不採用
