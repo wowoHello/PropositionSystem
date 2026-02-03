@@ -1,0 +1,1201 @@
+/* ==========================================================================
+   CWT 審題清單 - 完整整合樣式 (修復導覽列版)
+   檔案名稱：css/cwt-review.css
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. 全域變數與基礎設定 (Base)
+   -------------------------------------------------------------------------- */
+:root {
+    --primary-blue: #3b82f6;
+    --primary-blue-dark: #2563eb;
+    --bg-color: #f3f4f6;
+    --text-dark: #1f2937;
+    --text-gray: #6b7280;
+    --border-color: #e5e7eb;
+
+    /* 審核專用色系 */
+    --color-adopt: #198754;
+    /* 採用 - 綠 */
+    --color-modify: #fd7e14;
+    /* 改後再審 - 橘 */
+    --color-reject: #dc3545;
+    /* 不採用 - 紅 */
+    --color-pending: #0d6efd;
+    /* 待審核 - 藍 */
+
+    /* Modal 視覺設定 */
+    --cwt-section-bg: linear-gradient(145deg, #ffffff 0%, #f9fafb 100%);
+    --cwt-header-gradient: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #06b6d4 100%);
+}
+
+body {
+    font-family: "Noto Sans TC", sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-dark);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+}
+
+/* --------------------------------------------------------------------------
+   2. Quill 編輯器關鍵設定
+   -------------------------------------------------------------------------- */
+.ql-container {
+    font-family: "Noto Sans TC", sans-serif;
+    font-size: 1rem;
+}
+
+.quill-master-container .ql-container {
+    height: auto !important;
+    border: none !important;
+}
+
+.ql-editor {
+    min-height: 150px;
+    max-height: 300px;
+    overflow-y: auto;
+    line-height: 1.6;
+    color: #334155;
+}
+
+.option-editor .ql-editor {
+    min-height: 80px !important;
+    max-height: 150px;
+}
+
+.quill-master-container .ql-toolbar.ql-snow,
+.quill-master-container .ql-container.ql-snow {
+    border: none !important;
+}
+
+.ql-snow .ql-picker.ql-font {
+    width: 160px !important;
+}
+
+.ql-editor.ql-blank:focus::before {
+    opacity: 0;
+}
+
+.ql-font-microsoft-jhenghei {
+    font-family: "Microsoft JhengHei", "微軟正黑體", sans-serif;
+}
+
+.ql-font-kaiu {
+    font-family: "DFKai-SB", "標楷體", serif;
+}
+
+.ql-font-times-new-roman {
+    font-family: "Times New Roman", serif;
+}
+
+.ql-font-arial {
+    font-family: "Arial", sans-serif;
+}
+
+.ql-font-comic-sans-ms {
+    font-family: "Comic Sans MS", cursive;
+}
+
+#reviewModal .ql-toolbar.ql-snow {
+    border-bottom: 1px solid #e2e8f0 !important;
+    background: linear-gradient(180deg, #fafbfc 0%, #f1f5f9 100%) !important;
+    padding: 8px 12px !important;
+}
+
+#reviewModal .ql-container.ql-snow {
+    background: #ffffff !important;
+}
+
+/* =========================================
+   3. 頂部導航欄 (Top Navbar)
+   ========================================= */
+.top-navbar {
+    background-color: var(--primary-blue-dark);
+    color: white;
+    padding: 1rem 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    flex-shrink: 0;
+    z-index: 1000;
+    position: relative;
+}
+
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: white;
+    text-decoration: none;
+}
+
+.navbar-brand:hover {
+    color: white;
+}
+
+/* =========================================
+   4. 專案切換器 (Project Switcher)
+   ========================================= */
+.project-switcher {
+    position: relative;
+}
+
+.project-display {
+    background: rgba(255, 255, 255, 0.15);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    padding: 0.65rem 1.25rem;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    overflow: hidden;
+    /* 隱藏超出部分 */
+    text-overflow: ellipsis;
+    /* 超出顯示 ... */
+    max-width: 100%;
+    /* 限制最大寬度 */
+}
+
+.project-display:hover {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-1px);
+}
+
+.project-display.active {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.project-display svg {
+    transition: transform 0.2s;
+}
+
+.project-display.active svg {
+    transform: rotate(180deg);
+}
+
+.project-info {
+    min-width: 0;
+    /* 關鍵：讓 Flex 子元素可以縮小到比內容還小 */
+    flex: 1;
+    /* 佔滿剩餘空間 */
+}
+
+.project-year {
+    font-size: 0.8rem;
+    opacity: 0.9;
+}
+
+.project-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* =========================================
+   強化毛玻璃 + 鑲嵌圖示
+   ========================================= */
+
+.project-display.glass-enhanced {
+    /* 1. 玻璃質感基礎 */
+    background: rgba(255, 255, 255, 0.2);
+    /* 稍微提高不透明度 */
+    border: 2px solid rgba(255, 255, 255, 0.6);
+    /* 邊框加亮、加粗 */
+    border-radius: 12px;
+    padding: 0.5rem 1rem 0.5rem 0.75rem;
+    /* 左邊留少一點，因為有圖示了 */
+
+    /* 2. 濾鏡與陰影 */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    /* 柔和陰影 */
+
+    /* 3. 排版設定 */
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 280px;
+    /* 確保寬度足夠 */
+}
+
+/* 懸浮互動效果 */
+.project-display.glass-enhanced:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.9);
+    /* 懸浮時邊框發光 */
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* === 圖示區塊 === */
+.glass-icon {
+    width: 38px;
+    height: 38px;
+    background: rgba(255, 255, 255, 0.2);
+    /* 圖示自己的小玻璃背景 */
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 8px;
+    /* 圓角矩形，比圓形更現代 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+}
+
+/* 讓圖示在懸浮時有點動感 */
+.project-display.glass-enhanced:hover .glass-icon {
+    background: #fff;
+    /* 懸浮時圖示背景變白 */
+    transform: scale(1.05) rotate(-5deg);
+    /* 微微放大並旋轉 */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 文字排版微調 */
+.project-display.glass-enhanced .project-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    /* 文字靠左對齊 */
+    line-height: 1.3;
+}
+
+.project-display.glass-enhanced .project-year {
+    font-size: 0.75rem;
+    opacity: 0.9;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.project-display.glass-enhanced .project-name {
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+/* 右側箭頭自動推到最右邊 */
+.project-display.glass-enhanced .arrow-icon {
+    margin-left: auto;
+    opacity: 0.8;
+    transition: transform 0.3s;
+}
+
+/* 開啟下拉選單時，箭頭旋轉 */
+.project-display.glass-enhanced.active .arrow-icon {
+    transform: rotate(180deg);
+}
+
+/* 下拉選單容器 */
+.project-dropdown {
+    position: absolute;
+    top: calc(100% + 0.75rem);
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    min-width: 420px;
+    max-width: 500px;
+    display: none;
+    z-index: 1001;
+    overflow: hidden;
+}
+
+.project-dropdown.show {
+    display: block;
+    animation: dropdownFadeIn 0.2s ease;
+}
+
+@keyframes dropdownFadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+/* =========================================
+   5. 專案管理相關樣式 (Moved from cwt-role.html)
+   ========================================= */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+#projectListContainer {
+    background-color: #fff;
+}
+
+#projectListContainer .list-group-item:last-child {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125) !important;
+}
+
+#projectListContainer .list-group-item {
+    border-left: 4px solid transparent;
+    transition: all 0.2s ease;
+}
+
+#projectListContainer .list-group-item:hover {
+    background-color: #f8f9fa;
+}
+
+#projectListContainer .list-group-item.active {
+    background-color: #2563eb !important;
+    border-color: #2563eb !important;
+    color: white !important;
+    z-index: 2;
+}
+
+#projectListContainer .list-group-item.active h6 {
+    color: white !important;
+}
+
+#projectListContainer .list-group-item.active small,
+#projectListContainer .list-group-item.active i {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+#projectListContainer .list-group-item.active .badge.bg-primary {
+    background-color: white !important;
+    color: #2563eb !important;
+}
+
+/* 下拉選單內部元件 */
+.dropdown-header {
+    padding: 1rem 1.25rem;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    font-weight: 700;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.dropdown-header .close-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.dropdown-header .close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.project-search {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.project-search input {
+    width: 100%;
+    padding: 0.6rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.project-search input:focus {
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.project-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* 捲軸美化 */
+.project-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.project-list::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+.project-list::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+.project-category {
+    padding: 0.75rem 1.25rem 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+}
+
+.project-category:first-child {
+    border-top: none;
+}
+
+.project-item {
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-left: 3px solid transparent;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.project-item:hover {
+    background: #f9fafb;
+    border-left-color: var(--primary-blue);
+}
+
+.project-item.active {
+    background: #eff6ff;
+    border-left-color: var(--primary-blue-dark);
+}
+
+.project-item-info {
+    flex: 1;
+}
+
+.project-item-title {
+    font-weight: 600;
+    color: #111827;
+    font-size: 0.95rem;
+    margin-bottom: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.project-item-meta {
+    font-size: 0.8rem;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* 狀態圓點 */
+.status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 0.4rem;
+}
+
+.status-active {
+    background: #10b981;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+
+.status-finished {
+    background: #9ca3af;
+}
+
+/* 角色標籤 */
+.role-badge {
+    display: inline-block;
+    padding: 0.25rem 0.65rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.role-admin {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.role-reviewer {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.role-teacher {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+/* =========================================
+   6. 使用者資訊區 (User Section)
+   ========================================= */
+.user-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    color: white;
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    transition: all 0.2s;
+}
+
+.user-info:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.2) 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.user-name {
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* --------------------------------------------------------------------------
+   7. 主要內容與表格 (Layout)
+   -------------------------------------------------------------------------- */
+.breadcrumb-bar {
+    background: white;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 0.9rem;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+}
+
+.breadcrumb-item-link {
+    text-decoration: none;
+    color: #6b7280;
+}
+
+.breadcrumb-separator {
+    margin: 0 0.6rem;
+    color: #d1d5db;
+}
+
+.breadcrumb-current {
+    color: #111827;
+    font-weight: 500;
+}
+
+.main-content {
+    padding: 2rem 0;
+    flex-grow: 1;
+}
+
+.page-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.page-desc {
+    color: var(--text-gray);
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+}
+
+.card-box {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+/* 分頁籤 (Tabs) */
+.custom-tabs {
+    border-bottom: none;
+    margin-bottom: -1px;
+    z-index: 2;
+    position: relative;
+    padding-left: 1rem;
+}
+
+.custom-tabs .nav-link {
+    color: #6b7280;
+    background-color: transparent;
+    border: 1px solid transparent;
+    border-bottom: none;
+    margin-right: 0.5rem;
+    border-radius: 12px 12px 0 0;
+    padding: 0.8rem 1.5rem;
+    transition: all 0.2s ease;
+    font-size: 0.95rem;
+}
+
+.custom-tabs .nav-link:hover {
+    color: var(--primary-blue);
+    background-color: rgba(255, 255, 255, 0.5);
+    border-color: transparent;
+}
+
+.custom-tabs .nav-link.active {
+    color: var(--primary-blue-dark);
+    background-color: #ffffff;
+    border-color: #e5e7eb;
+    border-bottom-color: #ffffff;
+    box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.02);
+    position: relative;
+}
+
+.search-area.rounded-top-0 {
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 12px !important;
+}
+
+/* 表格樣式 */
+.custom-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.custom-table th {
+    background-color: #f3f4f6;
+    color: #374151;
+    font-weight: 700;
+    padding: 1rem;
+    border-bottom: 2px solid #e5e7eb;
+    text-align: left;
+}
+
+.custom-table td {
+    padding: 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #f3f4f6;
+    color: #4b5563;
+}
+
+.custom-table tr:hover td {
+    background-color: #f9fafb;
+}
+
+/* 狀態徽章 */
+.badge-outline {
+    padding: 0.35em 0.8em;
+    border-radius: 50rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: 1px solid transparent;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.badge-outline::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+.badge-pending {
+    background-color: rgba(13, 110, 253, 0.1);
+    color: var(--color-pending);
+    border-color: rgba(13, 110, 253, 0.2);
+}
+
+.badge-pending::before {
+    background-color: var(--color-pending);
+}
+
+.badge-adopted {
+    background-color: rgba(25, 135, 84, 0.1);
+    color: var(--color-adopt);
+    border-color: rgba(25, 135, 84, 0.2);
+}
+
+.badge-adopted::before {
+    background-color: var(--color-adopt);
+}
+
+.badge-modify {
+    background-color: rgba(253, 126, 20, 0.1);
+    color: var(--color-modify);
+    border-color: rgba(253, 126, 20, 0.2);
+}
+
+.badge-modify::before {
+    background-color: var(--color-modify);
+}
+
+.badge-rejected {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: var(--color-reject);
+    border-color: rgba(220, 53, 69, 0.2);
+}
+
+.badge-rejected::before {
+    background-color: var(--color-reject);
+}
+
+/* 鎖定列 */
+.row-locked {
+    background-color: #f8f9fa !important;
+    color: #adb5bd !important;
+}
+
+.row-locked a,
+.row-locked button.btn-link {
+    color: #adb5bd !important;
+    pointer-events: none;
+}
+
+.row-locked .form-check-input {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.btn-tool {
+    background: white;
+    border: 1px solid #d1d5db;
+    color: #374151;
+    font-weight: 600;
+    border-radius: 6px;
+    padding: 0.4rem 1rem;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.btn-tool:hover {
+    border-color: #2563eb;
+    color: #2563eb;
+    background-color: #eff6ff;
+}
+
+/* --------------------------------------------------------------------------
+   8. 統計卡片 (Interactive)
+   -------------------------------------------------------------------------- */
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    border: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    height: 100%;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    position: relative;
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    flex-shrink: 0;
+}
+
+.stat-info h4 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.stat-card.interactive-card {
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    position: relative;
+    border: 1px solid transparent;
+}
+
+/* Hover Base */
+.stat-card.interactive-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.08);
+    background-color: #ffffff;
+    border-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Icon Animation */
+.stat-card.interactive-card:hover .stat-icon {
+    transform: scale(1.1) rotate(6deg);
+    transition: transform 0.3s ease;
+}
+
+/* Text Color Animation (預設藍色，下面會被蓋掉) */
+.stat-card.interactive-card:hover .stat-info span,
+.stat-card.interactive-card:hover .stat-info h4 {
+    color: var(--primary-blue) !important;
+    transition: color 0.3s ease;
+}
+
+/* Active (Click) Effect */
+.stat-card.interactive-card:active {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.06);
+}
+
+/* === Color-Specific Hover Effects (狀態對應顏色) === */
+
+/* 1. 互審中 (Purple) */
+.stat-card.interactive-card:has(.stat-info span:contains("互審中")):hover {
+    border-color: rgba(139, 92, 246, 0.3);
+    box-shadow: 0 12px 24px -6px rgba(139, 92, 246, 0.15);
+}
+
+.stat-card.interactive-card:has(.stat-info span:contains("互審中")):hover .stat-info span,
+.stat-card.interactive-card:has(.stat-info span:contains("互審中")):hover .stat-info h4 {
+    color: #8b5cf6 !important;
+}
+
+/* 2. 專審中 (Orange) */
+.stat-card.interactive-card:has(.stat-info span:contains("專審中")):hover {
+    border-color: rgba(245, 158, 11, 0.3);
+    box-shadow: 0 12px 24px -6px rgba(245, 158, 11, 0.15);
+}
+
+.stat-card.interactive-card:has(.stat-info span:contains("專審中")):hover .stat-info span,
+.stat-card.interactive-card:has(.stat-info span:contains("專審中")):hover .stat-info h4 {
+    color: #f59e0b !important;
+}
+
+/* 3. 總審中 (Red) */
+.stat-card.interactive-card:has(.stat-info span:contains("總審中")):hover {
+    border-color: rgba(239, 68, 68, 0.3);
+    box-shadow: 0 12px 24px -6px rgba(239, 68, 68, 0.15);
+}
+
+.stat-card.interactive-card:has(.stat-info span:contains("總審中")):hover .stat-info span,
+.stat-card.interactive-card:has(.stat-info span:contains("總審中")):hover .stat-info h4 {
+    color: #ef4444 !important;
+}
+
+/* 4. 採用 (Green) */
+.stat-card.interactive-card:has(.stat-info span:contains("採用")):hover {
+    border-color: rgba(16, 185, 129, 0.3);
+    box-shadow: 0 12px 24px -6px rgba(16, 185, 129, 0.15);
+}
+
+.stat-card.interactive-card:has(.stat-info span:contains("採用")):hover .stat-info span,
+.stat-card.interactive-card:has(.stat-info span:contains("採用")):hover .stat-info h4 {
+    color: #10b981 !important;
+}
+
+/* 5. 改後再審 (Orange) */
+.stat-card.interactive-card:has(.stat-info span:contains("改後再審")):hover {
+    border-color: rgba(249, 115, 22, 0.3);
+    box-shadow: 0 12px 24px -6px rgba(249, 115, 22, 0.15);
+}
+
+.stat-card.interactive-card:has(.stat-info span:contains("改後再審")):hover .stat-info span,
+.stat-card.interactive-card:has(.stat-info span:contains("改後再審")):hover .stat-info h4 {
+    color: #f97316 !important;
+}
+
+/* 6. 不採用 (Gray/Red) */
+.stat-card.interactive-card:has(.stat-info span:contains("不採用")):hover {
+    border-color: rgba(107, 114, 128, 0.3);
+    box-shadow: 0 12px 24px -6px rgba(107, 114, 128, 0.15);
+}
+
+.stat-card.interactive-card:has(.stat-info span:contains("不採用")):hover .stat-info span,
+.stat-card.interactive-card:has(.stat-info span:contains("不採用")):hover .stat-info h4 {
+    color: #6b7280 !important;
+}
+
+/* Fallback for browsers not supporting :has */
+@supports not (selector(:has(*))) {
+    .stat-card.interactive-card:hover {
+        border-color: rgba(59, 130, 246, 0.3);
+        box-shadow: 0 12px 24px -6px rgba(59, 130, 246, 0.15);
+    }
+}
+
+.icon-blue {
+    background-color: #eff6ff;
+    color: #3b82f6;
+}
+
+.icon-green {
+    background-color: #f0fdf4;
+    color: #10b981;
+}
+
+.icon-orange {
+    background-color: #fff7ed;
+    color: #f97316;
+}
+
+.icon-red {
+    background-color: #fef2f2;
+    color: #dc3545;
+}
+
+.icon-gray {
+    background-color: #f3f4f6;
+    color: #6b7280;
+}
+
+.icon-purple {
+    background-color: #f3e8ff;
+    color: #8b5cf6;
+}
+
+/* --------------------------------------------------------------------------
+   9. Modal 與 審核樣式 (Review Specifics)
+   -------------------------------------------------------------------------- */
+#propModal .modal-content,
+#reviewModal .modal-content {
+    background: #f8fafc;
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+#propModal .modal-header,
+#reviewModal .modal-header {
+    background: var(--cwt-header-gradient);
+    padding: 1.25rem 1.5rem;
+    border-bottom: none;
+    color: white;
+}
+
+.modal-title {
+    font-weight: 700;
+}
+
+.btn-close {
+    filter: brightness(0) invert(1);
+    opacity: 0.8;
+}
+
+.modal-body {
+    background: linear-gradient(180deg, #f1f5f9 0%, #f8fafc 30%, #ffffff 100%);
+    padding: 1.5rem;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+/* 區塊卡片 */
+.section-card {
+    background: var(--cwt-section-bg);
+    border: 1px solid rgba(37, 99, 235, 0.12);
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.section-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(180deg, #3b82f6 0%, #06b6d4 100%);
+    border-radius: 12px 0 0 12px;
+}
+
+.section-title {
+    color: #1e40af;
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid transparent;
+    border-image: linear-gradient(90deg, #3b82f6 0%, #06b6d4 50%, transparent 100%) 1;
+}
+
+/* 審核專區 */
+.review-section {
+    background-color: #fff3cd;
+    border: 1px solid #ffeeba;
+    border-left: 5px solid #ffc107;
+}
+
+.review-section .section-title {
+    color: #856404;
+    border-image: none;
+    border-bottom: 1px solid #ffeeba;
+}
+
+/* 決策按鈕 */
+.review-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.review-actions .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.6rem 1.2rem;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.review-actions .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-adopt {
+    background-color: white;
+    border: 2px solid var(--color-adopt);
+    color: var(--color-adopt);
+}
+
+.btn-adopt:hover,
+.btn-adopt.active {
+    background-color: var(--color-adopt);
+    color: white;
+}
+
+.btn-adopt-modify {
+    background-color: white;
+    border: 2px solid var(--color-modify);
+    color: var(--color-modify);
+}
+
+.btn-adopt-modify:hover,
+.btn-adopt-modify.active {
+    background-color: var(--color-modify);
+    color: white;
+}
+
+.btn-reject {
+    background-color: white;
+    border: 2px solid var(--color-reject);
+    color: var(--color-reject);
+}
+
+.btn-reject:hover,
+.btn-reject.active {
+    background-color: var(--color-reject);
+    color: white;
+}
+
+.review-comment-box {
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1rem;
+    width: 100%;
+    min-height: 100px;
+}
+
+.review-comment-box:focus {
+    border-color: #ffc107;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.25);
+}
+
+/* Modal Footer */
+/* Modal Footer */
+.modal-footer {
+    background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #e2e8f0;
+    justify-content: space-between;
+}
+
+/* RWD */
+@media (max-width: 768px) {
+    .review-actions {
+        flex-direction: column;
+    }
+
+    .review-actions .btn {
+        width: 100%;
+    }
+
+    .project-dropdown {
+        min-width: 90vw;
+        left: 5vw;
+        transform: none;
+    }
+}
+
+/* ==========================================================================
+   10. 互動效果增強 (Hover Text Color)
+   ========================================================================== */
+.stat-card.interactive-card:hover .stat-info span,
+.stat-card.interactive-card:hover .stat-info h4 {
+    color: var(--primary-blue) !important;
+    transition: color 0.3s ease;
+}
+
+/* 針對特定狀態的顏色微調 (可選) */
+.stat-card.interactive-card:has(.stat-info span:contains("改後再審")):hover .stat-info h4 {
+    color: #f97316 !important;
+    /* 橘色 */
+}
+
+.stat-card.interactive-card:has(.stat-info span:contains("採用")):hover .stat-info h4 {
+    color: #2563eb !important;
+    /* 藍色 */
+}
+
+/* 讓非互動的卡片保持原樣 */
+.stat-card:not(.interactive-card) {
+    cursor: default;
+}

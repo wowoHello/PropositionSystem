@@ -7,11 +7,9 @@
     <title>審題清單 - CWT 命題工作平臺</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="css/style.css" />
-    <link rel="stylesheet" href="css/modal-enhanced.css">
-    <link rel="stylesheet" href="css/review-fix.css">
     <link rel="stylesheet" href="css/quill.snow.css">
     <link rel="stylesheet" href="css/sweetalert2.css">
+    <link rel="stylesheet" href="css/cwt-review.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
         rel="stylesheet" />
     <style>
@@ -89,82 +87,6 @@
             border-radius: 8px;
             padding: 0.6rem 1rem;
             font-size: 0.95rem;
-        }
-
-        /* 統計卡片區 */
-        .stat-card {
-            background: white;
-            border-radius: 12px;
-            padding: 1.25rem;
-            border: 1px solid #e5e7eb;
-            display: flex;
-            align-items: center;
-            height: 100%;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-            transition: all 0.2s ease;
-        }
-
-        .stat-card.clickable:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            border-color: #2563eb;
-        }
-
-        .stat-card.clickable:active {
-            transform: translateY(0);
-        }
-
-        .stat-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 1rem;
-            flex-shrink: 0;
-        }
-
-        .stat-info span {
-            display: block;
-            color: #6b7280;
-            font-size: 0.9rem;
-            font-weight: 600;
-            margin-bottom: 0.2rem;
-        }
-
-        .stat-info h4 {
-            margin: 0;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #111827;
-            line-height: 1;
-        }
-
-        /* 審題狀態圖示顏色 */
-        .icon-gray {
-            background-color: #f3f4f6;
-            color: #6b7280;
-        }
-
-        .icon-purple {
-            background-color: #f3e8ff;
-            color: #8b5cf6;
-        }
-
-        .icon-orange {
-            background-color: #fff7ed;
-            color: #f97316;
-        }
-
-        .icon-red {
-            background-color: #fef2f2;
-            color: #ef4444;
-        }
-
-        .icon-green {
-            background-color: #f0fdf4;
-            color: #10b981;
         }
 
         /* 表格樣式 */
@@ -1135,18 +1057,6 @@
             <!-- 搜尋篩選區 -->
             <div class="card-box search-area">
                 <div class="row g-3 align-items-end">
-                    <div class="col-md-2">
-                        <label class="form-label">審題狀態</label>
-                        <select class="form-select" id="filterReviewStatus">
-                            <option value="all" selected>全部狀態</option>
-                            <option value="互審中">互審中</option>
-                            <option value="專審中">專審中</option>
-                            <option value="總審中">總審中</option>
-                            <option value="改後再審">改後再審</option>
-                            <option value="不採用">不採用</option>
-                            <option value="採用">採用</option>
-                        </select>
-                    </div>
 
                     <div class="col-md-2">
                         <label class="form-label">題型篩選</label>
@@ -1171,6 +1081,19 @@
                             <option value="中高級">中高級</option>
                             <option value="高級">高級</option>
                             <option value="優級">優級</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label">審題狀態</label>
+                        <select class="form-select" id="filterReviewStatus">
+                            <option value="all" selected>全部狀態</option>
+                            <option value="互審中">互審中</option>
+                            <option value="專審中">專審中</option>
+                            <option value="總審中">總審中</option>
+                            <option value="改後再審">改後再審</option>
+                            <option value="不採用">不採用</option>
+                            <option value="採用">採用</option>
                         </select>
                     </div>
 
@@ -1216,22 +1139,22 @@
             <!-- 統計卡片 -->
             <div class="row g-4 mb-4">
                 <div class="col-md-3">
-                    <div class="stat-card clickable" onclick="filterByStatus('all')" title="顯示全部待審題目"
+                    <div class="stat-card clickable interactive-card" onclick="filterByStatus('all')" title="顯示全部待審題目"
                         style="cursor: pointer;">
                         <div class="stat-icon icon-gray">
-                            <i class="bi bi-clipboard-check fs-4"></i>
+                            <i class="bi bi-clipboard-check-fill fs-4"></i>
                         </div>
                         <div class="stat-info">
                             <span>待審總計</span>
-                            <h4 id="stat-total">8</h4>
+                            <h4 id="stat-total">4</h4>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="stat-card clickable" onclick="filterByStatus('互審中')" title="篩選互審中題目"
+                    <div class="stat-card clickable interactive-card" onclick="filterByStatus('互審中')" title="篩選互審中題目"
                         style="cursor: pointer;">
                         <div class="stat-icon icon-purple">
-                            <i class="bi bi-people fs-4"></i>
+                            <i class="bi bi-people-fill fs-4"></i>
                         </div>
                         <div class="stat-info">
                             <span>互審中</span>
@@ -1240,26 +1163,64 @@
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="stat-card clickable" onclick="filterByStatus('專審中')" title="篩選專審中題目"
+                    <div class="stat-card clickable interactive-card" onclick="filterByStatus('專審中')" title="篩選專審中題目"
                         style="cursor: pointer;">
                         <div class="stat-icon icon-orange">
-                            <i class="bi bi-person-badge fs-4"></i>
+                            <i class="bi bi-person-badge-fill fs-4"></i>
                         </div>
                         <div class="stat-info">
                             <span>專審中</span>
-                            <h4 id="stat-expert">3</h4>
+                            <h4 id="stat-expert">1</h4>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="stat-card clickable" onclick="filterByStatus('總審中')" title="篩選總審中題目"
+                    <div class="stat-card clickable interactive-card" onclick="filterByStatus('總審中')" title="篩選總審中題目"
                         style="cursor: pointer;">
                         <div class="stat-icon icon-red">
-                            <i class="bi bi-shield-check fs-4"></i>
+                            <i class="bi bi-shield-fill-check fs-4"></i>
                         </div>
                         <div class="stat-info">
                             <span>總審中</span>
-                            <h4 id="stat-final">2</h4>
+                            <h4 id="stat-final">1</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 第二列統計卡片：新增的三種狀態 -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-4">
+                    <div class="stat-card clickable interactive-card" onclick="filterByStatus('採用')" title="篩選採用題目">
+                        <div class="stat-icon" style="background-color: #eff6ff;">
+                            <i class="bi bi-check-circle-fill text-primary" style="font-size: 1.5em;"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span>採用</span>
+                            <h4 id="stat-adopted">1</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card clickable interactive-card" onclick="filterByStatus('改後再審')" title="篩選改後再審題目">
+                        <div class="stat-icon" style="background-color: #fff7ed;">
+                            <i class="bi bi-arrow-counterclockwise text-warning"
+                                style="font-size: 1.5em; font-weight: bold;"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span>改後再審</span>
+                            <h4 id="stat-revise">1</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card clickable interactive-card" onclick="filterByStatus('不採用')" title="篩選不採用題目">
+                        <div class="stat-icon" style="background-color: #f3f4f6;">
+                            <i class="bi bi-x-circle-fill text-secondary" style="font-size: 1.5em;"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span>不採用</span>
+                            <h4 id="stat-rejected">1</h4>
                         </div>
                     </div>
                 </div>
@@ -1271,7 +1232,7 @@
                     <div class="d-flex align-items-center gap-3">
                         <span class="text-secondary small">
                             <i class="bi bi-info-circle me-1"></i>
-                            共 <strong id="visibleCount">8</strong> 筆待審題目
+                            共 <strong id="visibleCount">4</strong> 筆待審題目
                         </span>
                     </div>
                 </div>
@@ -1352,7 +1313,7 @@
 
                             <!-- 專審中 - 範例1 -->
                             <tr class="data-row" data-status="專審中" data-type="一般題目" data-level="高級"
-                                data-json="{&quot;stem&quot;:&quot;下列文句的語氣，何者與其他三者不同？&quot;,&quot;options&quot;:[&quot;多麼美好的一天啊&quot;,&quot;這是誰的傑作&quot;,&quot;你真是太厲害了&quot;,&quot;請把窗戶關上&quot;],&quot;analysis&quot;:&quot;比對感嘆句與祈使句差異。&quot;,&quot;type&quot;:&quot;一般題目&quot;,&quot;grade&quot;:&quot;高級&quot;}">
+                                data-json="{&quot;stem&quot;:&quot;下列文句的語氣，何者與其他三者不同？&quot;,&quot;options&quot;:[&quot;多麼美好的一天啊&quot;,&quot;這是誰的傑作&quot;,&quot;你真是太厲害了&quot;,&quot;請把窗戶關上&quot;],&quot;analysis&quot;:&quot;比對感嘆句與祈使句差異。&quot;,&quot;type&quot;:&quot;一般題目&quot;,&quot;grade&quot;:&quot;高級&quot;,&quot;reviewHistory&quot;:[{&quot;stage&quot;:&quot;mutual&quot;,&quot;stageLabel&quot;:&quot;互審&quot;,&quot;decision&quot;:&quot;採用&quot;,&quot;reviewer&quot;:&quot;王大明&quot;,&quot;comment&quot;:&quot;題目設計良好，符合程度。&quot;,&quot;time&quot;:&quot;2026-01-26 10:00&quot;}]}">
                                 <td class="text-dark fw-medium">
                                     下列文句的語氣，何者與其他三者不同？<br>
                                     <small class="text-muted">題幹：(A)多麼美好的一天啊 (B)這是誰的傑作...</small>
@@ -1619,34 +1580,6 @@
                         <div id="mutualOpinionEdit">
                             <label class="form-label fw-bold small text-secondary required-star">審題意見</label>
                             <div class="quill-master-container border rounded">
-                                <!-- 標點符號工具列 -->
-                                <div
-                                    class="punctuation-toolbar d-flex flex-wrap gap-2 p-2 border-bottom bg-light rounded-top">
-                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                                        data-char="，">，</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                                        data-char="。">。</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                                        data-char="、">、</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                                        data-char="？">？</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                                        data-char="！">！</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                                        data-char="：">：</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                                        data-char="；">；</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                                        data-char="「」" data-back="1">「」</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                                        data-char="『』" data-back="1">『』</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                                        data-char="（）" data-back="1">（）</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                                        data-char="【】" data-back="1">【】</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                                        data-char="……">……</button>
-                                </div>
                                 <!-- Quill 編輯器 -->
                                 <div id="mutualOpinionEditor" style="min-height: 120px;"></div>
                                 <!-- 字數統計 -->
@@ -1698,34 +1631,6 @@
                         <div id="expertOpinionEdit">
                             <label class="form-label fw-bold small text-secondary required-star">審題意見</label>
                             <div class="quill-master-container border rounded">
-                                <!-- 標點符號工具列 -->
-                                <div
-                                    class="punctuation-toolbar d-flex flex-wrap gap-2 p-2 border-bottom bg-light rounded-top">
-                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                                        data-char="，">，</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                                        data-char="。">。</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                                        data-char="、">、</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                                        data-char="？">？</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                                        data-char="！">！</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                                        data-char="：">：</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                                        data-char="；">；</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                                        data-char="「」" data-back="1">「」</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                                        data-char="『』" data-back="1">『』</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                                        data-char="（）" data-back="1">（）</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                                        data-char="【】" data-back="1">【】</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                                        data-char="……">……</button>
-                                </div>
                                 <!-- Quill 編輯器 -->
                                 <div id="expertOpinionEditor" style="min-height: 120px;"></div>
                                 <!-- 字數統計 -->
@@ -1776,34 +1681,6 @@
                         <div id="finalOpinionEdit">
                             <label class="form-label fw-bold small text-secondary required-star">審題意見</label>
                             <div class="quill-master-container border rounded">
-                                <!-- 標點符號工具列 -->
-                                <div
-                                    class="punctuation-toolbar d-flex flex-wrap gap-2 p-2 border-bottom bg-light rounded-top">
-                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                                        data-char="，">，</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                                        data-char="。">。</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                                        data-char="、">、</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                                        data-char="？">？</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                                        data-char="！">！</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                                        data-char="：">：</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                                        data-char="；">；</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                                        data-char="「」" data-back="1">「」</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                                        data-char="『』" data-back="1">『』</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                                        data-char="（）" data-back="1">（）</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                                        data-char="【】" data-back="1">【】</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                                        data-char="……">……</button>
-                                </div>
                                 <!-- Quill 編輯器 -->
                                 <div id="finalOpinionEditor" style="min-height: 120px;"></div>
                                 <!-- 字數統計 -->
@@ -1873,8 +1750,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="js/quill.min.js"></script>
-    <!-- 審題頁面專用邏輯 -->
-    <script src="js/review.js"></script>
+    <script src="js/cwt-review.js"></script>
 </body>
 
 </html>

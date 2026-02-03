@@ -176,7 +176,11 @@ document.addEventListener("DOMContentLoaded", function () {
     initFilter();           // 表格篩選功能
     initTypeSwitcher();     // Modal 內的題型切換顯示
     initAutoSelect();       // [新增] 自動選取單一選項
+    initFilter();           // 表格篩選功能
+    initTypeSwitcher();     // Modal 內的題型切換顯示
+    initAutoSelect();       // [新增] 自動選取單一選項
     updateStats();          // [新增] 初始化統計數字
+    sortPropList();         // [新增] 初始排序
 });
 
 // ==========================================
@@ -486,9 +490,13 @@ window.batchUpdateStatus = function (targetStatus) {
         text = "設為不採用後將鎖定試題，僅保留檢視。";
         icon = "warning";
         confirmBtnColor = "#ef4444"; // 紅色
-    } else if (targetStatus === '改後採用') {
-        text = "改後採用後可再次編輯並重新送審。";
-        icon = "info";
+    } else if (targetStatus === '採用') {
+        text = "設為採用後，將列入有效命題計算。";
+        icon = "success";
+        confirmBtnColor = "#3b82f6"; // 藍色
+    } else if (targetStatus === '改後再審') {
+        text = "設為改後再審，請命題老師修正後再次提交。";
+        icon = "warning";
         confirmBtnColor = "#f97316"; // 橘色
     } else if (targetStatus === '命題完成') {
         text = "設為命題完成代表題目已完成編輯，也還可再進行編輯。";
@@ -546,6 +554,7 @@ window.batchUpdateStatus = function (targetStatus) {
 
             if (typeof resetSelection === 'function') resetSelection();
             updateStats(); // 更新統計
+            sortPropList(); // [新增] 更新後重新排序
             if (typeof updateMasterCheckboxState === 'function') {
                 updateMasterCheckboxState();
             }
@@ -652,32 +661,132 @@ function checkEmptyState() {
 
     // 更新統計數字
     updateStats();
+    // 檢查完是否為空後，順便排序 (確保新增/刪除後順序正確)
+    sortPropList();
 }
 
 function updateStats() {
     // 只計算實際存在的資料列 (不包含 noDataRow)
     const rows = document.querySelectorAll('.data-row');
-    const total = rows.length;
-    let draft = 0;
-    let confirmed = 0;
-    let sent = 0;
 
+    // 1. 初始化所有計數器
+    let draft = 0;      // 命題草稿
+    let confirmed = 0;  // 命題完成
+    let sent = 0;       // 命題送審
+    let adopted = 0;    // 採用
+    let revise = 0;     // 改後再審
+    let rejected = 0;   // 不採用
+    let mutual = 0;     // 互審中
+    let expert = 0;     // 專審中
+    let final = 0;      // 總審中
+
+    // 2. 遍歷並統計
     rows.forEach(row => {
+        // 如果列被隱藏 (例如滑掉)，可能不計入，但在這裡我們通常計算所有 DOM 中的資料列
+        // 若需排除被 filter 隱藏的列，可於此加入判斷
         const status = row.getAttribute('data-status');
+
         if (status === '命題草稿') draft++;
         else if (status === '命題完成') confirmed++;
         else if (status === '命題送審') sent++;
+        else if (status === '採用') adopted++;
+        else if (status === '改後再審') revise++;
+        else if (status === '不採用') rejected++;
+        else if (status === '互審中') mutual++;
+        else if (status === '專審中') expert++;
+        else if (status === '總審中') final++;
     });
 
+    // 3. 取得兩頁可能用到的所有元素
     const elTotal = document.getElementById('stat-total');
+    // 命題頁元素 (cwt-list.html)
     const elDraft = document.getElementById('stat-draft');
     const elConfirmed = document.getElementById('stat-confirmed');
     const elSent = document.getElementById('stat-sent');
+    // 審題頁元素 (cwt-review.html)
+    const elMutual = document.getElementById('stat-mutual');
+    const elExpert = document.getElementById('stat-expert');
+    const elFinal = document.getElementById('stat-final');
+    // 共用元素
+    const elAdopted = document.getElementById('stat-adopted');
+    const elRevise = document.getElementById('stat-revise');
+    const elRejected = document.getElementById('stat-rejected');
 
+    // 4. 計算 Total 邏輯 (依據頁面情境)
+    let total = 0;
+
+    // 情境 A：命題清單 (依據是否有 stat-draft 判斷)
+    if (elDraft) {
+        // 有效命題總計 = 全部排除不採用
+        total = draft + confirmed + sent + adopted + revise; // 不包含 rejected
+    }
+    // 情境 B：審題清單 (依據是否有 stat-mutual 判斷)
+    else if (elMutual) {
+        // 待審總計 = 互審 + 專審 + 總審
+        total = mutual + expert + final;
+    }
+    // 情境 C：若都抓不到，預設為所有有效列 (fallback)
+    else {
+        // 保守計算：只排除不採用
+        // total = ...; 
+        // 暫時維持 0 或根據 rows.length
+    }
+
+    // 5. 更新 DOM (存在才更新)
     if (elTotal) elTotal.innerText = total;
+
     if (elDraft) elDraft.innerText = draft;
     if (elConfirmed) elConfirmed.innerText = confirmed;
     if (elSent) elSent.innerText = sent;
+
+    if (elMutual) elMutual.innerText = mutual;
+    if (elExpert) elExpert.innerText = expert;
+    if (elFinal) elFinal.innerText = final;
+
+    if (elAdopted) elAdopted.innerText = adopted;
+    if (elRevise) elRevise.innerText = revise;
+    if (elRejected) elRejected.innerText = rejected;
+}
+
+// 列表排序邏輯
+function sortPropList() {
+    const tableBody = document.querySelector('tbody');
+    const rows = Array.from(document.querySelectorAll('.data-row'));
+    const noDataRow = document.getElementById('noDataRow');
+
+    // 狀態權重 (數值越小越前面)
+    const statusPriority = {
+        '改後再審': 1,
+        '命題草稿': 2,
+        '命題完成': 3,
+        '命題送審': 4,
+        '採用': 5,
+        '不採用': 6
+    };
+
+    rows.sort((a, b) => {
+        const statusA = a.getAttribute('data-status');
+        const statusB = b.getAttribute('data-status');
+
+        // 1. 狀態排序
+        const scoreA = statusPriority[statusA] || 99;
+        const scoreB = statusPriority[statusB] || 99;
+
+        if (scoreA !== scoreB) {
+            return scoreA - scoreB;
+        }
+
+        // 2. 日期排序 (CreateTime 在第 6 欄，index 5)
+        // 假設格式為 YYYY-MM-DD HH:mm，字串比較即可 (因格式固定)
+        const timeA = a.cells[5].innerText;
+        const timeB = b.cells[5].innerText;
+
+        // 降冪 (最新在最前)
+        return timeB.localeCompare(timeA);
+    });
+
+    // 重新插入 DOM
+    rows.forEach(row => tableBody.insertBefore(row, noDataRow));
 }
 
 // ==========================================
@@ -817,6 +926,19 @@ function initFilter() {
 
     // 5. 初始化：頁面載入時先執行一次，確保等級選單正確
     updateLevelOptions();
+}
+
+// [新增] 點擊統計卡片觸發篩選
+window.filterByStatus = function (status) {
+    const filterStatus = document.getElementById("filterStatus");
+    if (filterStatus) {
+        filterStatus.value = status;
+        // 觸發 change 事件以執行篩選
+        filterStatus.dispatchEvent(new Event('change'));
+
+        // 視覺回饋 (Toast)
+        // showToast(`已篩選：${status}`, 'secondary');
+    }
 }
 
 // ==========================================
