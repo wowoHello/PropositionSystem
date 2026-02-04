@@ -1416,3 +1416,14 @@ body {
 .stat-card:not(.interactive-card) {
     cursor: default;
 }
+/* Sticky Title Section */
+.top-section {
+    position: sticky;
+    top: 0;
+    z-index: 1020;
+    background-color: #fff;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+}
