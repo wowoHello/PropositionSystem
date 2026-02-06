@@ -2205,58 +2205,11 @@
       </div>
     </div>
   </div>
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      // 1. 抓取表格 tbody 內的所有列
-      // 注意：這裡直接抓 tbody 裡的 tr，避免抓到 header
-      const rows = document.querySelectorAll('tbody tr');
 
-      rows.forEach((row, index) => {
-        // 2. 找到「狀態」那個欄位 (第 6 欄)
-        // 為了避免算錯格，我們直接找裡面的 .badge
-        const badge = row.querySelector('.badge-outline');
-
-        if (badge) {
-          // 去除前後空白，確保比對正確
-          const statusText = badge.innerText.trim();
-          // 3. 判斷是否為「命題送審 / 不採用」
-          if (statusText === '命題送審' || statusText === '不採用') {
-
-            // A. 加上鎖定樣式 class
-            row.classList.add('row-locked');
-
-            // B. 真的把 checkbox 停用 (防止全選時被選中)
-            const checkbox = row.querySelector('input[type="checkbox"]');
-            if (checkbox) {
-              checkbox.disabled = true;
-            }
-          }
-        }
-      });
-
-      // 4. 修正全選功能
-      // (確保全選時，不會勾到已鎖定的項目)
-      const selectAllBtn = document.getElementById('selectAll');
-      if (selectAllBtn) {
-        selectAllBtn.addEventListener('change', function () {
-          const isChecked = this.checked;
-          const allCheckboxes = document.querySelectorAll('tbody input[type="checkbox"]');
-
-          allCheckboxes.forEach(cb => {
-            // 只有「沒有被 disabled」的才跟著全選
-            if (!cb.disabled) {
-              cb.checked = isChecked;
-            }
-          });
-        });
-      }
-    });
-  </script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="js/sweetalert2.min.js"></script>
   <script src="js/quill.min.js"></script>
   <script src="js/cwt-list.js"></script>
-  <script src="js/app.js"></script>
 </body>
 
 </html>

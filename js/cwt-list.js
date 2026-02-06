@@ -9,17 +9,41 @@
 // ==========================================
 //  1. 全域設定與工具 (Globals & Utils)
 // ==========================================
+// --- 註冊 Quill 自訂字體 ---
+if (typeof Quill !== 'undefined') {
+    try {
+        const Font = Quill.import('attributors/class/font') || Quill.import('formats/font');
+        Font.whitelist = ['microsoft-jhenghei', 'kaiu', 'times-new-roman', 'arial', 'comic-sans-ms'];
+        Quill.register(Font, true);
+    } catch (e) {
+        console.warn("Quill 字體註冊失敗，將使用預設字體", e);
+    }
+}
 
-// 標點符號工具列 HTML 模板 (確保全站一致)
+// --- Quill 工具列設定 ---
+// 設定 A：全功能 (用於：共用編輯器)
+window.mainToolbar = [
+    [{ 'size': ['small', false, 'large', 'huge'] }],
+    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+    [{ 'font': ['kaiu', 'times-new-roman'] }],
+    [{ 'color': [] }, { 'background': [] }], // 補回背景色
+    [{ 'align': [] }],
+    ['bold', 'underline', 'strike'],
+    ['link'], // 移除 image，因改用附檔上傳
+    [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'list': 'check' }],
+    [{ 'script': 'sub' }, { 'script': 'super' }],
+    [{ 'indent': '-1' }, { 'indent': '+1' }],
+    ['clean']
+];
 
+// 角色對照表
+const RoleMapping = { admin: "系統管理員", reviewer: "審題委員", teacher: "命題教師" };
+const RoleClassMapping = { admin: "role-admin", reviewer: "role-reviewer", teacher: "role-teacher" };
 
-// 綁定標點符號與字數統計
-
-
-// 角色對照
-
-
-
+// 全域變數
+let propModal;
+let toastInstance;
+let currentZoom = 100;
 
 // ==========================================
 //  2. 題型 Handlers
@@ -1621,10 +1645,12 @@ const ShortArticleHandler = (function () {
     };
 })();
 
-// --- Handler 映射表 ---
-
-
-
+// 題型對照表 (Manager)
+const TypeHandlers = {
+    '一般題目': GeneralHandler, '精選題目': GeneralHandler, '閱讀題組': ReadingHandler,
+    '長文題目': LongArticleHandler, '短文題組': ShortArticleHandler,
+    '聽力題目': ListenHandler, '聽力題組': ListenGroupHandler
+};
 
 // 專案切換
 function initProjectHeader() {
@@ -1668,7 +1694,6 @@ window.openPropModal = function (btn, mode) {
 
     const typeSelect = document.getElementById('mType');
     const statusBadge = document.getElementById('mStatusBadge');
-    // 修正：無論是新增還是編輯，都先清空所有表單，避免殘留
     Object.values(TypeHandlers).forEach(h => { if (h && h.clear) h.clear(); });
 
     if (mode === 'create') {
@@ -1708,16 +1733,14 @@ window.saveProp = function (targetStatus) {
     const specificData = handler.collect(targetStatus);
     if (!specificData) return;
 
-    const rowData = {
-        type: type, status: targetStatus, time: getCurrentTime(), ...specificData
-    };
+    const rowData = { type: type, status: targetStatus, time: getCurrentTime(), ...specificData };
     writeToTable(rowData);
     showToast(`已儲存：${targetStatus}`);
     propModal.hide();
 };
 
 window.deleteRow = function (btn) {
-    Swal.fire({ title: '確定刪除?', icon: 'warning', showCancelButton: true, confirmButtonText: '刪除' }).then((r) => {
+    Swal.fire({ title: '確定刪除?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: '刪除' }).then((r) => {
         if (r.isConfirmed) { btn.closest('tr').remove(); checkEmptyState(); showToast('已刪除', 'error'); }
     });
 };
@@ -1726,7 +1749,7 @@ window.batchAction = function (action) {
     if (action !== '刪除') return;
     const checks = document.querySelectorAll('tbody .data-row input:checked:not(:disabled)');
     if (checks.length === 0) return Swal.fire({ icon: 'warning', text: '請先勾選' });
-    Swal.fire({ title: `刪除 ${checks.length} 筆?`, icon: 'warning', showCancelButton: true }).then((r) => {
+    Swal.fire({ title: `刪除 ${checks.length} 筆?`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33' }).then((r) => {
         if (r.isConfirmed) { checks.forEach(c => c.closest('tr').remove()); resetSelection(); checkEmptyState(); showToast('已批次刪除'); }
     });
 };
@@ -1871,156 +1894,7 @@ function initCheckboxLogic() {
 // ==========================================
 //  ★ 修改：核心篩選邏輯 (修復等級篩選 & Tab 連動)
 // ==========================================
-// ==========================================
-//  ★ 修改：核心篩選邏輯 (修復等級篩選 & Tab 連動)
-// ==========================================
-function initFilter() {
-    const tabState = { current: 'working' };
-    const statusGroups = {
-        'working': ['命題草稿', '命題完成', '命題送審'],
-        'review': ['採用', '改後再審', '不採用']
-    };
 
-    // 1. 更新狀態下拉選單
-    const updateStatusDropdown = (group) => {
-        const select = document.getElementById('filterStatus');
-        const currentVal = select.value;
-        select.innerHTML = '<option value="all" selected>全部狀態</option>';
-        statusGroups[group].forEach(status => {
-            select.add(new Option(status, status));
-        });
-        if (!statusGroups[group].includes(currentVal)) select.value = 'all';
-        else select.value = currentVal;
-    };
-
-    // 2. ★ 更新等級下拉選單 (修復失效問題)
-    const updateLevelDropdown = () => {
-        const typeSelect = document.getElementById('filterType');
-        const levelSelect = document.getElementById('filterLevel');
-        const currentType = typeSelect.value;
-        const oldVal = levelSelect.value;
-
-        levelSelect.innerHTML = '<option value="all">全部等級</option>';
-
-        let opts = ['初級', '中級', '中高級', '高級', '優級'];
-        if (currentType.includes('聽力')) {
-            opts = ['難度一', '難度二', '難度三', '難度四']; // 聽力專用
-        }
-
-        opts.forEach(o => levelSelect.add(new Option(o, o)));
-
-        // 嘗試保留原選擇
-        if (opts.includes(oldVal)) levelSelect.value = oldVal;
-        else levelSelect.value = 'all';
-    };
-
-    // 3. 核心篩選與 UI 切換
-    const doFilter = () => {
-        const type = document.getElementById('filterType').value;
-        const status = document.getElementById('filterStatus').value;
-        const level = document.getElementById('filterLevel').value;
-        const key = document.getElementById('searchInput').value.toLowerCase();
-        const allowedStatuses = statusGroups[tabState.current];
-
-        let visibleCount = 0;
-        document.querySelectorAll('.data-row').forEach(row => {
-            const rt = row.getAttribute('data-type');
-            const rs = row.getAttribute('data-status');
-            const rl = row.getAttribute('data-level');
-            const txt = row.cells[1].textContent.toLowerCase();
-
-            let show = true;
-            if (!allowedStatuses.includes(rs)) show = false; // Tab 過濾
-            if (show) {
-                if (type !== 'all' && rt !== type) show = false;
-                if (status !== 'all' && rs !== status) show = false;
-                if (level !== 'all' && rl !== level) show = false;
-                if (key && !txt.includes(key)) show = false;
-            }
-            row.style.display = show ? '' : 'none';
-            if (show) visibleCount++;
-        });
-
-        const noData = document.getElementById('noDataRow');
-        if (noData) noData.style.display = visibleCount === 0 ? 'table-row' : 'none';
-    };
-
-    // --- 事件綁定 ---
-
-    // Tab 切換監聽
-    document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(tab => {
-        tab.addEventListener('shown.bs.tab', function (event) {
-            const targetType = event.target.getAttribute('data-tab-type');
-            tabState.current = targetType;
-
-            // UI 切換邏輯
-            const workingStats = document.getElementById('stats-working');
-            const reviewStats = document.getElementById('stats-review');
-            const hint = document.getElementById('operationHint');
-
-            if (targetType === 'working') {
-                workingStats.classList.remove('d-none');
-                reviewStats.classList.add('d-none');
-                if (hint) hint.classList.remove('d-none');
-            } else {
-                workingStats.classList.add('d-none');
-                reviewStats.classList.remove('d-none');
-                if (hint) hint.classList.add('d-none');
-            }
-
-            updateStatusDropdown(targetType);
-            doFilter();
-        });
-    });
-
-    // 篩選器監聽
-    ['filterStatus', 'filterLevel', 'searchInput'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.addEventListener(el.tagName === 'INPUT' ? 'input' : 'change', doFilter);
-    });
-
-    // ★ 題型改變時，連動等級選單 + 觸發篩選
-    document.getElementById('filterType').addEventListener('change', function () {
-        updateLevelDropdown();
-        doFilter();
-    });
-
-    // 初始化
-    updateLevelDropdown();
-    updateStatusDropdown('working');
-    doFilter();
-
-    // 綁定全域 Filter
-    window.filterByStatus = function (targetStatus) {
-        if (targetStatus === 'all') {
-            const select = document.getElementById('filterStatus');
-            if (select) {
-                select.value = 'all';
-                select.dispatchEvent(new Event('change'));
-            }
-            return;
-        }
-
-        let targetTab = 'working';
-        if (statusGroups['review'].includes(targetStatus)) {
-            targetTab = 'review';
-        }
-
-        const tabBtn = document.querySelector(`button[data-tab-type="${targetTab}"]`);
-        if (tabBtn && !tabBtn.classList.contains('active')) {
-            const bsTab = new bootstrap.Tab(tabBtn);
-            bsTab.show();
-        }
-
-        setTimeout(() => {
-            const select = document.getElementById('filterStatus');
-            if (select) {
-                select.value = targetStatus;
-                select.dispatchEvent(new Event('change'));
-            }
-        }, 50);
-    };
-}
 
 window.changeFontSize = function (dir) {
     if (dir === 1 && currentZoom < 150) currentZoom += 10;
@@ -2030,31 +1904,13 @@ window.changeFontSize = function (dir) {
 };
 window.resetFontSize = function () { currentZoom = 100; changeFontSize(0); };
 
-function initTypeSwitcher() {
-    const s = document.getElementById('mType');
-    if (!s) return;
-    s.addEventListener('change', function () {
-        const v = this.value;
-        document.querySelectorAll('.question-form-group').forEach(el => el.classList.add('d-none'));
-        let tid = 'form-general';
-        if (v === '長文題目') tid = 'form-longarticle';
-        else if (v === '短文題組') tid = 'form-shortarticle';
-        else if (v === '閱讀題組') tid = 'form-reading';
-        else if (v === '聽力題目') tid = 'form-listen';
-        else if (v === '聽力題組') tid = 'form-listengroup';
-        const t = document.getElementById(tid); if (t) t.classList.remove('d-none');
-    });
-}
 
-function initAutoSelect() {
-    document.querySelectorAll('select').forEach(sel => {
-        if (!sel.multiple && sel.options.length > 0) {
-            const valid = Array.from(sel.options).filter(o => o.value && !o.disabled);
-            if (valid.length === 1 && sel.value !== valid[0].value) sel.value = valid[0].value;
-        }
-    });
-}
 
+// ==========================================
+//  7. 初始化與事件綁定 (Initialization)
+// ==========================================
+
+// --- [補回] Missing Utils (Previously Overwritten) ---
 function toggleGlobalEditable(editable) {
     const inputs = document.querySelectorAll('#propModal input:not(#mType):not(.readonly-field), #propModal select:not(#mType):not(.readonly-field), #propModal textarea:not(.readonly-field)');
     inputs.forEach(el => el.disabled = !editable);
@@ -2088,4 +1944,263 @@ function resetSelection() {
     if (m) m.checked = false;
     document.querySelectorAll('tbody input[type="checkbox"]').forEach(c => c.checked = false);
 }
+
+// --- [補回] Type Switcher ---
+function initTypeSwitcher() {
+    const s = document.getElementById('mType');
+    if (!s) return;
+    s.addEventListener('change', function () {
+        const v = this.value;
+        document.querySelectorAll('.question-form-group').forEach(el => el.classList.add('d-none'));
+        let tid = 'form-general';
+        if (v === '長文題目') tid = 'form-longarticle';
+        else if (v === '短文題組') tid = 'form-shortarticle';
+        else if (v === '閱讀題組') tid = 'form-reading';
+        else if (v === '聽力題目') tid = 'form-listen';
+        else if (v === '聽力題組') tid = 'form-listengroup';
+        const t = document.getElementById(tid); if (t) t.classList.remove('d-none');
+    });
+}
+
+// --- [補回] Auto Select ---
+function initAutoSelect() {
+    document.querySelectorAll('select').forEach(sel => {
+        if (!sel.multiple && sel.options.length > 0) {
+            const valid = Array.from(sel.options).filter(o => o.value && !o.disabled);
+            if (valid.length === 1 && sel.value !== valid[0].value) sel.value = valid[0].value;
+        }
+    });
+}
+
+// --- [補回] Tab-aware Filter ---
+function initFilter() {
+    const tabState = { current: 'working' };
+    const statusGroups = {
+        'working': ['命題草稿', '命題完成', '命題送審'],
+        'review': ['採用', '改後再審', '不採用']
+    };
+
+    // 1. 更新狀態下拉選單
+    const updateStatusDropdown = (group) => {
+        const select = document.getElementById('filterStatus');
+        if (!select) return;
+
+        const currentVal = select.value;
+        select.innerHTML = '<option value="all" selected>全部狀態</option>';
+        statusGroups[group].forEach(status => {
+            select.add(new Option(status, status));
+        });
+        if (!statusGroups[group].includes(currentVal)) select.value = 'all';
+        else select.value = currentVal;
+    };
+
+    // 2. 更新等級下拉選單
+    const updateLevelDropdown = () => {
+        const typeSelect = document.getElementById('filterType');
+        const levelSelect = document.getElementById('filterLevel');
+        if (!typeSelect || !levelSelect) return;
+
+        const currentType = typeSelect.value;
+        const oldVal = levelSelect.value;
+
+        levelSelect.innerHTML = '<option value="all">全部等級</option>';
+
+        let opts = ['初級', '中級', '中高級', '高級', '優級'];
+        if (currentType.includes('聽力')) {
+            opts = ['難度一', '難度二', '難度三', '難度四'];
+        }
+
+        opts.forEach(o => levelSelect.add(new Option(o, o)));
+
+        if (opts.includes(oldVal)) levelSelect.value = oldVal;
+        else levelSelect.value = 'all';
+    };
+
+    // 3. 核心篩選與 UI 切換
+    const doFilter = () => {
+        const typeSelect = document.getElementById('filterType');
+        const statusSelect = document.getElementById('filterStatus');
+        const levelSelect = document.getElementById('filterLevel');
+        const searchInput = document.getElementById('searchInput'); // 假設有這個 ID
+
+        const type = typeSelect ? typeSelect.value : 'all';
+        const status = statusSelect ? statusSelect.value : 'all';
+        const level = levelSelect ? levelSelect.value : 'all';
+        const key = searchInput ? searchInput.value.toLowerCase() : '';
+        const allowedStatuses = statusGroups[tabState.current];
+
+        let visibleCount = 0;
+        document.querySelectorAll('.data-row').forEach(row => {
+            const rt = row.getAttribute('data-type');
+            const rs = row.getAttribute('data-status');
+            const rl = row.getAttribute('data-level');
+            const txt = row.cells[1] ? row.cells[1].textContent.toLowerCase() : '';
+
+            let show = true;
+            if (!allowedStatuses.includes(rs)) show = false; // Tab 過濾
+            if (show) {
+                if (type !== 'all' && rt !== type) show = false;
+                if (status !== 'all' && rs !== status) show = false;
+                if (level !== 'all' && rl !== level) show = false;
+                if (key && !txt.includes(key)) show = false;
+            }
+            row.style.display = show ? '' : 'none';
+            if (show) visibleCount++;
+        });
+
+        const noData = document.getElementById('noDataRow');
+        if (noData) noData.style.display = visibleCount === 0 ? 'table-row' : 'none';
+    };
+
+    // --- 事件綁定 ---
+
+    // Tab 切換監聽
+    document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(tab => {
+        tab.addEventListener('shown.bs.tab', function (event) {
+            const targetType = event.target.getAttribute('data-tab-type');
+            if (targetType) {
+                tabState.current = targetType;
+
+                // UI 切換邏輯
+                const workingStats = document.getElementById('stats-working');
+                const reviewStats = document.getElementById('stats-review');
+                const hint = document.getElementById('operationHint');
+
+                if (workingStats) {
+                    if (targetType === 'working') workingStats.classList.remove('d-none');
+                    else workingStats.classList.add('d-none');
+                }
+                if (reviewStats) {
+                    if (targetType === 'review') reviewStats.classList.remove('d-none');
+                    else reviewStats.classList.add('d-none');
+                }
+                if (hint) {
+                    if (targetType === 'working') hint.classList.remove('d-none');
+                    else hint.classList.add('d-none');
+                }
+
+                updateStatusDropdown(targetType);
+                doFilter();
+            }
+        });
+    });
+
+    // 篩選器監聽
+    ['filterStatus', 'filterLevel', 'searchInput'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener(el.tagName === 'INPUT' ? 'input' : 'change', doFilter);
+    });
+
+    // 題型篩選
+    const filterType = document.getElementById('filterType');
+    if (filterType) {
+        filterType.addEventListener('change', function () {
+            updateLevelDropdown();
+            doFilter();
+        });
+    }
+
+    // 初始化
+    updateLevelDropdown();
+    updateStatusDropdown('working');
+    doFilter();
+
+    // 綁定全域 Filter (供外部呼叫)
+    window.filterByStatus = function (targetStatus) {
+        if (targetStatus === 'all') {
+            const select = document.getElementById('filterStatus');
+            if (select) {
+                select.value = 'all';
+                select.dispatchEvent(new Event('change'));
+            }
+            return;
+        }
+
+        let targetTab = 'working';
+        if (statusGroups['review'].includes(targetStatus)) {
+            targetTab = 'review';
+        }
+
+        const tabBtn = document.querySelector(`button[data-tab-type="${targetTab}"]`);
+        if (tabBtn && !tabBtn.classList.contains('active')) {
+            const bsTab = new bootstrap.Tab(tabBtn);
+            bsTab.show();
+        }
+
+        setTimeout(() => {
+            const select = document.getElementById('filterStatus');
+            if (select) {
+                select.value = targetStatus;
+                select.dispatchEvent(new Event('change'));
+            }
+        }, 50);
+    };
+}
+
+// --- Row Locking Logic (From cwt-list.html) ---
+function initRowLocking() {
+    // 1. 處理既有的鎖定列
+    const rows = document.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+        const badge = row.querySelector('.badge-outline');
+        if (badge) {
+            const statusText = badge.innerText.trim();
+            if (isLockedStatus(statusText)) {
+                row.classList.add('row-locked');
+                const checkbox = row.querySelector('input[type="checkbox"]');
+                if (checkbox) checkbox.disabled = true;
+            }
+        }
+    });
+
+    // 2. 修正全選功能
+    const selectAllBtn = document.getElementById('selectAll');
+    if (selectAllBtn) {
+        selectAllBtn.addEventListener('change', function () {
+            const isChecked = this.checked;
+            const allCheckboxes = document.querySelectorAll('tbody input[type="checkbox"]');
+            allCheckboxes.forEach(cb => {
+                if (!cb.disabled) cb.checked = isChecked;
+            });
+        });
+    }
+}
+
+// Helper: 判斷是否鎖定
+function isLockedStatus(status) {
+    return (status === '命題送審' || status === '不採用');
+}
+
+
+// ==========================================
+//  ★ 主要初始化入口 (DOMContentLoaded)
+// ==========================================
+document.addEventListener("DOMContentLoaded", function () {
+    // 1. 初始化 Bootstrap 元件
+    const modalEl = document.getElementById('propModal');
+    if (modalEl) propModal = new bootstrap.Modal(modalEl);
+
+    const toastEl = document.getElementById('liveToast');
+    if (toastEl) toastInstance = new bootstrap.Toast(toastEl);
+
+    // 2. 初始化 Common Editor
+    if (typeof CommonEditorManager !== 'undefined' && CommonEditorManager.init) {
+        CommonEditorManager.init();
+    }
+
+    // 3. 初始化 Handlers
+    Object.values(TypeHandlers).forEach(h => { if (h && h.init) h.init(); });
+
+    // 4. 啟動各功能模組
+    if (typeof initProjectHeader === 'function') initProjectHeader();
+    if (typeof initCheckboxLogic === 'function') initCheckboxLogic();
+
+    initFilter();           // 表格篩選 (含 Tab)
+    initTypeSwitcher();     // Modal 內題型切換
+    initAutoSelect();       // 自動選取
+    initRowLocking();       // 鎖定列處理
+
+    if (typeof updateStats === 'function') updateStats();
+    if (typeof sortPropList === 'function') sortPropList();
+});
 
