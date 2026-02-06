@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
     rel="stylesheet" />
+  <link rel="stylesheet" href="css/css-reset.css">
   <link rel="stylesheet" href="css/cwt-list.css">
   <link rel="stylesheet" href="css/quill.snow.css">
   <link rel="stylesheet" href="css/sweetalert2.css">
@@ -1345,7 +1346,7 @@
   </div>
   <!-- 表單區塊 -->
   <div class="modal fade" id="propModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-dialog modal-fullscreen modal-dialog-centered p-3">
       <div class="modal-content border-0 rounded-4 shadow">
 
         <div class="modal-header border-bottom-0">
@@ -1436,43 +1437,16 @@
                     <i class="bi bi-file-text"></i>
                     二、題目內容與選項
                   </h6>
-                  <div class="mb-3">
-                    <label class="form-label fw-bold small text-secondary required-star">題幹內容</label>
-                    <div class="quill-master-container border rounded-3">
-                      <div class="punctuation-toolbar d-flex flex-wrap gap-2 p-2 border-bottom bg-light rounded-top-3">
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="？">？</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="！">！</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="：">：</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="；">；</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」"
-                          data-back="1">「」</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』"
-                          data-back="1">『』</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）"
-                          data-back="1">（）</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】"
-                          data-back="1">【】</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                          data-char="……">……</button>
-                      </div>
-
-                      <div id="q-editor-content"></div>
-
-                      <div
-                        class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
-                        <span>字數：<span class="count-num" id="count-q-editor-content">0</span></span>
-                      </div>
-                    </div>
-                  </div>
                   <div class="mb-4">
-                    <label class="form-label fw-bold small text-secondary">題目附檔 (圖片/PNG)</label>
-                    <div class="input-group">
-                      <input class="form-control" type="file" id="gAttachment">
+                    <label class="form-label fw-bold small text-secondary required-star">題幹內容</label>
+                    <div class="editor-preview-box border rounded-3 p-3 bg-white mb-2" id="preview-g-content"
+                      data-field="g-content" data-placeholder="點擊輸入題幹內容..." onclick="openCommonEditor(this)"></div>
+                    <input type="hidden" id="hidden-g-content" name="g-content">
+
+                    <div class="attachment-wrapper p-2 border rounded bg-light">
+                      <label class="form-label small fw-bold text-muted mb-1">題幹附檔 (圖片/PNG)</label>
+                      <input class="form-control form-control-sm" type="file" id="file-g-content">
                     </div>
-                    <div class="form-text small mt-1 text-primary d-none" id="gAttachmentName"></div>
                   </div>
 
                   <!-- 選項區域 (移至此處) -->
@@ -1482,171 +1456,59 @@
                     請避免選項長短、語氣明顯差異，以免影響鑑別度
                   </div>
                   <div class="row g-3">
-                    <div class="col-md-12">
+                    <div class="col-md-6 mb-3">
                       <div class="card option-card" id="optionCardA" data-option="A">
                         <div class="option-header-styled">
                           <span class="badge bg-secondary">選項 A</span>
                         </div>
-                        <div class="quill-master-container border">
-                          <div class="punctuation-toolbar d-flex flex-wrap gap-2 p-2 border-bottom bg-light">
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="，">，</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="。">。</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="、">、</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="？">？</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="！">！</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="：">：</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="；">；</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」"
-                              data-back="1">「」</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』"
-                              data-back="1">『』</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）"
-                              data-back="1">（）</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】"
-                              data-back="1">【】</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="……">……</button>
-                          </div>
+                        <div class="editor-preview-box p-3" id="preview-g-optA" data-field="g-optA"
+                          data-placeholder="點擊輸入選項 A 內容..." onclick="openCommonEditor(this)"></div>
+                        <input type="hidden" id="hidden-g-optA">
 
-                          <div id="q-editor-optA"></div>
-
-                          <div
-                            class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
-                            <span>字數：<span class="count-num" id="count-q-editor-optA">0</span></span>
-                          </div>
+                        <div class="attachment-wrapper p-2 border-top bg-light">
+                          <input class="form-control form-control-sm" type="file" id="file-g-optA">
                         </div>
                       </div>
                     </div>
-                    <div class="col-md-12">
+                    <div class="col-md-6 mb-3">
                       <div class="card option-card" id="optionCardB" data-option="B">
                         <div class="option-header-styled">
                           <span class="badge bg-secondary">選項 B</span>
                         </div>
-                        <div class="quill-master-container border">
-                          <div class="punctuation-toolbar d-flex flex-wrap gap-2 p-2 border-bottom bg-light">
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="，">，</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="。">。</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="、">、</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="？">？</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="！">！</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="：">：</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="；">；</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」"
-                              data-back="1">「」</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』"
-                              data-back="1">『』</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）"
-                              data-back="1">（）</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】"
-                              data-back="1">【】</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="……">……</button>
-                          </div>
+                        <div class="editor-preview-box p-3" id="preview-g-optB" data-field="g-optB"
+                          data-placeholder="點擊輸入選項 B 內容..." onclick="openCommonEditor(this)"></div>
+                        <input type="hidden" id="hidden-g-optB">
 
-                          <div id="q-editor-optB" class="option-editor"></div>
-
-                          <div
-                            class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
-                            <span>字數：<span class="count-num" id="count-q-editor-optB">0</span></span>
-                          </div>
+                        <div class="attachment-wrapper p-2 border-top bg-light">
+                          <input class="form-control form-control-sm" type="file" id="file-g-optB">
                         </div>
                       </div>
                     </div>
-                    <div class="col-md-12">
+                    <div class="col-md-6 mb-3">
                       <div class="card option-card" id="optionCardC" data-option="C">
                         <div class="option-header-styled">
                           <span class="badge bg-secondary">選項 C</span>
                         </div>
-                        <div class="quill-master-container border">
-                          <div class="punctuation-toolbar d-flex flex-wrap gap-2 p-2 border-bottom bg-light">
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="，">，</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="。">。</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="、">、</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="？">？</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="！">！</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="：">：</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="；">；</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」"
-                              data-back="1">「」</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』"
-                              data-back="1">『』</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）"
-                              data-back="1">（）</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】"
-                              data-back="1">【】</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="……">……</button>
-                          </div>
+                        <div class="editor-preview-box p-3" id="preview-g-optC" data-field="g-optC"
+                          data-placeholder="點擊輸入選項 C 內容..." onclick="openCommonEditor(this)"></div>
+                        <input type="hidden" id="hidden-g-optC">
 
-                          <div id="q-editor-optC" class="option-editor"></div>
-
-                          <div
-                            class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
-                            <span>字數：<span class="count-num" id="count-q-editor-optC">0</span></span>
-                          </div>
+                        <div class="attachment-wrapper p-2 border-top bg-light">
+                          <input class="form-control form-control-sm" type="file" id="file-g-optC">
                         </div>
                       </div>
                     </div>
-                    <div class="col-md-12">
+                    <div class="col-md-6 mb-3">
                       <div class="card option-card" id="optionCardD" data-option="D">
                         <div class="option-header-styled">
                           <span class="badge bg-secondary">選項 D</span>
                         </div>
-                        <div class="quill-master-container border">
-                          <div class="punctuation-toolbar d-flex flex-wrap gap-2 p-2 border-bottom bg-light">
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="，">，</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="。">。</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="、">、</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="？">？</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="！">！</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="：">：</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="；">；</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」"
-                              data-back="1">「」</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』"
-                              data-back="1">『』</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）"
-                              data-back="1">（）</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】"
-                              data-back="1">【】</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="……">……</button>
-                          </div>
+                        <div class="editor-preview-box p-3" id="preview-g-optD" data-field="g-optD"
+                          data-placeholder="點擊輸入選項 D 內容..." onclick="openCommonEditor(this)"></div>
+                        <input type="hidden" id="hidden-g-optD">
 
-                          <div id="q-editor-optD" class="option-editor"></div>
-
-                          <div
-                            class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
-                            <span>字數：<span class="count-num" id="count-q-editor-optD">0</span></span>
-                          </div>
+                        <div class="attachment-wrapper p-2 border-top bg-light">
+                          <input class="form-control form-control-sm" type="file" id="file-g-optD">
                         </div>
                       </div>
                     </div>
@@ -1679,35 +1541,12 @@
                   </h6>
 
                   <div class="mb-3">
-                    <label class="form-label fw-bold small text-secondary">解析 (紀錄答案理由)</label>
-                    <div class="quill-master-container border rounded-3">
-                      <div class="punctuation-toolbar d-flex flex-wrap gap-2 p-2 border-bottom bg-light rounded-top-3">
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="？">？</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="！">！</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="：">：</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="；">；</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」"
-                          data-back="1">「」</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』"
-                          data-back="1">『』</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）"
-                          data-back="1">（）</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】"
-                          data-back="1">【】</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                          data-char="……">……</button>
-                      </div>
+                    <label class="form-label fw-bold small text-secondary">解析內容</label>
 
-                      <div id="q-editor-explanation"></div>
+                    <div class="editor-preview-box border rounded-3 p-3 bg-white" id="preview-g-explanation"
+                      data-field="g-explanation" data-placeholder="點擊輸入解析..." onclick="openCommonEditor(this)"></div>
 
-                      <div
-                        class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
-                        <span>字數：<span class="count-num" id="count-q-editor-explanation">0</span></span>
-                      </div>
-                    </div>
+                    <input type="hidden" id="hidden-g-explanation" name="g-explanation">
                   </div>
                 </div>
               </div>
@@ -1767,76 +1606,29 @@
                   </div>
 
                   <div class="mb-3">
-                    <label class="form-label fw-bold small text-secondary required-star">內容</label>
-                    <div class="quill-master-container border rounded-3">
-                      <div class="punctuation-toolbar d-flex flex-wrap gap-2 p-2 border-bottom bg-light rounded-top-3">
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="？">？</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="！">！</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="：">：</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="；">；</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」"
-                          data-back="1">「」</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』"
-                          data-back="1">『』</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）"
-                          data-back="1">（）</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】"
-                          data-back="1">【】</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                          data-char="……">……</button>
-                      </div>
-                      <div id="q-long-content"></div>
-                      <div
-                        class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
-                        <span>字數：<span class="count-num" id="count-q-long-content">0</span></span>
-                      </div>
+                    <label class="form-label fw-bold small text-secondary required-star">文章內容</label>
+
+                    <div class="editor-preview-box border rounded-3 p-3 bg-white mb-2" id="preview-l-content"
+                      data-field="l-content" data-placeholder="點擊輸入文章內容..." onclick="openCommonEditor(this)"></div>
+                    <input type="hidden" id="hidden-l-content" name="l-content">
+
+                    <div class="attachment-wrapper p-2 border rounded bg-light">
+                      <label class="form-label small fw-bold text-muted mb-1">題目附檔 (圖片/PNG)</label>
+                      <input class="form-control form-control-sm" type="file" id="lAttachment">
                     </div>
                   </div>
 
-                  <div class="mb-4">
-                    <label class="form-label fw-bold small text-secondary">題目附檔 (圖片/PNG)</label>
-                    <div class="input-group">
-                      <input class="form-control" type="file" id="lAttachment">
-                    </div>
-                    <div class="form-text small mt-1 text-primary d-none" id="lAttachmentName"></div>
-                  </div>
-                </div>
+                  <div class="section-card">
+                    <h6 class="section-title">
+                      <i class="bi bi-lightbulb"></i>
+                      三、詳解與解析改為試題解析（供審題與試後說明參考）
+                    </h6>
+                    <div class="mb-3">
+                      <label class="form-label fw-bold small text-secondary">解析 (紀錄答案理由)</label>
 
-                <div class="section-card">
-                  <h6 class="section-title">
-                    <i class="bi bi-lightbulb"></i>
-                    三、詳解與解析改為試題解析（供審題與試後說明參考）
-                  </h6>
-                  <div class="mb-3">
-                    <label class="form-label fw-bold small text-secondary">解析 (紀錄答案理由)</label>
-                    <div class="quill-master-container border rounded-3">
-                      <div class="punctuation-toolbar d-flex flex-wrap gap-2 p-2 border-bottom bg-light rounded-top-3">
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="？">？</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="！">！</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="：">：</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="；">；</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」"
-                          data-back="1">「」</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』"
-                          data-back="1">『』</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）"
-                          data-back="1">（）</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】"
-                          data-back="1">【】</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                          data-char="……">……</button>
-                      </div>
-                      <div id="q-long-explanation"></div>
-                      <div
-                        class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
-                        <span>字數：<span class="count-num" id="count-q-long-explanation">0</span></span>
-                      </div>
+                      <div class="editor-preview-box border rounded-3 p-3 bg-white" id="preview-l-explanation"
+                        data-field="l-explanation" data-placeholder="點擊輸入解析..." onclick="openCommonEditor(this)"></div>
+                      <input type="hidden" id="hidden-l-explanation" name="l-explanation">
                     </div>
                   </div>
                 </div>
@@ -1900,60 +1692,34 @@
                   </h6>
 
                   <div class="mb-3">
-                    <label class="form-label fw-bold small text-secondary required-star">題目</label>
-                    <input type="text" class="form-control" id="sTopic" placeholder="請輸入標題...">
+                    <label class="form-label fw-bold small text-secondary required-star">題目 (母題)</label>
+                    <div class="editor-preview-box article-preview-box border rounded-3 p-3 bg-white mb-2"
+                      id="preview-sTopic" data-field="sTopic" data-placeholder="點擊輸入母題題目..."
+                      onclick="openCommonEditor(this)"></div>
+                    <input type="hidden" id="hidden-sTopic" name="sTopic">
                   </div>
 
                   <div class="mb-3">
                     <label class="form-label fw-bold small text-secondary required-star">母題文章內容</label>
-                    <div class="quill-master-container border rounded-3">
-                      <div class="punctuation-toolbar d-flex flex-wrap gap-2 p-2 border-bottom bg-light rounded-top-3">
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="？">？</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="！">！</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="：">：</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="；">；</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」"
-                          data-back="1">「」</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』"
-                          data-back="1">『』</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）"
-                          data-back="1">（）</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】"
-                          data-back="1">【】</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                          data-char="……">……</button>
-                      </div>
-                      <div id="q-short-main"></div>
-                      <div
-                        class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
-                        <span>字數：<span class="count-num" id="count-q-short-main">0</span></span>
-                      </div>
-                    </div>
-                  </div>
+                    <div class="editor-preview-box border rounded-3 p-3 bg-white mb-2" id="preview-s-article"
+                      data-field="s-article" data-placeholder="點擊輸入短文內容..." onclick="openCommonEditor(this)"></div>
+                    <input type="hidden" id="hidden-s-article" name="s-article">
 
-                  <div class="mb-4">
-                    <label class="form-label fw-bold small text-secondary">題目附檔 (圖片/PDF)</label>
-                    <div class="input-group">
-                      <input class="form-control" type="file" id="sAttachment">
+                    <div class="attachment-wrapper p-2 border rounded bg-light">
+                      <label class="form-label small fw-bold text-muted mb-1">短文附檔 (圖片/PNG)</label>
+                      <input class="form-control form-control-sm" type="file" id="file-s-article">
                     </div>
-                    <div class="form-text small mt-1 text-primary d-none" id="sAttachmentName"></div>
                   </div>
 
                   <div class="sub-question-container">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                      <h6 class="fw-bold text-dark m-0">
-                        <i class="bi bi-list-ol"></i>
-                        子題列表
-                      </h6>
-                      <button type="button" class="btn btn-sm btn-primary" onclick="Short_AddSub()">
-                        + 新增子題
+                      <h6 class="fw-bold text-dark m-0"><i class="bi bi-list-ol"></i> 子題列表</h6>
+                      <button type="button" class="btn btn-sm btn-primary" id="btn-add-s-sub">
+                        <i class="bi bi-plus-lg"></i> 新增子題
                       </button>
                     </div>
 
-                    <div id="short-sub-container"></div>
+                    <div id="s-sub-questions-container"></div>
 
                     <div id="short-sub-empty" class="text-center py-4 text-muted border border-dashed rounded bg-white">
                       尚未新增任何子題，請點擊右上方按鈕新增。
@@ -2027,32 +1793,12 @@
                   </h6>
 
                   <div class="mb-3">
-                    <label class="form-label fw-bold small text-secondary required-star">母題文章內容</label>
-                    <div class="quill-master-container border rounded-3">
-                      <div class="punctuation-toolbar d-flex flex-wrap gap-2 p-2 border-bottom bg-light rounded-top-3">
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="？">？</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="！">！</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="：">：</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="；">；</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」"
-                          data-back="1">「」</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』"
-                          data-back="1">『』</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）"
-                          data-back="1">（）</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】"
-                          data-back="1">【】</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                          data-char="……">……</button>
-                      </div>
-                      <div id="q-reading-main"></div>
-                      <div
-                        class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
-                        <span>字數：<span class="count-num" id="count-q-reading-main">0</span></span>
-                      </div>
+                    <div class="mb-3">
+                      <label class="form-label fw-bold small text-secondary required-star">母題文章內容</label>
+                      <div class="editor-preview-box article-preview-box border rounded-3 p-3 bg-white mb-2"
+                        id="preview-rArticle" data-field="rArticle" data-placeholder="點擊輸入文章內容..."
+                        onclick="openCommonEditor(this)"></div>
+                      <input type="hidden" id="hidden-rArticle" name="rArticle">
                     </div>
                   </div>
 
@@ -2170,32 +1916,9 @@
 
                   <div class="mb-3">
                     <label class="form-label fw-bold small text-secondary required-star">語音內容</label>
-                    <div class="quill-master-container border rounded-3">
-                      <div class="punctuation-toolbar d-flex flex-wrap gap-2 p-2 border-bottom bg-light rounded-top-3">
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="？">？</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="！">！</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="：">：</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="；">；</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」"
-                          data-back="1">「」</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』"
-                          data-back="1">『』</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）"
-                          data-back="1">（）</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】"
-                          data-back="1">【】</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                          data-char="……">……</button>
-                      </div>
-                      <div id="q-listen-content"></div>
-                      <div
-                        class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
-                        <span>字數：<span class="count-num" id="count-q-listen-content">0</span></span>
-                      </div>
-                    </div>
+                    <div class="editor-preview-box border rounded-3 p-3 bg-white mb-2" id="preview-listen-content"
+                      data-field="listen-content" data-placeholder="請輸入語音內容..." onclick="openCommonEditor(this)"></div>
+                    <input type="hidden" id="hidden-listen-content" name="listen-content">
                   </div>
 
                   <div class="mb-4">
@@ -2212,163 +1935,59 @@
                     請避免選項長短、語氣明顯差異，以免影響鑑別度
                   </div>
                   <div class="row g-3">
-                    <div class="col-md-12">
-                      <div class="card option-card" id="liOptionCardA" data-option="A">
+                    <div class="col-md-6 mb-1">
+                      <div class="card option-card h-100" id="liOptionCardA" data-option="A">
                         <div class="option-header-styled">
                           <span class="badge bg-secondary">選項 A</span>
                         </div>
-                        <div class="quill-master-container border-0">
-                          <div class="punctuation-toolbar d-flex flex-wrap gap-2 p-2 border-bottom bg-light">
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="，">，</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="。">。</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="、">、</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="？">？</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="！">！</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="：">：</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="；">；</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」"
-                              data-back="1">「」</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』"
-                              data-back="1">『』</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）"
-                              data-back="1">（）</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】"
-                              data-back="1">【】</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="……">……</button>
-                          </div>
-                          <div id="q-listen-optA" class="option-editor"></div>
-                          <div
-                            class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
-                            <span>字數：<span class="count-num" id="count-q-listen-optA">0</span></span>
-                          </div>
+                        <div class="editor-preview-box p-3 border-0 bg-white h-100" id="preview-listen-optA"
+                          data-field="listen-optA" data-placeholder="輸入選項 A..." onclick="openCommonEditor(this)"></div>
+                        <input type="hidden" id="hidden-listen-optA">
+
+                        <div class="attachment-wrapper p-2 border-top bg-light">
+                          <input class="form-control form-control-sm" type="file" id="file-listen-optA">
                         </div>
                       </div>
                     </div>
-                    <div class="col-md-12">
-                      <div class="card option-card" id="liOptionCardB" data-option="B">
+                    <div class="col-md-6 mb-1">
+                      <div class="card option-card h-100" id="liOptionCardB" data-option="B">
                         <div class="option-header-styled">
                           <span class="badge bg-secondary">選項 B</span>
                         </div>
-                        <div class="quill-master-container border-0">
-                          <div class="punctuation-toolbar d-flex flex-wrap gap-2 p-2 border-bottom bg-light">
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="，">，</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="。">。</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="、">、</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="？">？</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="！">！</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="：">：</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="；">；</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」"
-                              data-back="1">「」</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』"
-                              data-back="1">『』</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）"
-                              data-back="1">（）</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】"
-                              data-back="1">【】</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="……">……</button>
-                          </div>
-                          <div id="q-listen-optB" class="option-editor"></div>
-                          <div
-                            class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
-                            <span>字數：<span class="count-num" id="count-q-listen-optB">0</span></span>
-                          </div>
+                        <div class="editor-preview-box p-3 border-0 bg-white h-100" id="preview-listen-optB"
+                          data-field="listen-optB" data-placeholder="輸入選項 B..." onclick="openCommonEditor(this)"></div>
+                        <input type="hidden" id="hidden-listen-optB">
+
+                        <div class="attachment-wrapper p-2 border-top bg-light">
+                          <input class="form-control form-control-sm" type="file" id="file-listen-optB">
                         </div>
                       </div>
                     </div>
-                    <div class="col-md-12">
-                      <div class="card option-card" id="liOptionCardC" data-option="C">
+                    <div class="col-md-6 mb-1">
+                      <div class="card option-card h-100" id="liOptionCardC" data-option="C">
                         <div class="option-header-styled">
                           <span class="badge bg-secondary">選項 C</span>
                         </div>
-                        <div class="quill-master-container border-0">
-                          <div class="punctuation-toolbar d-flex flex-wrap gap-2 p-2 border-bottom bg-light">
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="，">，</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="。">。</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="、">、</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="？">？</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="！">！</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="：">：</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="；">；</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」"
-                              data-back="1">「」</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』"
-                              data-back="1">『』</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）"
-                              data-back="1">（）</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】"
-                              data-back="1">【】</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="……">……</button>
-                          </div>
-                          <div id="q-listen-optC" class="option-editor"></div>
-                          <div
-                            class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
-                            <span>字數：<span class="count-num" id="count-q-listen-optC">0</span></span>
-                          </div>
+                        <div class="editor-preview-box p-3 border-0 bg-white h-100" id="preview-listen-optC"
+                          data-field="listen-optC" data-placeholder="輸入選項 C..." onclick="openCommonEditor(this)"></div>
+                        <input type="hidden" id="hidden-listen-optC">
+
+                        <div class="attachment-wrapper p-2 border-top bg-light">
+                          <input class="form-control form-control-sm" type="file" id="file-listen-optC">
                         </div>
                       </div>
                     </div>
-                    <div class="col-md-12">
-                      <div class="card option-card" id="liOptionCardD" data-option="D">
+                    <div class="col-md-6 mb-1">
+                      <div class="card option-card h-100" id="liOptionCardD" data-option="D">
                         <div class="option-header-styled">
                           <span class="badge bg-secondary">選項 D</span>
                         </div>
-                        <div class="quill-master-container border-0">
-                          <div class="punctuation-toolbar d-flex flex-wrap gap-2 p-2 border-bottom bg-light">
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="，">，</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="。">。</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="、">、</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="？">？</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="！">！</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="：">：</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="；">；</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」"
-                              data-back="1">「」</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』"
-                              data-back="1">『』</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）"
-                              data-back="1">（）</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】"
-                              data-back="1">【】</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                              data-char="……">……</button>
-                          </div>
-                          <div id="q-listen-optD" class="option-editor"></div>
-                          <div
-                            class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
-                            <span>字數：<span class="count-num" id="count-q-listen-optD">0</span></span>
-                          </div>
+                        <div class="editor-preview-box p-3 border-0 bg-white h-100" id="preview-listen-optD"
+                          data-field="listen-optD" data-placeholder="輸入選項 D..." onclick="openCommonEditor(this)"></div>
+                        <input type="hidden" id="hidden-listen-optD">
+
+                        <div class="attachment-wrapper p-2 border-top bg-light">
+                          <input class="form-control form-control-sm" type="file" id="file-listen-optD">
                         </div>
                       </div>
                     </div>
@@ -2401,32 +2020,10 @@
 
                   <div class="mb-3">
                     <label class="form-label fw-bold small text-secondary">解析 (紀錄答案理由)</label>
-                    <div class="quill-master-container border rounded-3">
-                      <div class="punctuation-toolbar d-flex flex-wrap gap-2 p-2 border-bottom bg-light rounded-top-3">
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="？">？</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="！">！</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="：">：</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="；">；</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」"
-                          data-back="1">「」</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』"
-                          data-back="1">『』</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）"
-                          data-back="1">（）</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】"
-                          data-back="1">【】</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                          data-char="……">……</button>
-                      </div>
-                      <div id="q-listen-explanation"></div>
-                      <div
-                        class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
-                        <span>字數：<span class="count-num" id="count-q-listen-explanation">0</span></span>
-                      </div>
+                    <div class="editor-preview-box border rounded-3 p-3 bg-white" id="preview-listen-explanation"
+                      data-field="listen-explanation" data-placeholder="點擊輸入解析..." onclick="openCommonEditor(this)">
                     </div>
+                    <input type="hidden" id="hidden-listen-explanation" name="listen-explanation">
                   </div>
 
                   <div id="div-ref-answer" class="mb-3 d-none">
@@ -2515,32 +2112,9 @@
 
                   <div class="mb-3">
                     <label class="form-label fw-bold small text-secondary required-star">語音內容</label>
-                    <div class="quill-master-container border rounded-3">
-                      <div class="punctuation-toolbar d-flex flex-wrap gap-2 p-2 border-bottom bg-light rounded-top-3">
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="？">？</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="！">！</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="：">：</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="；">；</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」"
-                          data-back="1">「」</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』"
-                          data-back="1">『』</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）"
-                          data-back="1">（）</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】"
-                          data-back="1">【】</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                          data-char="……">……</button>
-                      </div>
-                      <div id="q-listengroup-content"></div>
-                      <div
-                        class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
-                        <span>字數：<span class="count-num" id="count-q-listengroup-content">0</span></span>
-                      </div>
-                    </div>
+                    <div class="editor-preview-box border rounded-3 p-3 bg-white mb-2" id="preview-lg-content"
+                      data-field="lg-content" data-placeholder="點擊輸入語音內容..." onclick="openCommonEditor(this)"></div>
+                    <input type="hidden" id="hidden-lg-content" name="lg-content">
                   </div>
 
                   <div class="mb-4">
@@ -2577,7 +2151,6 @@
             </div>
           </form>
         </div>
-
         <div class="modal-footer">
           <button type="button" class="btn btn-light" data-bs-dismiss="modal">取消</button>
           <button type="button" class="btn btn-outline-primary" id="btnSaveDraft"
@@ -2585,7 +2158,6 @@
           <button type="button" class="btn btn-primary fw-bold" id="btnSaveConfirm"
             onclick="saveProp('命題完成')">儲存並確認</button>
         </div>
-
       </div>
     </div>
   </div>
@@ -2597,6 +2169,39 @@
         </div>
         <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
           aria-label="Close"></button>
+      </div>
+    </div>
+  </div>
+  <!-- 共用編輯器 -->
+  <div id="common-editor-backdrop"
+    style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1999; display: none; opacity: 0; transition: opacity 0.3s ease;">
+  </div>
+
+  <div id="common-editor-wrapper" class="fixed-bottom bg-white shadow-lg border-top"
+    style="display: none; z-index: 2000;">
+    <div class="container-fluid p-0">
+      <div class="punctuation-toolbar d-flex flex-wrap gap-1 p-2 bg-light border-bottom">
+        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="？">？</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="！">！</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="：">：</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="；">；</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」" data-back="1">「」</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』" data-back="1">『』</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）" data-back="1">（）</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】" data-back="1">【】</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="……">……</button>
+      </div>
+
+      <div id="common-quill-editor" style="height: 100px;"></div>
+
+      <div class="d-flex justify-content-between align-items-center p-2 bg-light border-top">
+        <div class="small text-secondary ps-2">
+          字數：<span id="common-word-count">0</span>
+        </div>
+        <button type="button" class="btn btn-primary btn-sm px-4" onclick="CommonEditorManager.close()">完成</button>
       </div>
     </div>
   </div>
@@ -2651,6 +2256,7 @@
   <script src="js/sweetalert2.min.js"></script>
   <script src="js/quill.min.js"></script>
   <script src="js/cwt-list.js"></script>
+  <script src="js/app.js"></script>
 </body>
 
 </html>

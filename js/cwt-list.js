@@ -11,263 +11,459 @@
 // ==========================================
 
 // 標點符號工具列 HTML 模板 (確保全站一致)
-const PUNCTUATION_BAR_HTML = `
-<div class="punctuation-toolbar d-flex flex-wrap gap-2 p-2 border-bottom bg-light rounded-top-3">
-    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
-    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
-    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
-    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="？">？</button>
-    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="！">！</button>
-    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="：">：</button>
-    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="；">；</button>
-    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」" data-back="1">「」</button>
-    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』" data-back="1">『』</button>
-    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）" data-back="1">（）</button>
-    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】" data-back="1">【】</button>
-    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="……">……</button>
-</div>`;
 
-// 註冊 Quill 字體
-if (typeof Quill !== 'undefined') {
-    try {
-        const Font = Quill.import('attributors/class/font') || Quill.import('formats/font');
-        Font.whitelist = ['microsoft-jhenghei', 'kaiu', 'times-new-roman', 'arial', 'comic-sans-ms'];
-        Quill.register(Font, true);
-    } catch (e) { console.warn("Quill 字體註冊失敗", e); }
-}
-
-// 統一的 Toolbar 設定
-window.mainToolbar = [
-    [{ 'size': ['small', false, 'large', 'huge'] }],
-    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-    [{ 'font': ['kaiu', 'times-new-roman'] }],
-    [{ 'color': [] }], [{ 'align': [] }],
-    ['bold', 'underline', 'strike'], ['link'],
-    [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'list': 'check' }],
-    [{ 'script': 'sub' }, { 'script': 'super' }],
-    [{ 'indent': '-1' }, { 'indent': '+1' }], ['clean']
-];
-
-window.optionToolbar = [
-    [{ 'size': ['small', false, 'large', 'huge'] }],
-    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-    [{ 'font': ['kaiu', 'times-new-roman'] }],
-    [{ 'color': [] }], [{ 'align': [] }],
-    ['bold', 'underline', 'strike'], ['link'],
-    [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'list': 'check' }],
-    [{ 'script': 'sub' }, { 'script': 'super' }],
-    [{ 'indent': '-1' }, { 'indent': '+1' }], ['clean']
-];
 
 // 綁定標點符號與字數統計
-function bindQuillHelpers(quillInstance, containerId) {
-    const el = document.getElementById(containerId);
-    if (!el) return;
-    const wrapper = el.closest('.quill-master-container');
-    if (!wrapper) return;
 
-    // 1. 標點符號
-    const puncButtons = wrapper.querySelectorAll('.punc-btn');
-    puncButtons.forEach(btn => {
-        btn.onclick = null; // 清除舊事件
-        btn.onclick = function (e) {
-            e.preventDefault();
-            if (!quillInstance.isEnabled()) return;
-            const char = this.getAttribute('data-char');
-            const moveBack = parseInt(this.getAttribute('data-back') || '0');
-            const range = quillInstance.getSelection(true);
-            if (range) {
-                quillInstance.insertText(range.index, char);
-                quillInstance.setSelection(range.index + char.length - moveBack);
-            }
-        };
-    });
-
-    // 2. 字數偵測
-    const countDisplay = wrapper.querySelector('.count-num');
-    if (countDisplay) {
-        const updateCount = () => {
-            const text = quillInstance.getText().trim();
-            countDisplay.innerText = text.length;
-        };
-        updateCount(); // Init
-        quillInstance.on('text-change', updateCount);
-    }
-}
 
 // 角色對照
-const RoleMapping = { admin: "系統管理員", reviewer: "審題委員", teacher: "命題教師" };
-const RoleClassMapping = { admin: "role-admin", reviewer: "role-reviewer", teacher: "role-teacher" };
 
-// 全域變數
-let propModal;
-let toastInstance;
-let currentZoom = 100;
+
+
 
 // ==========================================
 //  2. 題型 Handlers
 // ==========================================
 
-/* --- GeneralHandler (一般/精選) --- */
+// 1. 共用編輯器管理員 (手機輸入模式)
+const CommonEditorManager = {
+    quill: null,
+    activePreview: null,
+    activeHidden: null,
+    backdrop: null,
+
+    init: function () {
+        // 初始化共用實例
+        this.quill = new Quill('#common-quill-editor', {
+            theme: 'snow',
+            modules: { toolbar: window.mainToolbar }
+        });
+
+        this.backdrop = document.getElementById('common-editor-backdrop');
+
+        // 點擊遮罩層時關閉編輯器
+        if (this.backdrop) {
+            this.backdrop.addEventListener('click', () => {
+                this.close();
+            });
+        }
+
+        // 監聽文字變更：即時計算字數與同步預覽
+        this.quill.on('text-change', () => {
+            const text = this.quill.getText().trim();
+            document.getElementById('common-word-count').innerText = text.length;
+
+            if (this.activePreview && this.activeHidden) {
+                const html = this.quill.root.innerHTML === '<p><br></p>' ? '' : this.quill.root.innerHTML;
+                this.activePreview.innerHTML = html;
+                this.activeHidden.value = encodeURIComponent(html);
+            }
+        });
+
+        // 綁定標點符號列按鈕 (沿用原邏輯)
+        document.querySelectorAll('#common-editor-wrapper .punc-btn').forEach(btn => {
+            btn.onclick = (e) => {
+                // 1. 取得符號與回退數值
+                const char = btn.getAttribute('data-char');
+                // 如果沒有 data-back 屬性，預設為 0
+                const moveBack = parseInt(btn.getAttribute('data-back') || '0');
+
+                // 2. 取得當前游標位置
+                const range = this.quill.getSelection(true);
+
+                if (range) {
+                    // 3. 插入文字
+                    this.quill.insertText(range.index, char);
+
+                    // 4. 設定新游標位置：原本位置 + 文字長度 - 回退量
+                    this.quill.setSelection(range.index + char.length - moveBack);
+                }
+            };
+        });
+    },
+
+    open: function (el) {
+        this.activePreview = el;
+        this.activeHidden = document.getElementById('hidden-' + el.getAttribute('data-field'));
+
+        const wrapper = document.getElementById('common-editor-wrapper');
+
+        // 1. 先顯示元素 (此時還在螢幕下方)
+        wrapper.style.display = 'block';
+        if (this.backdrop) this.backdrop.style.display = 'block';
+
+        // 2. 載入內容
+        const content = this.activeHidden.value ? decodeURIComponent(this.activeHidden.value) : '';
+        this.quill.setText('');
+        this.quill.clipboard.dangerouslyPasteHTML(0, content);
+
+        // 3. ★ 關鍵：稍微延遲後加上 .show class，觸發 CSS 滑動動畫
+        // 同時這也解決了 addRange 的錯誤，因為這時候 DOM 已經長出來了
+        setTimeout(() => {
+            wrapper.classList.add('show');
+            if (this.backdrop) this.backdrop.style.opacity = '1';
+            // 等動畫稍微跑一下再 Focus (體驗較好)，或立即 Focus 也可以
+            this.quill.focus();
+
+            // 游標移到最後
+            const len = this.quill.getLength();
+            this.quill.setSelection(len, len);
+        }, 50);
+    },
+
+    close: function () {
+        const wrapper = document.getElementById('common-editor-wrapper');
+
+        // 1. 移除 .show，觸發 CSS 下滑動畫
+        wrapper.classList.remove('show');
+        if (this.backdrop) this.backdrop.style.opacity = '0'; // 遮罩變透明
+        // 2. 等待動畫時間 (300ms) 結束後，再真正隱藏元素
+        setTimeout(() => {
+            wrapper.style.display = 'none';
+            if (this.backdrop) this.backdrop.style.display = 'none';
+
+            this.activePreview = null;
+            this.activeHidden = null;
+        }, 300);
+    }
+};
+
+// 全域喚起函式
+window.openCommonEditor = function (el) {
+    CommonEditorManager.open(el);
+};
+
+// 修改後的 GeneralHandler
 const GeneralHandler = (function () {
-    const quills = {};
+    // 定義類別資料 (從原代碼提取)
     const categoryData = {
-        "文字": ["字音", "字型", "造字原則"], "語詞": ["辭義辨識", "詞彙辨析", "詞性分辨", "語詞應用"],
-        "成語短語": ["短語辨識", "語詞使用", "文義取得"], "造句標點": ["句義", "句法辨析", "標點符號"],
-        "修辭技巧": ["修辭類型", "語態變化"], "語文知識": ["語文知識"], "文意判讀": ["段義辨析"]
+        "文字": ["字音", "字型", "造字原則"],
+        "語詞": ["辭義辨識", "詞彙辨析", "詞性分辨", "語詞應用"],
+        "成語短語": ["短語辨識", "語詞使用", "文義取得"],
+        "造句標點": ["句義", "句法辨析", "標點符號"],
+        "修辭技巧": ["修辭類型", "語態變化"],
+        "語文知識": ["語文知識"],
+        "文意判讀": ["段義辨析"]
     };
 
-    function updateCorrectAnswerDisplay(val) {
-        ['A', 'B', 'C', 'D'].forEach(opt => {
-            const card = document.getElementById(`optionCard${opt}`);
-            if (card) val === opt ? card.classList.add('is-correct-answer') : card.classList.remove('is-correct-answer');
-        });
-        const dropdown = document.getElementById('gCorrectAnswer');
-        if (dropdown) val ? dropdown.classList.add('has-answer') : dropdown.classList.remove('has-answer');
-    }
-
     return {
+        // 初始化：綁定下拉選單邏輯
         init: function () {
             const mainSelect = document.getElementById('gMainCategory');
             const subSelect = document.getElementById('gSubCategory');
+
             if (mainSelect) {
+                // 重置並填入主類選項
                 mainSelect.innerHTML = '<option value="">請選擇...</option>';
                 Object.keys(categoryData).forEach(key => mainSelect.add(new Option(key, key)));
+
+                // 綁定連動事件
                 mainSelect.addEventListener('change', function () {
                     subSelect.innerHTML = '<option value="">請選擇...</option>';
                     if (this.value && categoryData[this.value]) {
                         subSelect.disabled = false;
+                        subSelect.classList.remove('readonly-field');
                         categoryData[this.value].forEach(sub => subSelect.add(new Option(sub, sub)));
                     } else {
                         subSelect.disabled = true;
+                        subSelect.classList.add('readonly-field');
                         subSelect.innerHTML = '<option value="">請先選擇主類</option>';
                     }
                 });
             }
 
-            // Init Quills
-            const configs = [
-                { id: 'q-editor-content', key: 'content', tb: window.mainToolbar },
-                { id: 'q-editor-explanation', key: 'explanation', tb: window.mainToolbar },
-                { id: 'q-editor-optA', key: 'optA', tb: window.optionToolbar },
-                { id: 'q-editor-optB', key: 'optB', tb: window.optionToolbar },
-                { id: 'q-editor-optC', key: 'optC', tb: window.optionToolbar },
-                { id: 'q-editor-optD', key: 'optD', tb: window.optionToolbar }
-            ];
+            // 綁定答案選擇連動
+            const ansSelect = document.getElementById('gCorrectAnswer');
+            if (ansSelect) {
+                ansSelect.addEventListener('change', function () {
+                    // 移除所有選項的高亮
+                    ['A', 'B', 'C', 'D'].forEach(opt => {
+                        const card = document.getElementById(`optionCard${opt}`);
+                        if (card) card.classList.remove('is-correct-answer');
+                    });
 
-            configs.forEach(c => {
-                const el = document.getElementById(c.id);
-                if (el && !quills[c.key] && !el.classList.contains('ql-container')) {
-                    quills[c.key] = new Quill('#' + c.id, { theme: 'snow', modules: { toolbar: c.tb }, placeholder: '請輸入...' });
-                    bindQuillHelpers(quills[c.key], c.id);
-                }
-            });
-
-            const ans = document.getElementById('gCorrectAnswer');
-            if (ans) {
-                const newAns = ans.cloneNode(true);
-                ans.parentNode.replaceChild(newAns, ans);
-                newAns.addEventListener('change', function () { updateCorrectAnswerDisplay(this.value); });
+                    // 加入目前選中的高亮
+                    if (this.value) {
+                        const targetCard = document.getElementById(`optionCard${this.value}`);
+                        if (targetCard) targetCard.classList.add('is-correct-answer');
+                        this.classList.add('has-answer');
+                    } else {
+                        this.classList.remove('has-answer');
+                    }
+                });
             }
         },
+
+        // 清除表單
         clear: function () {
-            ['gLevel', 'gDifficulty', 'gMainCategory', 'gCorrectAnswer'].forEach(id => {
-                const el = document.getElementById(id); if (el) el.value = '';
+            ['gLevel', 'gDifficulty', 'gMainCategory', 'gCorrectAnswer', 'hidden-g-content', 'hidden-g-optA', 'hidden-g-optB', 'hidden-g-optC', 'hidden-g-optD'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
             });
+
+            // 清空預覽區塊
+            ['preview-g-content', 'preview-g-optA', 'preview-g-optB', 'preview-g-optC', 'preview-g-optD'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.innerHTML = '';
+            });
+
+            // 重置檔案欄位
+            document.querySelectorAll('#form-general input[type="file"]').forEach(el => el.value = '');
+
             const sub = document.getElementById('gSubCategory');
-            if (sub) { sub.innerHTML = '<option value="">請先選擇主類</option>'; sub.disabled = true; }
-            Object.values(quills).forEach(q => q.setText(''));
-            updateCorrectAnswerDisplay('');
-            this.toggleEditable(true);
+            if (sub) {
+                sub.innerHTML = '<option value="">請先選擇主類</option>';
+                sub.disabled = true;
+            }
         },
+
+        // 回填資料 (編輯模式)
         fill: function (data, isViewMode) {
-            ['gLevel', 'gDifficulty'].forEach(id => { const el = document.getElementById(id); if (el) el.value = data[id.replace('g', '').toLowerCase()] || ''; });
+            // 1. 回填下拉選單
+            ['gLevel', 'gDifficulty'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = data[id.replace('g', '').toLowerCase()] || '';
+            });
+
             const main = document.getElementById('gMainCategory');
-            if (main) { main.value = data.mainCat || ''; main.dispatchEvent(new Event('change')); }
+            if (main) {
+                main.value = data.mainCat || '';
+                // 觸發 change 以更新次類選單
+                main.dispatchEvent(new Event('change'));
+            }
             const sub = document.getElementById('gSubCategory');
             if (sub && data.subCat) sub.value = data.subCat;
 
-            const setQ = (k, v) => { if (quills[k]) { quills[k].setText(''); if (v) quills[k].clipboard.dangerouslyPasteHTML(0, decodeURIComponent(v)); } };
-            setQ('content', data.content); setQ('explanation', data.explanation);
-            ['A', 'B', 'C', 'D'].forEach(o => setQ(`opt${o}`, data[`opt${o}`]));
+            // 2. 回填：題幹 + 選項 A~D + 解析
+            const setContent = (key, val) => {
+                const hidden = document.getElementById(`hidden-g-${key}`);
+                const preview = document.getElementById(`preview-g-${key}`);
+                if (hidden && preview) {
+                    const decoded = val ? decodeURIComponent(val) : '';
+                    hidden.value = decoded;
+                    preview.innerHTML = decoded;
+                }
+            };
 
+            setContent('content', data.content);
+            ['A', 'B', 'C', 'D'].forEach(opt => setContent(`opt${opt}`, data[`opt${opt}`]));
+
+            // 3. 回填答案
             const ans = document.getElementById('gCorrectAnswer');
-            if (ans) { ans.value = data.ans || ''; updateCorrectAnswerDisplay(data.ans || ''); }
-            this.toggleEditable(!isViewMode);
+            if (ans) {
+                ans.value = data.ans || '';
+                ans.dispatchEvent(new Event('change')); // 觸發高亮
+            }
         },
+
+        // 收集資料 (儲存時)
         collect: function () {
+            // 輔助函數：取得隱藏欄位並編碼
+            const getVal = (id) => {
+                const el = document.getElementById(id);
+                // 共用編輯器已經將內容編碼存入 value 了，所以這裡直接取 value 即可
+                return el ? el.value : '';
+            };
+
             return {
                 level: document.getElementById('gLevel').value,
                 mainCat: document.getElementById('gMainCategory').value,
                 subCat: document.getElementById('gSubCategory').value,
-                content: encodeURIComponent(quills.content.root.innerHTML),
-                summary: quills.content.getText().trim().substring(0, 20) + '...',
+                content: getVal('hidden-g-content'),
+                optA: getVal('hidden-g-optA'),
+                optB: getVal('hidden-g-optB'),
+                optC: getVal('hidden-g-optC'),
+                optD: getVal('hidden-g-optD'),
+                explanation: getVal('hidden-g-explanation'), // 收集解析
+
+                // 這裡摘要只抓文字
+                summary: document.getElementById('preview-g-content').innerText.trim().substring(0, 20) + '...',
                 ans: document.getElementById('gCorrectAnswer').value
             };
-        },
-        toggleEditable: function (editable) {
-            Object.values(quills).forEach(q => q.enable(editable));
-            document.querySelectorAll('#form-general input, #form-general select').forEach(el => {
-                if (el.id !== 'gPropositioner' && el.id !== 'gSubCategory') el.disabled = !editable;
-            });
-            const sub = document.getElementById('gSubCategory');
-            if (sub && editable && document.getElementById('gMainCategory').value) sub.disabled = false;
-            document.querySelectorAll('#form-general .punc-btn').forEach(b => b.disabled = !editable);
         }
     };
 })();
 
+/* --- GeneralHandler (一般/精選) --- */
+// const GeneralHandler = (function () {
+//     const quills = {};
+//     const categoryData = {
+//         "文字": ["字音", "字型", "造字原則"], "語詞": ["辭義辨識", "詞彙辨析", "詞性分辨", "語詞應用"],
+//         "成語短語": ["短語辨識", "語詞使用", "文義取得"], "造句標點": ["句義", "句法辨析", "標點符號"],
+//         "修辭技巧": ["修辭類型", "語態變化"], "語文知識": ["語文知識"], "文意判讀": ["段義辨析"]
+//     };
+
+//     function updateCorrectAnswerDisplay(val) {
+//         ['A', 'B', 'C', 'D'].forEach(opt => {
+//             const card = document.getElementById(`optionCard${opt}`);
+//             if (card) val === opt ? card.classList.add('is-correct-answer') : card.classList.remove('is-correct-answer');
+//         });
+//         const dropdown = document.getElementById('gCorrectAnswer');
+//         if (dropdown) val ? dropdown.classList.add('has-answer') : dropdown.classList.remove('has-answer');
+//     }
+
+//     return {
+//         init: function () {
+//             const mainSelect = document.getElementById('gMainCategory');
+//             const subSelect = document.getElementById('gSubCategory');
+//             if (mainSelect) {
+//                 mainSelect.innerHTML = '<option value="">請選擇...</option>';
+//                 Object.keys(categoryData).forEach(key => mainSelect.add(new Option(key, key)));
+//                 mainSelect.addEventListener('change', function () {
+//                     subSelect.innerHTML = '<option value="">請選擇...</option>';
+//                     if (this.value && categoryData[this.value]) {
+//                         subSelect.disabled = false;
+//                         categoryData[this.value].forEach(sub => subSelect.add(new Option(sub, sub)));
+//                     } else {
+//                         subSelect.disabled = true;
+//                         subSelect.innerHTML = '<option value="">請先選擇主類</option>';
+//                     }
+//                 });
+//             }
+
+//             // Init Quills
+//             const configs = [
+//                 { id: 'q-editor-content', key: 'content', tb: window.mainToolbar },
+//                 { id: 'q-editor-explanation', key: 'explanation', tb: window.mainToolbar },
+//                 { id: 'q-editor-optA', key: 'optA', tb: window.optionToolbar },
+//                 { id: 'q-editor-optB', key: 'optB', tb: window.optionToolbar },
+//                 { id: 'q-editor-optC', key: 'optC', tb: window.optionToolbar },
+//                 { id: 'q-editor-optD', key: 'optD', tb: window.optionToolbar }
+//             ];
+
+//             configs.forEach(c => {
+//                 const el = document.getElementById(c.id);
+//                 if (el && !quills[c.key] && !el.classList.contains('ql-container')) {
+//                     quills[c.key] = new Quill('#' + c.id, { theme: 'snow', modules: { toolbar: c.tb }, placeholder: '請輸入...' });
+//                     bindQuillHelpers(quills[c.key], c.id);
+//                 }
+//             });
+
+//             const ans = document.getElementById('gCorrectAnswer');
+//             if (ans) {
+//                 const newAns = ans.cloneNode(true);
+//                 ans.parentNode.replaceChild(newAns, ans);
+//                 newAns.addEventListener('change', function () { updateCorrectAnswerDisplay(this.value); });
+//             }
+//         },
+//         clear: function () {
+//             ['gLevel', 'gDifficulty', 'gMainCategory', 'gCorrectAnswer'].forEach(id => {
+//                 const el = document.getElementById(id); if (el) el.value = '';
+//             });
+//             const sub = document.getElementById('gSubCategory');
+//             if (sub) { sub.innerHTML = '<option value="">請先選擇主類</option>'; sub.disabled = true; }
+//             Object.values(quills).forEach(q => q.setText(''));
+//             updateCorrectAnswerDisplay('');
+//             this.toggleEditable(true);
+//         },
+//         fill: function (data, isViewMode) {
+//             ['gLevel', 'gDifficulty'].forEach(id => { const el = document.getElementById(id); if (el) el.value = data[id.replace('g', '').toLowerCase()] || ''; });
+//             const main = document.getElementById('gMainCategory');
+//             if (main) { main.value = data.mainCat || ''; main.dispatchEvent(new Event('change')); }
+//             const sub = document.getElementById('gSubCategory');
+//             if (sub && data.subCat) sub.value = data.subCat;
+
+//             const setQ = (k, v) => { if (quills[k]) { quills[k].setText(''); if (v) quills[k].clipboard.dangerouslyPasteHTML(0, decodeURIComponent(v)); } };
+//             setQ('content', data.content); setQ('explanation', data.explanation);
+//             ['A', 'B', 'C', 'D'].forEach(o => setQ(`opt${o}`, data[`opt${o}`]));
+
+//             const ans = document.getElementById('gCorrectAnswer');
+//             if (ans) { ans.value = data.ans || ''; updateCorrectAnswerDisplay(data.ans || ''); }
+//             this.toggleEditable(!isViewMode);
+//         },
+//         collect: function () {
+//             return {
+//                 level: document.getElementById('gLevel').value,
+//                 mainCat: document.getElementById('gMainCategory').value,
+//                 subCat: document.getElementById('gSubCategory').value,
+//                 content: encodeURIComponent(quills.content.root.innerHTML),
+//                 summary: quills.content.getText().trim().substring(0, 20) + '...',
+//                 ans: document.getElementById('gCorrectAnswer').value
+//             };
+//         },
+//         toggleEditable: function (editable) {
+//             Object.values(quills).forEach(q => q.enable(editable));
+//             document.querySelectorAll('#form-general input, #form-general select').forEach(el => {
+//                 if (el.id !== 'gPropositioner' && el.id !== 'gSubCategory') el.disabled = !editable;
+//             });
+//             const sub = document.getElementById('gSubCategory');
+//             if (sub && editable && document.getElementById('gMainCategory').value) sub.disabled = false;
+//             document.querySelectorAll('#form-general .punc-btn').forEach(b => b.disabled = !editable);
+//         }
+//     };
+// })();
+
 /* --- LongArticleHandler (長文題目) --- */
 const LongArticleHandler = (function () {
-    const quills = { content: null, explanation: null };
     return {
-        init: function () {
-            if (document.getElementById('q-long-content') && !document.getElementById('q-long-content').classList.contains('ql-container')) {
-                quills.content = new Quill('#q-long-content', { theme: 'snow', modules: { toolbar: window.mainToolbar }, placeholder: '文章內容...' });
-                bindQuillHelpers(quills.content, 'q-long-content');
-            }
-            if (document.getElementById('q-long-explanation') && !document.getElementById('q-long-explanation').classList.contains('ql-container')) {
-                quills.explanation = new Quill('#q-long-explanation', { theme: 'snow', modules: { toolbar: window.mainToolbar }, placeholder: '解析...' });
-                bindQuillHelpers(quills.explanation, 'q-long-explanation');
-            }
-        },
+        init: function () { },
         clear: function () {
-            ['lType', 'lLevel', 'lDifficulty', 'lTopic'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-            if (quills.content) quills.content.setText('');
-            if (quills.explanation) quills.explanation.setText('');
-            this.toggleEditable(true);
+            // 1. 清空一般欄位
+            ['lLevel', 'lType', 'lDifficulty', 'lTopic'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+
+            // 2. 清空隱藏欄位與預覽區 (內容、解析)
+            ['content', 'explanation'].forEach(key => {
+                const hidden = document.getElementById(`hidden-l-${key}`);
+                const preview = document.getElementById(`preview-l-${key}`);
+                if (hidden) hidden.value = '';
+                if (preview) preview.innerHTML = '';
+            });
+
+            // 3. 清空附檔
+            const file = document.getElementById('lAttachment');
+            if (file) file.value = '';
         },
         fill: function (data, isViewMode) {
-            document.getElementById('lType').value = data.subType || '';
-            document.getElementById('lLevel').value = data.level || '';
-            document.getElementById('lTopic').value = data.topic || '';
-            if (quills.content) { quills.content.setText(''); if (data.content) quills.content.clipboard.dangerouslyPasteHTML(0, decodeURIComponent(data.content)); }
-            this.toggleEditable(!isViewMode);
+            // 1. 回填基本資料
+            const setVal = (id, val) => {
+                const el = document.getElementById(id);
+                if (el) el.value = val || '';
+            };
+            setVal('lType', data.subType);
+            setVal('lLevel', data.level);
+            setVal('lDifficulty', data.difficulty);
+            setVal('lTopic', data.topic);
+
+            // 修正點：隱藏欄位存編碼，預覽區存 HTML
+            const setContent = (key, val) => {
+                const hidden = document.getElementById(`hidden-l-${key}`);
+                const preview = document.getElementById(`preview-l-${key}`);
+                if (hidden && preview) {
+                    preview.innerHTML = val ? decodeURIComponent(val) : '';
+                    hidden.value = val || ''; // 保持編碼
+                }
+            };
+            setContent('content', data.content);
+            setContent('explanation', data.explanation);
         },
         collect: function () {
+            // 輔助函數：取得隱藏欄位並編碼
+            const getVal = (id) => {
+                const el = document.getElementById(id);
+                return el ? el.value : '';
+            };
+
             return {
                 mainCat: '長文題目',
                 subType: document.getElementById('lType').value,
                 level: document.getElementById('lLevel').value,
+                difficulty: document.getElementById('lDifficulty').value,
                 topic: document.getElementById('lTopic').value,
-                content: encodeURIComponent(quills.content.root.innerHTML),
-                summary: document.getElementById('lTopic').value
+                // 從隱藏欄位取值
+                content: getVal('hidden-l-content'),
+                explanation: getVal('hidden-l-explanation'),
+                // 摘要使用標題
+                summary: document.getElementById('lTopic').value || '未命名長文題目'
             };
-        },
-        toggleEditable: function (editable) {
-            if (quills.content) quills.content.enable(editable);
-            if (quills.explanation) quills.explanation.enable(editable);
-            document.querySelectorAll('#form-longarticle input, #form-longarticle select').forEach(el => {
-                if (el.id !== 'lPropositioner') el.disabled = !editable;
-            });
-            document.querySelectorAll('#form-longarticle .punc-btn').forEach(b => b.disabled = !editable);
         }
     };
 })();
 
 /* --- ListenHandler (聽力題目) --- */
 const ListenHandler = (function () {
-    const quills = {};
     const levelData = {
         "難度一": { cores: ["提取訊息"], indicators: ["提取對話與訊息主旨"] },
         "難度二": { cores: ["理解訊息"], indicators: ["理解訊息意圖"] },
@@ -275,6 +471,7 @@ const ListenHandler = (function () {
         "難度四": { cores: ["歸納分析訊息"], indicators: ["歸納或總結訊息內容"] },
         "難度五": { cores: ["統整、闡述或評鑑訊息"], indicators: ["摘要、條列、統整訊息"] }
     };
+
     function updateCorrectAnswerDisplay(val) {
         ['A', 'B', 'C', 'D'].forEach(opt => {
             const card = document.getElementById(`liOptionCard${opt}`);
@@ -283,22 +480,10 @@ const ListenHandler = (function () {
         const d = document.getElementById('liCorrectAnswer');
         if (d) val ? d.classList.add('has-answer') : d.classList.remove('has-answer');
     }
+
     return {
         init: function () {
-            if (document.getElementById('q-listen-content') && !document.getElementById('q-listen-content').classList.contains('ql-container')) {
-                quills.content = new Quill('#q-listen-content', { theme: 'snow', modules: { toolbar: window.mainToolbar } });
-                bindQuillHelpers(quills.content, 'q-listen-content');
-            }
-            if (document.getElementById('q-listen-explanation') && !document.getElementById('q-listen-explanation').classList.contains('ql-container')) {
-                quills.explanation = new Quill('#q-listen-explanation', { theme: 'snow', modules: { toolbar: window.mainToolbar } });
-                bindQuillHelpers(quills.explanation, 'q-listen-explanation');
-            }
-            ['A', 'B', 'C', 'D'].forEach(o => {
-                if (document.getElementById(`q-listen-opt${o}`) && !document.getElementById(`q-listen-opt${o}`).classList.contains('ql-container')) {
-                    quills[`opt${o}`] = new Quill(`#q-listen-opt${o}`, { theme: 'snow', modules: { toolbar: window.optionToolbar } });
-                    bindQuillHelpers(quills[`opt${o}`], `q-listen-opt${o}`);
-                }
-            });
+            // 移除原本 Quill 初始化，改由 HTML 直接綁定 onclick="openCommonEditor(this)"
 
             const lvl = document.getElementById('liLevel');
             if (lvl) {
@@ -320,27 +505,98 @@ const ListenHandler = (function () {
                 ans.parentNode.replaceChild(newAns, ans);
                 newAns.addEventListener('change', function () { updateCorrectAnswerDisplay(this.value); });
             }
+
+            // 綁定 MutationObserver 監聽 Preview Box 變更 (若需要即時檢查可在此實作，目前保持簡單)
         },
         clear: function () {
-            ['liLevel', 'liTopic', 'liCorrectAnswer'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-            Object.values(quills).forEach(q => q.setText(''));
+            ['liLevel', 'liTopic', 'liCorrectAnswer', 'liCore', 'liIndicator', 'liVoiceType', 'liMaterial', 'liAttachment'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+
+            // 清空 Preview Boxes & Hidden Inputs
+            ['listen-content', 'listen-optA', 'listen-optB', 'listen-optC', 'listen-optD', 'listen-explanation'].forEach(key => {
+                const h = document.getElementById(`hidden-${key}`);
+                const p = document.getElementById(`preview-${key}`);
+                if (h) h.value = '';
+                if (p) p.innerHTML = '';
+            });
+
+            // 清空選項附檔 (新增)
+            ['A', 'B', 'C', 'D'].forEach(opt => {
+                const f = document.getElementById(`file-listen-opt${opt}`);
+                if (f) f.value = '';
+            });
+
             updateCorrectAnswerDisplay('');
             this.toggleEditable(true);
         },
         fill: function (data, isViewMode) {
             document.getElementById('liLevel').value = data.level || '';
-            document.getElementById('liLevel').dispatchEvent(new Event('change'));
+            document.getElementById('liLevel').dispatchEvent(new Event('change')); // 觸發連動
+
             document.getElementById('liTopic').value = data.topic || '';
-            if (quills.content) { quills.content.setText(''); if (data.content) quills.content.clipboard.dangerouslyPasteHTML(0, decodeURIComponent(data.content)); }
+            document.getElementById('liVoiceType').value = data.voiceType || '';
+            document.getElementById('liMaterial').value = data.material || '';
+            document.getElementById('liCorrectAnswer').value = data.ans || '';
+            updateCorrectAnswerDisplay(data.ans || '');
+
+            // 回填 Preview Boxes
+            const fillBox = (key, val) => {
+                const h = document.getElementById(`hidden-${key}`);
+                const p = document.getElementById(`preview-${key}`);
+                if (h && p) {
+                    h.value = val || '';
+                    p.innerHTML = val ? decodeURIComponent(val) : '';
+                }
+            };
+
+            fillBox('listen-content', data.content);
+            fillBox('listen-optA', data.optA);
+            fillBox('listen-optB', data.optB);
+            fillBox('listen-optC', data.optC);
+            fillBox('listen-optD', data.optD);
+            fillBox('listen-explanation', data.explanation);
+
             this.toggleEditable(!isViewMode);
         },
         collect: function () {
-            return { level: document.getElementById('liLevel').value, summary: document.getElementById('liTopic').value };
+            const getVal = (id) => { const el = document.getElementById(id); return el ? el.value : ''; };
+
+            return {
+                level: getVal('liLevel'),
+                voiceType: getVal('liVoiceType'),
+                material: getVal('liMaterial'),
+                topic: getVal('liTopic'),
+                summary: getVal('liTopic'),
+                content: getVal('hidden-listen-content'),
+                optA: getVal('hidden-listen-optA'),
+                optB: getVal('hidden-listen-optB'),
+                optC: getVal('hidden-listen-optC'),
+                optD: getVal('hidden-listen-optD'),
+                ans: getVal('liCorrectAnswer'),
+                explanation: getVal('hidden-listen-explanation')
+            };
         },
         toggleEditable: function (editable) {
-            Object.values(quills).forEach(q => q.enable(editable));
-            document.querySelectorAll('#form-listen input, #form-listen select').forEach(el => { if (!el.classList.contains('readonly-field')) el.disabled = !editable; });
-            document.querySelectorAll('#form-listen .punc-btn').forEach(b => b.disabled = !editable);
+            // Preview Boxes state
+            const previews = document.querySelectorAll('#form-listen .editor-preview-box');
+            previews.forEach(el => {
+                if (!editable) {
+                    el.style.pointerEvents = 'none';
+                    el.style.backgroundColor = '#f8f9fa';
+                    el.style.borderColor = '#e9ecef';
+                } else {
+                    el.style.pointerEvents = 'auto';
+                    el.style.backgroundColor = '#fff';
+                    el.style.borderColor = '#dee2e6';
+                }
+            });
+
+            document.querySelectorAll('#form-listen input, #form-listen select').forEach(el => {
+                if (!el.classList.contains('readonly-field')) el.disabled = !editable;
+            });
+            // 標點符號列已移除，無需處理
         }
     };
 })();
@@ -383,27 +639,30 @@ const ListenGroupHandler = (function () {
         }
     }
 
-    // 產生選項 HTML
+    // 產生選項 HTML (改為 Preview Box + 附檔輸入框)
+    // 注意：外部容器會負責 col-md-6 的佈局
     function generateOptionHTML(uid, opt) {
-        return `<div class="card option-card mb-2" id="lgOptCard-${uid}-${opt}">
+        return `
+        <div class="col-md-6 mb-3">
+            <div class="card option-card h-100" id="lgOptCard-${uid}-${opt}">
                 <div class="option-header-styled"><span class="badge bg-secondary">選項 ${opt}</span></div>
-                <div class="quill-master-container border-0">
-                    ${PUNCTUATION_BAR_HTML}
-                    <div id="q-${uid}-opt${opt}" class="option-editor border-0"></div>
-                    <div class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary">
-                        <span>字數：<span class="count-num">0</span></span>
-                    </div>
+                
+                <div class="editor-preview-box p-3 border-0 bg-white" style="min-height: 80px;"
+                     id="preview-${uid}-opt${opt}" 
+                     data-field="${uid}-opt${opt}" 
+                     data-placeholder="輸入選項 ${opt}..."
+                     onclick="openCommonEditor(this)"></div>
+                <input type="hidden" id="hidden-${uid}-opt${opt}">
+
+                <div class="attachment-wrapper p-2 border-top bg-light">
+                    <input class="form-control form-control-sm" type="file" id="file-${uid}-opt${opt}">
                 </div>
-            </div>`;
+            </div>
+        </div>`;
     }
 
     return {
         init: function () {
-            // 初始化母題編輯器
-            if (document.getElementById('q-listengroup-content') && !document.getElementById('q-listengroup-content').classList.contains('ql-container')) {
-                quills.main = new Quill('#q-listengroup-content', { theme: 'snow', modules: { toolbar: window.mainToolbar }, placeholder: '請輸入語音內容...' });
-                bindQuillHelpers(quills.main, 'q-listengroup-content');
-            }
             // 渲染固定子題
             this.renderFixedSubQuestions();
         },
@@ -433,13 +692,13 @@ const ListenGroupHandler = (function () {
                             <div class="row g-2 mb-3 p-3 bg-white border rounded">
                                 <div class="col-md-6">
                                     <label class="form-label small fw-bold text-secondary">核心能力</label>
-                                    <select class="form-select form-select-sm" id="lg-core-${uid}">
+                                    <select class="form-select form-select-sm" id="lg-core-${uid}" disabled>
                                         ${config.cores.map(c => `<option value="${c}">${c}</option>`).join('')}
                                     </select>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label small fw-bold text-secondary">細目指標</label>
-                                    <select class="form-select form-select-sm" id="lg-ind-${uid}">
+                                    <select class="form-select form-select-sm" id="lg-ind-${uid}" disabled>
                                         ${config.indicators.map(i => `<option value="${i}">${i}</option>`).join('')}
                                     </select>
                                 </div>
@@ -447,167 +706,144 @@ const ListenGroupHandler = (function () {
 
                             <div class="mb-4">
                                 <label class="form-label fw-bold small text-secondary required-star">子題內容 (語音腳本)</label>
-                                <div class="quill-master-container border rounded bg-white">
-                                    ${PUNCTUATION_BAR_HTML}
-                                    <div id="q-${uid}-content" class="bg-white"></div>
-                                    <div class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary">
-                                        <span>字數：<span class="count-num">0</span></span>
-                                    </div>
-                                </div>
+                                <div class="editor-preview-box border rounded-3 p-3 bg-white mb-2" 
+                                     id="preview-${uid}-content" 
+                                     data-field="${uid}-content" 
+                                     data-placeholder="點擊輸入子題語音腳本..." 
+                                     onclick="openCommonEditor(this)"></div>
+                                <input type="hidden" id="hidden-${uid}-content">
                             </div>
 
                             <div class="mb-4">
                                 <label class="form-label fw-bold small text-secondary required-star">選項與正確答案</label>
-                                ${['A', 'B', 'C', 'D'].map(opt => generateOptionHTML(uid, opt)).join('')}
-                                
-                                <div class="answer-selector-section mt-2">
-                                    <span class="selector-label"><i class="bi bi-check-circle"></i> 正確答案</span>
-                                    <select class="answer-dropdown" id="lg-ans-select-${uid}">
-                                        <option value="">請選擇...</option>
-                                        <option value="A">選項 A</option><option value="B">選項 B</option><option value="C">選項 C</option><option value="D">選項 D</option>
-                                    </select>
+                                <div class="row g-3">
+                                    ${['A', 'B', 'C', 'D'].map(opt => generateOptionHTML(uid, opt)).join('')}
                                 </div>
                             </div>
+                            
+                            <div class="answer-selector-section">
+                                <span class="selector-label"><i class="bi bi-check-circle"></i> 正確答案</span>
+                                <select class="answer-dropdown" id="lg-ans-select-${uid}" onchange="ListenGroupHandler.onSubAnswerChange('${uid}', this.value)">
+                                    <option value="">請選擇...</option>
+                                    <option value="A">選項 A</option>
+                                    <option value="B">選項 B</option>
+                                    <option value="C">選項 C</option>
+                                    <option value="D">選項 D</option>
+                                </select>
+                            </div>
 
-                            <div class="mb-2">
+                            <div class="mt-3">
                                 <label class="form-label fw-bold small text-secondary">解析</label>
-                                <div class="quill-master-container border rounded bg-white">
-                                    ${PUNCTUATION_BAR_HTML}
-                                    <div id="q-${uid}-explanation" class="bg-white"></div>
-                                </div>
+                                <div class="editor-preview-box border rounded-3 p-3 bg-white" 
+                                     id="preview-${uid}-explanation" 
+                                     data-field="${uid}-explanation" 
+                                     data-placeholder="點擊輸入解析..." 
+                                     onclick="openCommonEditor(this)"></div>
+                                <input type="hidden" id="hidden-${uid}-explanation">
                             </div>
                         </div>
-                    </div>
-                `;
+                    </div>`;
                 container.appendChild(card);
-
-                // 初始化 Quill
-                const tb = window.optionToolbar;
-                const mainTb = window.mainToolbar;
-
-                quills.subs[uid] = {
-                    content: new Quill(`#q-${uid}-content`, { theme: 'snow', modules: { toolbar: mainTb }, placeholder: '請輸入子題語音內容...' }),
-                    optA: new Quill(`#q-${uid}-optA`, { theme: 'snow', modules: { toolbar: tb } }),
-                    optB: new Quill(`#q-${uid}-optB`, { theme: 'snow', modules: { toolbar: tb } }),
-                    optC: new Quill(`#q-${uid}-optC`, { theme: 'snow', modules: { toolbar: tb } }),
-                    optD: new Quill(`#q-${uid}-optD`, { theme: 'snow', modules: { toolbar: tb } }),
-                    explanation: new Quill(`#q-${uid}-explanation`, { theme: 'snow', modules: { toolbar: mainTb } })
-                };
-
-                // ★ 修改：綁定所有編輯器的輔助功能 (標點 & 字數)
-                bindQuillHelpers(quills.subs[uid].content, `q-${uid}-content`);
-                bindQuillHelpers(quills.subs[uid].explanation, `q-${uid}-explanation`);
-                ['A', 'B', 'C', 'D'].forEach(opt => {
-                    bindQuillHelpers(quills.subs[uid][`opt${opt}`], `q-${uid}-opt${opt}`);
-                });
-
-                // 綁定檢查事件 (綠勾勾 & 選項高亮)
-                const checkFn = () => this.checkCompletion(uid);
-
-                // 監聽文字變更
-                quills.subs[uid].content.on('text-change', checkFn);
-                ['A', 'B', 'C', 'D'].forEach(opt => {
-                    quills.subs[uid][`opt${opt}`].on('text-change', checkFn);
-                });
-
-                // 監聽下拉選單
-                const ansSelect = document.getElementById(`lg-ans-select-${uid}`);
-                ansSelect.addEventListener('change', function () {
-                    updateSubCorrectAnswerDisplay(uid, this.value);
-                    checkFn();
-                });
             });
         },
 
-        // 檢查單一子題是否完成 (題目+選項+答案)
+        onSubAnswerChange: function (uid, val) {
+            updateSubCorrectAnswerDisplay(uid, val);
+        },
+
+
+
+
         checkCompletion: function (uid) {
-            const q = quills.subs[uid];
-            if (!q) return;
-
-            // 1. 題目要有字
-            const hasContent = q.content.getText().trim().length > 0;
-
-            // 2. 答案要有選
-            const ans = document.getElementById(`lg-ans-select-${uid}`).value;
-
-            // 3. 所有選項 (A, B, C, D) 都要有字
+            const getVal = (id) => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
+            const hasContent = getVal(`hidden-${uid}-content`).length > 0;
+            const ans = getVal(`lg-ans-select-${uid}`);
             let hasAllOptions = true;
             ['A', 'B', 'C', 'D'].forEach(opt => {
-                if (q[`opt${opt}`].getText().trim().length === 0) hasAllOptions = false;
+                if (getVal(`hidden-${uid}-opt${opt}`).length === 0) hasAllOptions = false;
             });
 
             const checkIcon = document.getElementById(`check-icon-${uid}`);
-
-            // 綜合判斷
-            if (hasContent && ans && hasAllOptions) {
-                checkIcon.classList.remove('d-none');
-            } else {
-                checkIcon.classList.add('d-none');
+            if (checkIcon) {
+                if (hasContent && ans && hasAllOptions) checkIcon.classList.remove('d-none');
+                else checkIcon.classList.add('d-none');
             }
         },
 
         clear: function () {
-            if (quills.main) quills.main.setText('');
-            document.getElementById('lgLevel').value = '';
-            document.getElementById('lgVoiceType').value = '';
-            document.getElementById('lgMaterial').value = '';
-            document.getElementById('lgAttachment').value = '';
+            // 清空主欄位
+            ['lgLevel', 'lgVoiceType', 'lgMaterial', 'lgAttachment'].forEach(id => {
+                const el = document.getElementById(id); if (el) el.value = '';
+            });
+            // 清空主語音內容 Preview Box
+            const hMain = document.getElementById('hidden-lg-content');
+            const pMain = document.getElementById('preview-lg-content');
+            if (hMain) hMain.value = '';
+            if (pMain) pMain.innerHTML = '';
 
-            // 清空所有子題
-            Object.keys(quills.subs).forEach(uid => {
-                const s = quills.subs[uid];
-                s.content.setText('');
-                s.optA.setText('');
-                s.optB.setText('');
-                s.optC.setText('');
-                s.optD.setText('');
-                s.explanation.setText('');
+            // 清空子題
+            subConfigs.forEach(conf => {
+                const uid = `lgsub-${conf.index}`;
 
-                // 重置下拉
+                // Clear Preview Boxes for Sub
+                ['content', 'explanation', 'optA', 'optB', 'optC', 'optD'].forEach(key => {
+                    const h = document.getElementById(`hidden-${uid}-${key}`);
+                    const p = document.getElementById(`preview-${uid}-${key}`);
+                    if (h) h.value = '';
+                    if (p) p.innerHTML = '';
+                });
+
+                // Clear Sub File Inputs
+                ['A', 'B', 'C', 'D'].forEach(opt => {
+                    const f = document.getElementById(`file-${uid}-opt${opt}`);
+                    if (f) f.value = '';
+                });
+
+                // Clear Answer
                 const ans = document.getElementById(`lg-ans-select-${uid}`);
-                if (ans) {
-                    ans.value = '';
-                    updateSubCorrectAnswerDisplay(uid, '');
-                }
-                document.getElementById(`check-icon-${uid}`).classList.add('d-none');
+                if (ans) ans.value = '';
+                updateSubCorrectAnswerDisplay(uid, '');
             });
 
             this.toggleEditable(true);
         },
 
         fill: function (data, isViewMode) {
-            document.getElementById('lgLevel').value = data.level || '';
-            // 回填其他屬性... (略，視實際資料結構)
+            const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
 
-            if (quills.main) {
-                quills.main.setText('');
-                if (data.content) quills.main.clipboard.dangerouslyPasteHTML(0, decodeURIComponent(data.content));
-            }
+            setVal('lgLevel', data.level);
+            setVal('lgVoiceType', data.voiceType);
+            setVal('lgMaterial', data.material);
 
-            // 回填子題資料
-            if (data.subQuestions && Array.isArray(data.subQuestions)) {
-                data.subQuestions.forEach((subData, index) => {
-                    // 根據 index 對應到 lgsub-0 或 lgsub-1
-                    const uid = `lgsub-${index}`;
-                    if (quills.subs[uid]) {
-                        const s = quills.subs[uid];
-                        const safePaste = (q, h) => { if (q && h) { q.setText(''); q.clipboard.dangerouslyPasteHTML(0, decodeURIComponent(h)); } };
+            // Main Content
+            const hMain = document.getElementById('hidden-lg-content');
+            const pMain = document.getElementById('preview-lg-content');
+            if (hMain) hMain.value = data.content || '';
+            if (pMain) pMain.innerHTML = data.content ? decodeURIComponent(data.content) : '';
 
-                        safePaste(s.content, subData.content);
-                        safePaste(s.optA, subData.optA);
-                        safePaste(s.optB, subData.optB);
-                        safePaste(s.optC, subData.optC);
-                        safePaste(s.optD, subData.optD);
-                        safePaste(s.explanation, subData.explanation);
+            // Subs (假設 data.subs 是一個 array)
+            if (data.subs && Array.isArray(data.subs)) {
+                data.subs.forEach((subData, idx) => {
+                    const uid = `lgsub-${idx}`; // 假設順序對應 0, 1
 
-                        const ansSelect = document.getElementById(`lg-ans-select-${uid}`);
-                        if (ansSelect) {
-                            ansSelect.value = subData.ans || '';
-                            updateSubCorrectAnswerDisplay(uid, subData.ans || '');
+                    // Fill Preview Boxes
+                    const fillBox = (key, val) => {
+                        const h = document.getElementById(`hidden-${uid}-${key}`);
+                        const p = document.getElementById(`preview-${uid}-${key}`);
+                        if (h && p) {
+                            h.value = val || '';
+                            p.innerHTML = val ? decodeURIComponent(val) : '';
                         }
+                    };
+                    fillBox('content', subData.content);
+                    fillBox('explanation', subData.explanation);
+                    ['A', 'B', 'C', 'D'].forEach(opt => fillBox(`opt${opt}`, subData[`opt${opt}`]));
 
-                        // 觸發檢查以顯示綠勾勾
-                        this.checkCompletion(uid);
+                    // Fill Answer
+                    const ans = document.getElementById(`lg-ans-select-${uid}`);
+                    if (ans) {
+                        ans.value = subData.ans || '';
+                        updateSubCorrectAnswerDisplay(uid, subData.ans || '');
                     }
                 });
             }
@@ -616,152 +852,158 @@ const ListenGroupHandler = (function () {
         },
 
         collect: function () {
-            // 收集子題資料
-            const subsData = [];
-            subConfigs.forEach((config, idx) => {
-                const uid = `lgsub-${config.index}`;
-                const q = quills.subs[uid];
-                const ans = document.getElementById(`lg-ans-select-${uid}`).value;
-                const core = document.getElementById(`lg-core-${uid}`).value;
-                const ind = document.getElementById(`lg-ind-${uid}`).value;
+            const getVal = (id) => { const el = document.getElementById(id); return el ? el.value : ''; };
 
-                subsData.push({
-                    index: idx,
-                    title: config.title,
-                    core: core,
-                    indicator: ind,
-                    content: encodeURIComponent(q.content.root.innerHTML),
-                    optA: encodeURIComponent(q.optA.root.innerHTML),
-                    optB: encodeURIComponent(q.optB.root.innerHTML),
-                    optC: encodeURIComponent(q.optC.root.innerHTML),
-                    optD: encodeURIComponent(q.optD.root.innerHTML),
-                    explanation: encodeURIComponent(q.explanation.root.innerHTML),
-                    ans: ans
-                });
+            const subs = subConfigs.map(conf => {
+                const uid = `lgsub-${conf.index}`;
+                return {
+                    core: getVal(`lg-core-${uid}`),
+                    indicator: getVal(`lg-ind-${uid}`),
+                    content: getVal(`hidden-${uid}-content`),
+                    explanation: getVal(`hidden-${uid}-explanation`),
+                    ans: getVal(`lg-ans-select-${uid}`),
+                    optA: getVal(`hidden-${uid}-optA`),
+                    optB: getVal(`hidden-${uid}-optB`),
+                    optC: getVal(`hidden-${uid}-optC`),
+                    optD: getVal(`hidden-${uid}-optD`)
+                };
             });
 
             return {
-                mainCat: '聽力題組',
-                level: document.getElementById('lgLevel').value,
-                content: encodeURIComponent(quills.main.root.innerHTML),
-                summary: quills.main.getText().trim().substring(0, 15) + '...',
-                subQuestions: subsData
+                level: getVal('lgLevel'),
+                voiceType: getVal('lgVoiceType'),
+                material: getVal('lgMaterial'),
+                content: getVal('hidden-lg-content'),
+                summary: '聽力題組...', // 示意
+                subs: subs
             };
         },
 
         toggleEditable: function (editable) {
-            if (quills.main) quills.main.enable(editable);
-
-            // 子題 Quill 與 下拉
-            subConfigs.forEach(config => {
-                const uid = `lgsub-${config.index}`;
-                if (quills.subs[uid]) {
-                    Object.values(quills.subs[uid]).forEach(q => q.enable(editable));
-                }
-
-                // 鎖定子題的屬性下拉
-                document.getElementById(`lg-core-${uid}`).disabled = !editable;
-                document.getElementById(`lg-ind-${uid}`).disabled = !editable;
-
-                // 答案下拉選單
-                const ansSelect = document.getElementById(`lg-ans-select-${uid}`);
-                if (ansSelect) ansSelect.disabled = !editable;
+            // 處理 main form inputs
+            document.querySelectorAll('#form-listengroup > .section-card input, #form-listengroup > .section-card select').forEach(el => {
+                if (!el.classList.contains('readonly-field')) el.disabled = !editable;
             });
 
-            // 母題 Inputs
-            const inputs = document.querySelectorAll('#form-listengroup input, #form-listengroup select');
-            inputs.forEach(input => {
-                if (input.classList.contains('readonly-field')) {
-                    input.disabled = true;
+            // 處理 dynamic subquestion inputs
+            document.querySelectorAll('#listengroup-sub-container input, #listengroup-sub-container select').forEach(el => {
+                if (!el.id.startsWith('lg-core-') && !el.id.startsWith('lg-ind-')) {
+                    el.disabled = !editable;
+                }
+            });
+
+            // Handle All Preview Boxes in this form
+            const previews = document.querySelectorAll('#form-listengroup .editor-preview-box');
+            previews.forEach(el => {
+                if (!editable) {
+                    el.style.pointerEvents = 'none';
+                    el.style.backgroundColor = '#f8f9fa';
+                    el.style.borderColor = '#e9ecef';
                 } else {
-                    input.disabled = !editable;
+                    el.style.pointerEvents = 'auto';
+                    el.style.backgroundColor = '#fff';
+                    el.style.borderColor = '#dee2e6';
                 }
-            });
-
-            // 切換標點符號按鈕
-            const puncBtns = document.querySelectorAll('#form-listengroup .punc-btn');
-            puncBtns.forEach(btn => {
-                btn.disabled = !editable;
             });
         }
     };
 })();
 
+// ★ 功能：更新子題選項卡片的正確答案標示 (綠色邊框)
+function updateSubCorrectAnswerDisplay(uid, selectedValue) {
+    ['A', 'B', 'C', 'D'].forEach(opt => {
+        const card = document.getElementById(`optCard-${uid}-${opt}`);
+        if (card) {
+            if (opt === selectedValue) card.classList.add('is-correct-answer');
+            else card.classList.remove('is-correct-answer');
+        }
+    });
+    const dropdown = document.getElementById(`ans-select-${uid}`);
+    if (dropdown) {
+        if (selectedValue) dropdown.classList.add('has-answer');
+        else dropdown.classList.remove('has-answer');
+    }
+}
+
 /* --- ReadingHandler (閱讀題組) --- */
 const ReadingHandler = (function () {
-    const quills = { main: null, subs: {} };
-    // 用於 DOM ID 的唯一計數 (不顯示給使用者，確保程式不衝突)
+    // 用於 DOM ID 的唯一計數
     let subQuestionUidCounter = 0;
-    // ★ 新增：用於顯示的題號計數器 (只增不減，刪除不回補)
+    // 用於顯示的題號計數器 (只增不減)
     let displaySequence = 0;
-    // 選項 HTML 生成器 (保持原檔邏輯，但配合 CSS class)
-    function generateOptionHTML(uid, opt) {
-        return `<div class="card option-card mb-2" id="optCard-${uid}-${opt}">
-                <div class="option-header-styled"><span class="badge bg-secondary">選項 ${opt}</span></div>
-                <div class="quill-master-container border-0">
-                    ${PUNCTUATION_BAR_HTML} 
-                    <div id="q-${uid}-opt${opt}" class="option-editor border-0"></div>
-                    <div class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary">
-                        <span>字數：<span class="count-num">0</span></span>
-                    </div>
-                </div>
-            </div>`;
-    }
 
-    // ★ 功能：更新子題選項卡片的正確答案標示 (綠色邊框)
-    function updateSubCorrectAnswerDisplay(uid, selectedValue) {
-        ['A', 'B', 'C', 'D'].forEach(opt => {
-            const card = document.getElementById(`optCard-${uid}-${opt}`);
-            if (card) {
-                if (opt === selectedValue) card.classList.add('is-correct-answer');
-                else card.classList.remove('is-correct-answer');
-            }
-        });
-        const dropdown = document.getElementById(`ans-select-${uid}`);
-        if (dropdown) {
-            if (selectedValue) dropdown.classList.add('has-answer');
-            else dropdown.classList.remove('has-answer');
-        }
-    }
+
 
     return {
         init: function () {
-            // 防止重複初始化
-            if (document.getElementById('q-reading-main') && !document.getElementById('q-reading-main').classList.contains('ql-container')) {
-                quills.main = new window.Quill('#q-reading-main', { theme: 'snow', modules: { toolbar: window.mainToolbar }, placeholder: '文章內容...' });
-                bindQuillHelpers(quills.main, 'q-reading-main');
-            }
             // 綁定全域函式供 HTML onclick 使用
             window.Reading_AddSub = () => this.addSubQuestion(null, false);
             window.Reading_RemoveSub = (uid) => this.removeSubQuestion(uid);
         },
+
         clear: function () {
             ['rLevel', 'rGenre', 'rDifficulty'].forEach(id => document.getElementById(id).value = '');
-            if (quills.main) quills.main.setText('');
+
+            // 清除母題文章 (Common Editor)
+            const hMain = document.getElementById('hidden-rArticle');
+            const pMain = document.getElementById('preview-rArticle');
+            if (hMain) hMain.value = '';
+            if (pMain) pMain.innerHTML = '';
+
             document.getElementById('sub-questions-container').innerHTML = '';
-            quills.subs = {};
             displaySequence = 0;
             this.toggleEditable(true);
             this.checkEmptyState();
         },
+
         fill: function (data, isViewMode) {
             document.getElementById('rLevel').value = data.level || '';
-            if (quills.main) { quills.main.setText(''); if (data.content) quills.main.clipboard.dangerouslyPasteHTML(0, decodeURIComponent(data.content)); }
+            document.getElementById('rGenre').value = data.genre || '';
+            document.getElementById('rDifficulty').value = data.difficulty || '';
+
+            // 回填母題文章 (Common Editor)
+            const hMain = document.getElementById('hidden-rArticle');
+            const pMain = document.getElementById('preview-rArticle');
+            if (hMain && pMain) {
+                hMain.value = data.content || '';
+                pMain.innerHTML = data.content ? decodeURIComponent(data.content) : '';
+            }
+
             document.getElementById('sub-questions-container').innerHTML = '';
-            quills.subs = {};
-            // ★ 重置顯示編號 (讀取舊資料時，從頭開始發號碼牌)
+            // ★ 重置顯示編號
             displaySequence = 0;
             // 回填子題
             if (data.subQuestions) data.subQuestions.forEach(sub => this.addSubQuestion(sub, false));
             this.checkEmptyState();
             this.toggleEditable(!isViewMode);
         },
+
         collect: function () {
-            return {
+            const getVal = (id) => { const el = document.getElementById(id); return el ? el.value : ''; };
+
+            const result = {
                 level: document.getElementById('rLevel').value,
-                content: encodeURIComponent(quills.main.root.innerHTML),
-                summary: '閱讀題組...' // 實際應從內容擷取
+                genre: document.getElementById('rGenre').value,
+                difficulty: document.getElementById('rDifficulty').value,
+                content: getVal('hidden-rArticle'), // 改為從 hidden input 取值
+                summary: '閱讀題組', // 實際可優化
+                subQuestions: []
             };
+
+            document.querySelectorAll('#sub-questions-container .sub-question-card').forEach(card => {
+                const uid = card.id.replace('card-', '');
+                result.subQuestions.push({
+                    content: getVal(`hidden-${uid}_content`),
+                    optA: getVal(`hidden-${uid}_optA`),
+                    optB: getVal(`hidden-${uid}_optB`),
+                    optC: getVal(`hidden-${uid}_optC`),
+                    optD: getVal(`hidden-${uid}_optD`),
+                    ans: document.getElementById(`ans-select-${uid}`).value,
+                    explanation: getVal(`hidden-${uid}_explanation`)
+                });
+            });
+
+            return result;
         },
         addSubQuestion: function (data = null, isOpen = false) {
             const container = document.getElementById('sub-questions-container');
@@ -774,7 +1016,65 @@ const ReadingHandler = (function () {
             card.className = 'card mb-3 sub-question-card shadow-sm border-0';
             card.id = `card-${uid}`;
 
-            // ★ 修正重點 1 & 3：手風琴結構 + 綠勾勾 + 刪除按鈕
+            // --- 內部 helpers (仿 ShortArticleHandler) ---
+
+            // 1. 一般欄位 (題目、解析)
+            const buildStandardField = (fieldKey, placeholder, label = '', showAttachment = false) => {
+                const uniqueFieldId = `${uid}_${fieldKey}`;
+                const valEncoded = data && data[fieldKey] ? data[fieldKey] : '';
+                const valDecoded = valEncoded ? decodeURIComponent(valEncoded) : '';
+
+                const attachmentHTML = showAttachment ? `
+                    <div class="attachment-wrapper p-2 border rounded bg-light mt-0">
+                        <label class="form-label small fw-bold text-muted mb-1">附檔 (圖片/PNG)</label>
+                        <input class="form-control form-control-sm" type="file" id="file-${uniqueFieldId}">
+                    </div>
+                ` : '';
+
+                return `
+                    <div class="mb-3">
+                        ${label ? `<label class="form-label fw-bold small text-secondary required-star">${label}</label>` : ''}                    
+                        <div class="editor-preview-box border rounded-3 p-3 bg-white mb-2" 
+                                id="preview-${uniqueFieldId}" 
+                                data-field="${uniqueFieldId}" 
+                                data-placeholder="${placeholder}"
+                                onclick="openCommonEditor(this)">${valDecoded}</div>
+                        <input type="hidden" id="hidden-${uniqueFieldId}" value="${valEncoded}">                    
+                        ${attachmentHTML}
+                    </div>
+                `;
+            };
+
+            // 2. 選項卡片 (仿 form-general 結構：Card + Attachment)
+            const buildOptionCard = (optLabel, fieldKey) => {
+                const uniqueFieldId = `${uid}_${fieldKey}`;
+                const valEncoded = data && data[fieldKey] ? data[fieldKey] : '';
+                const valDecoded = valEncoded ? decodeURIComponent(valEncoded) : '';
+
+                return `
+                    <div class="col-md-6 mb-1">
+                        <div class="card option-card" id="optCard-${uid}-${optLabel}" data-option="${optLabel}">
+                            <div class="option-header-styled">
+                                <span class="badge bg-secondary">選項 ${optLabel}</span>
+                            </div>
+                            <div class="p-0 d-flex flex-column">
+                                 <div class="editor-preview-box p-3"
+                                     id="preview-${uniqueFieldId}"
+                                     data-field="${uniqueFieldId}"
+                                     data-placeholder="輸入選項 ${optLabel}..."
+                                     onclick="openCommonEditor(this)">${valDecoded}</div>
+                                <input type="hidden" id="hidden-${uniqueFieldId}" value="${valEncoded}">
+                                
+                                <div class="attachment-wrapper p-2 border-top bg-light">
+                                    <input class="form-control form-control-sm" type="file" id="file-${uniqueFieldId}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            };
+
+            // ★ 修正重點 1 & 3：手風琴結構 + 綠勾勾 + 刪除按鈕 (仿 ShortArticleHandler)
             card.innerHTML = `
                 <div class="card-header sub-accordion-btn bg-white border d-flex justify-content-between align-items-center ${isOpen ? '' : 'collapsed'}" 
                      data-bs-toggle="collapse" data-bs-target="#collapse-${uid}" aria-expanded="${isOpen}" style="cursor:pointer">
@@ -788,37 +1088,45 @@ const ReadingHandler = (function () {
                 
                 <div id="collapse-${uid}" class="collapse ${isOpen ? 'show' : ''} border border-top-0 rounded-bottom" data-bs-parent="#sub-questions-container">
                     <div class="card-body bg-light">
-                        <div class="mb-4">
-                            <label class="form-label fw-bold small text-secondary required-star">題目</label>
-                            <div class="quill-master-container border rounded bg-white">
-                                ${PUNCTUATION_BAR_HTML} <div id="q-${uid}-content" class="bg-white"></div>
-                                <div class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary">
-                                    <span>字數：<span class="count-num">0</span></span>
-                                </div>
-                            </div>
-                        </div>
+                        <!-- 題目 -->
+                        ${buildStandardField('content', '輸入子題題目...', '題目', true)}
                         
                         <div class="mb-4">
                             <label class="form-label fw-bold small text-secondary required-star">選項與正確答案</label>
-                            ${['A', 'B', 'C', 'D'].map(opt => generateOptionHTML(uid, opt)).join('')}
+                            <div class="alert-hint small py-2 mb-2">
+                                <i class="bi bi-exclamation-circle-fill"></i> 請避免選項長短、語氣明顯差異，以免影響鑑別度
+                            </div>
+                            <div class="row g-3">
+                                ${buildOptionCard('A', 'optA')}
+                                ${buildOptionCard('B', 'optB')}
+                                ${buildOptionCard('C', 'optC')}
+                                ${buildOptionCard('D', 'optD')}
+                            </div>
                             
-                            <div class="answer-selector-section mt-2">
+                            <div class="answer-selector-section mt-3">
                                 <span class="selector-label"><i class="bi bi-check-circle"></i> 正確答案</span>
                                 <select class="answer-dropdown" id="ans-select-${uid}">
                                     <option value="">請選擇...</option>
-                                    <option value="A">選項 A</option><option value="B">選項 B</option><option value="C">選項 C</option><option value="D">選項 D</option>
+                                    <option value="A" ${data && data.ans === 'A' ? 'selected' : ''}>選項 A</option>
+                                    <option value="B" ${data && data.ans === 'B' ? 'selected' : ''}>選項 B</option>
+                                    <option value="C" ${data && data.ans === 'C' ? 'selected' : ''}>選項 C</option>
+                                    <option value="D" ${data && data.ans === 'D' ? 'selected' : ''}>選項 D</option>
                                 </select>
+                                <span class="selector-hint">
+                                    <i class="bi bi-info-circle me-1"></i> 選擇後會在對應選項顯示標記
+                                </span>
                             </div>
                         </div>
                         
+                        <!-- 解析 -->
                         <div class="mb-2">
-                            <label class="form-label fw-bold small text-secondary">解析</label>
-                            <div class="quill-master-container border rounded bg-white">
-                                ${PUNCTUATION_BAR_HTML} <div id="q-${uid}-explanation" class="bg-white"></div>
-                                <div class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary">
-                                    <span>字數：<span class="count-num">0</span></span>
-                                </div>
-                            </div>
+                             <label class="form-label fw-bold small text-secondary">解析</label>
+                            <div class="editor-preview-box border rounded-3 p-3 bg-white" 
+                                    id="preview-${uid}_explanation" 
+                                    data-field="${uid}_explanation" 
+                                    data-placeholder="輸入解析(批說)..."
+                                    onclick="openCommonEditor(this)">${data && data.explanation ? decodeURIComponent(data.explanation) : ''}</div>
+                            <input type="hidden" id="hidden-${uid}_explanation" value="${data && data.explanation ? data.explanation : ''}">
                         </div>
                     </div>
                 </div>
@@ -826,56 +1134,39 @@ const ReadingHandler = (function () {
             container.appendChild(card);
             this.checkEmptyState();
 
-            // 初始化 Quill
-            const tb = window.optionToolbar;
-            const mainTb = window.mainToolbar;
-
-            quills.subs[uid] = {
-                content: new Quill(`#q-${uid}-content`, { theme: 'snow', modules: { toolbar: mainTb }, placeholder: '題目...' }),
-                optA: new Quill(`#q-${uid}-optA`, { theme: 'snow', modules: { toolbar: tb } }),
-                optB: new Quill(`#q-${uid}-optB`, { theme: 'snow', modules: { toolbar: tb } }),
-                optC: new Quill(`#q-${uid}-optC`, { theme: 'snow', modules: { toolbar: tb } }),
-                optD: new Quill(`#q-${uid}-optD`, { theme: 'snow', modules: { toolbar: tb } }),
-                explanation: new Quill(`#q-${uid}-explanation`, { theme: 'snow', modules: { toolbar: mainTb } })
-            };
-
-            // 綁定標點符號功能與字數
-            bindQuillHelpers(quills.subs[uid].content, `q-${uid}-content`);
-            bindQuillHelpers(quills.subs[uid].explanation, `q-${uid}-explanation`);
-
             // 綁定檢查事件
             const checkFn = () => this.checkCompletion(uid);
 
-            // 監聽題目變更
-            quills.subs[uid].content.on('text-change', checkFn);
-
-            ['A', 'B', 'C', 'D'].forEach(opt => {
-                quills.subs[uid][`opt${opt}`].on('text-change', checkFn);
-                // ★ 修正：綁定選項的標點符號工具列
-                bindQuillHelpers(quills.subs[uid][`opt${opt}`], `q-${uid}-opt${opt}`);
-            });
-
-            // 監聽下拉選單變更 (同時觸發高亮與綠勾勾檢查)
+            // 監聽下拉選單變更
             const ansSelect = document.getElementById(`ans-select-${uid}`);
             ansSelect.addEventListener('change', function () {
                 updateSubCorrectAnswerDisplay(uid, this.value);
                 checkFn();
             });
 
-            // 如果有資料則回填
-            if (data) {
-                const safePaste = (q, h) => { if (q && h) { q.setText(''); q.clipboard.dangerouslyPasteHTML(0, decodeURIComponent(h)); } };
-                safePaste(quills.subs[uid].content, data.content);
-                // ... 其他回填邏輯
+            // 監聽 Preview Box 變更 (透過 MutationObserver)
+            ['content', 'optA', 'optB', 'optC', 'optD'].forEach(key => {
+                const box = document.getElementById(`preview-${uid}_${key}`);
+                if (box) {
+                    const observer = new MutationObserver(() => {
+                        checkFn();
+                    });
+                    observer.observe(box, { childList: true, subtree: true, characterData: true });
+                }
+            });
+
+            // 如果有資料則回填正確答案 (內容已在 HTML string 中回填)
+            if (data && data.ans) {
+                ansSelect.value = data.ans;
+                updateSubCorrectAnswerDisplay(uid, data.ans);
             }
+            checkFn(); // 初始檢查
         },
         // ★ 修正重點 4：綠勾勾邏輯 (必須題目有內容 且 答案已選)
+        // ★ 修正重點 4：綠勾勾邏輯 (必須題目有內容 且 答案已選)
         checkCompletion: function (uid) {
-            const q = quills.subs[uid];
-            if (!q) return;
-
             // 1. 題目要有字
-            const hasTopic = q.content.getText().trim().length > 0;
+            const hasTopic = (document.getElementById(`hidden-${uid}_content`)?.value || '').trim().length > 0;
 
             // 2. 答案要有選
             const ans = document.getElementById(`ans-select-${uid}`).value;
@@ -883,18 +1174,18 @@ const ReadingHandler = (function () {
             // 3. 所有選項 (A, B, C, D) 都要有字
             let hasAllOptions = true;
             ['A', 'B', 'C', 'D'].forEach(opt => {
-                if (q[`opt${opt}`].getText().trim().length === 0) {
-                    hasAllOptions = false;
-                }
+                const val = (document.getElementById(`hidden-${uid}_opt${opt}`)?.value || '').trim();
+                if (val.length === 0) hasAllOptions = false;
             });
 
             const checkIcon = document.getElementById(`check-icon-${uid}`);
-
-            // 綜合判斷
-            if (hasTopic && ans && hasAllOptions) {
-                checkIcon.classList.remove('d-none');
-            } else {
-                checkIcon.classList.add('d-none');
+            if (checkIcon) {
+                // 綜合判斷
+                if (hasTopic && ans && hasAllOptions) {
+                    checkIcon.classList.remove('d-none');
+                } else {
+                    checkIcon.classList.add('d-none');
+                }
             }
         },
         // ★ 修正重點 2：刪除確認 (SweetAlert)
@@ -910,7 +1201,6 @@ const ReadingHandler = (function () {
                 if (result.isConfirmed) {
                     const el = document.getElementById(`card-${uid}`);
                     if (el) el.remove();
-                    if (quills.subs[uid]) delete quills.subs[uid];
                     this.checkEmptyState();
                     // 重新編號
                     // const cards = document.querySelectorAll('#sub-questions-container .sub-question-card');
@@ -929,9 +1219,6 @@ const ReadingHandler = (function () {
             }
         },
         toggleEditable: function (editable) {
-            if (quills.main) quills.main.enable(editable);
-            Object.values(quills.subs).forEach(s => Object.values(s).forEach(q => q.enable(editable)));
-
             // 鎖定新增按鈕
             const addBtn = document.getElementById('btn-add-reading-sub');
             if (addBtn) addBtn.hidden = !editable;
@@ -941,132 +1228,252 @@ const ReadingHandler = (function () {
 
             // 鎖定輸入框
             document.querySelectorAll('#form-reading input, #form-reading select').forEach(el => {
-                if (el.id !== 'rPropositioner') el.disabled = !editable;
+                if (el.id !== 'rPropositioner' && !el.classList.contains('readonly-field')) el.disabled = !editable;
             });
-            // 鎖定標點符號
-            document.querySelectorAll('#form-reading .punc-btn').forEach(b => b.disabled = !editable);
+
+            // 鎖定 Preview Box
+            const previews = document.querySelectorAll('#form-reading .editor-preview-box');
+            previews.forEach(el => {
+                if (!editable) {
+                    el.style.pointerEvents = 'none';
+                    el.style.backgroundColor = '#f8f9fa';
+                    el.style.borderColor = '#e9ecef';
+                } else {
+                    el.style.pointerEvents = 'auto';
+                    el.style.backgroundColor = '#fff';
+                    el.style.borderColor = '#dee2e6';
+                }
+            });
         }
     };
 })();
 
 /* --- ShortArticleHandler (短文題組) --- */
 const ShortArticleHandler = (function () {
-    const quills = { main: null, subs: {} };
-    // 用於 DOM ID 的唯一計數 (內部識別用)
-    let subQuestionUidCounter = 0;
-    // ★ 新增：顯示用的題號計數器 (只增不減，刪除不回補)
+    const generateId = () => 'ssub_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+    // ★ 定義顯示用的題號計數器 (只增不減)
     let displaySequence = 0;
-    return {
-        init: function () {
-            if (document.getElementById('q-short-main') && !document.getElementById('q-short-main').classList.contains('ql-container')) {
-                quills.main = new window.Quill('#q-short-main', { theme: 'snow', modules: { toolbar: window.mainToolbar }, placeholder: '文章內容...' });
-                bindQuillHelpers(quills.main, 'q-short-main');
-            }
-            window.Short_AddSub = () => this.addSubQuestion(null, false);
-            window.Short_RemoveSub = (uid) => this.removeSubQuestion(uid);
-        },
-        clear: function () {
-            document.getElementById('sLevel').value = '';
-            if (quills.main) quills.main.setText('');
-            document.getElementById('short-sub-container').innerHTML = '';
-            quills.subs = {};
-            // ★ 重置顯示編號
-            displaySequence = 0;
-            this.toggleEditable(true);
-            this.checkEmptyState();
-        },
-        fill: function (data, isViewMode) {
-            document.getElementById('sLevel').value = data.level || '';
-            if (quills.main) { quills.main.setText(''); if (data.content) quills.main.clipboard.dangerouslyPasteHTML(0, decodeURIComponent(data.content)); }
-            document.getElementById('short-sub-container').innerHTML = '';
-            quills.subs = {};
-            // ★ 重置顯示編號 (讀取舊資料時從頭開始)
-            displaySequence = 0;
-            if (data.subQuestions) data.subQuestions.forEach(sub => this.addSubQuestion(sub, false));
-            this.checkEmptyState();
-            this.toggleEditable(!isViewMode);
-        },
-        collect: function () {
-            return {
-                level: document.getElementById('sLevel').value,
-                content: encodeURIComponent(quills.main.root.innerHTML),
-                summary: '短文題組...'
-            };
-        },
-        addSubQuestion: function (data = null, isOpen = false) {
-            const container = document.getElementById('short-sub-container');
-            const uid = `ssub-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-            // ★ 修改：題號使用獨立計數器，只加不減
-            displaySequence++;
-            const currentSeq = displaySequence;
 
-            const card = document.createElement('div');
-            card.className = 'card mb-3 sub-question-card shadow-sm border-0';
-            card.id = `card-${uid}`;
-            card.innerHTML = `
-                <div class="card-header sub-accordion-btn bg-white border d-flex justify-content-between align-items-center ${isOpen ? '' : 'collapsed'}" 
-                     data-bs-toggle="collapse" data-bs-target="#collapse-${uid}" aria-expanded="${isOpen}" style="cursor:pointer">
-                    <div class="d-flex align-items-center gap-2">
-                        <i class="bi bi-chevron-down accordion-arrow"></i>
-                        <span class="fw-bold text-primary sub-index-label">子題代碼：${currentSeq}</span>
-                        <i class="bi bi-check-circle-fill text-success ms-2 d-none" id="check-icon-${uid}"></i>
-                    </div>
-                    <button type="button" class="btn btn-sm btn-outline-danger border-0 sub-remove-btn" onclick="event.stopPropagation(); Short_RemoveSub('${uid}')"><i class="bi bi-trash"></i></button>
+    // ★ 檢查子題完成狀態
+    function checkSubCompletion(id) {
+        // 1. 檢查題目與選項是否有內容
+        const checkField = (key) => {
+            const el = document.getElementById(`hidden-${id}_${key}`);
+            return el && el.value.trim().length > 0;
+        };
+        const hasContent = checkField('content');
+        const hasAllOpts = ['optA', 'optB', 'optC', 'optD'].every(key => checkField(key));
+
+        // 2. 檢查是否已選答案
+        const ans = document.getElementById(`ans-${id}`).value;
+
+        // 3. 綜合判斷
+        const checkIcon = document.getElementById(`check-icon-${id}`);
+        if (checkIcon) {
+            if (hasContent && hasAllOpts && ans) {
+                checkIcon.classList.remove('d-none');
+            } else {
+                checkIcon.classList.add('d-none');
+            }
+        }
+    }
+
+    // ★ 更新選項高亮 (完全仿照 ReadingHandler 的 CSS class 操作)
+    function updateSubCorrectAnswerDisplay(id, val) {
+        ['A', 'B', 'C', 'D'].forEach(opt => {
+            // 注意：這裡 ID 改為 optCard-${id}-${opt} 配合 HTML
+            const card = document.getElementById(`optCard-${id}-${opt}`);
+            if (card) {
+                if (opt === val) card.classList.add('is-correct-answer');
+                else card.classList.remove('is-correct-answer');
+            }
+        });
+
+        const select = document.getElementById(`ans-${id}`);
+        if (select) {
+            if (val) select.classList.add('has-answer'); // CSS: .answer-dropdown.has-answer
+            else select.classList.remove('has-answer');
+        }
+    }
+
+    // 產生子題 HTML
+    const createSubQuestionHTML = (id, seqNum, data = {}, isOpen = true) => {
+        // 1. 一般欄位 (題目、解析)
+        // ★ 修改：增加 attachment-wrapper (仿 form-general)
+        const buildStandardField = (fieldKey, placeholder, label = '', showAttachment = false) => {
+            const uniqueFieldId = `${id}_${fieldKey}`;
+            const valEncoded = data[fieldKey] || '';
+            const valDecoded = valEncoded ? decodeURIComponent(valEncoded) : '';
+
+            const attachmentHTML = showAttachment ? `
+                <div class="attachment-wrapper p-2 border rounded bg-light mt-0">
+                    <label class="form-label small fw-bold text-muted mb-1">附檔 (圖片/PNG)</label>
+                    <input class="form-control form-control-sm" type="file" id="file-${uniqueFieldId}">
                 </div>
-                <div id="collapse-${uid}" class="collapse ${isOpen ? 'show' : ''} border border-top-0 rounded-bottom" data-bs-parent="#short-sub-container">
-                    <div class="card-body bg-light">
-                        <div class="mb-3">
-                        <label class="form-label fw-bold small text-secondary required-star">題目</label>
-                            <div class="quill-master-container border rounded bg-white">
-                                ${PUNCTUATION_BAR_HTML}
-                                <div id="qs-${uid}-content" class="bg-white"></div>
-                                <div class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary">
-                                    <span>字數：<span class="count-num">0</span></span>
-                                </div>
-                            </div>
+            ` : '';
+
+            return `
+                <div class="mb-3">
+                    ${label ? `<label class="form-label fw-bold small text-secondary required-star">${label}</label>` : ''}                    
+                    <div class="editor-preview-box border rounded-3 p-3 bg-white mb-2" 
+                            id="preview-${uniqueFieldId}" 
+                            data-field="${uniqueFieldId}" 
+                            data-placeholder="${placeholder}"
+                            onclick="openCommonEditor(this)">${valDecoded}</div>
+                    <input type="hidden" id="hidden-${uniqueFieldId}" value="${valEncoded}">                    
+                    ${attachmentHTML}
+                </div>
+            `;
+        };
+
+        // 2. 選項卡片 (仿 form-general 結構：Card + Attachment)
+        // ★ 修改：包含 attachment-wrapper
+        const buildOptionCard = (optLabel, fieldKey) => {
+            const uniqueFieldId = `${id}_${fieldKey}`;
+            const valEncoded = data[fieldKey] || '';
+            const valDecoded = valEncoded ? decodeURIComponent(valEncoded) : '';
+
+            return `
+                <div class="col-md-6 mb-1">
+                    <div class="card option-card" id="optCard-${id}-${optLabel}" data-option="${optLabel}">
+                        <div class="option-header-styled">
+                            <span class="badge bg-secondary">選項 ${optLabel}</span>
                         </div>
-                        <div class="mt-3">
-                            <label class="form-label fw-bold small text-secondary">批說:</label> 
-                            <div class="quill-master-container border rounded bg-white">
-                                ${PUNCTUATION_BAR_HTML}
-                                <div id="qs-${uid}-explanation" class="bg-white"></div>
-                                <div class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary">
-                                    <span>字數：<span class="count-num">0</span></span>
-                                </div>
+                        <div class="p-0 d-flex flex-column">
+                             <div class="editor-preview-box p-3"
+                                 id="preview-${uniqueFieldId}"
+                                 data-field="${uniqueFieldId}"
+                                 data-placeholder="輸入選項 ${optLabel}..."
+                                 onclick="openCommonEditor(this)">${valDecoded}</div>
+                            <input type="hidden" id="hidden-${uniqueFieldId}" value="${valEncoded}">
+                            
+                            <div class="attachment-wrapper p-2 border-top bg-light">
+                                <input class="form-control form-control-sm" type="file" id="file-${uniqueFieldId}">
                             </div>
                         </div>
                     </div>
                 </div>
             `;
-            container.appendChild(card);
-            this.checkEmptyState();
+        };
 
-            const tb = window.mainToolbar;
-            quills.subs[uid] = {
-                content: new Quill(`#qs-${uid}-content`, { theme: 'snow', modules: { toolbar: tb }, placeholder: '子題敘述...' }),
-                explanation: new Quill(`#qs-${uid}-explanation`, { theme: 'snow', modules: { toolbar: tb }, placeholder: '批說...' })
-            };
+        // ★ 手風琴結構
+        return `
+            <div class="card mb-3 sub-question-card border-0 shadow-sm" id="card-${id}">
+                <div class="card-header sub-accordion-btn bg-white border d-flex justify-content-between align-items-center ${isOpen ? '' : 'collapsed'}"
+                     data-bs-toggle="collapse" data-bs-target="#collapse-${id}" aria-expanded="${isOpen}" style="cursor:pointer">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-chevron-down accordion-arrow"></i>
+                        <span class="fw-bold text-primary sub-index-label">子題代碼：${seqNum}</span>
+                        <i class="bi bi-check-circle-fill text-success ms-2 d-none" id="check-icon-${id}" title="內容與答案皆已填寫"></i>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-danger border-0 sub-remove-btn" onclick="event.stopPropagation(); ShortArticle_RemoveSub('${id}')">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
 
-            bindQuillHelpers(quills.subs[uid].content, `qs-${uid}-content`);
-            bindQuillHelpers(quills.subs[uid].explanation, `qs-${uid}-explanation`);
+                <div id="collapse-${id}" class="collapse ${isOpen ? 'show' : ''} border border-top-0 rounded-bottom" data-bs-parent="#s-sub-questions-container">
+                    <div class="card-body bg-light">
+                        <!-- 題目 (仿 form-general: 內容 + 附檔) -->
+                        ${buildStandardField('content', '點擊輸入子題題目...', '題目', true)}
 
-            // 綠勾勾檢查 (短文：只要「子題敘述」有字就算完成)
-            const checkFn = () => {
-                const hasContent = quills.subs[uid].content.getText().trim().length > 0;
-                const icon = document.getElementById(`check-icon-${uid}`);
-                if (hasContent) icon.classList.remove('d-none');
-                else icon.classList.add('d-none');
-            };
-            quills.subs[uid].content.on('text-change', checkFn);
+                        <!-- 選項 (A, B, C, D) - 2x2 Grid -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold small text-secondary required-star">選項與正確答案</label>
+                            <div class="alert-hint small py-2 mb-2">
+                                <i class="bi bi-exclamation-circle-fill"></i> 請避免選項長短、語氣明顯差異，以免影響鑑別度
+                            </div>
+                            <div class="row g-3">
+                                ${buildOptionCard('A', 'optA')}
+                                ${buildOptionCard('B', 'optB')}
+                                ${buildOptionCard('C', 'optC')}
+                                ${buildOptionCard('D', 'optD')}
+                            </div>
 
-            if (data) {
-                const safePaste = (q, h) => { if (q && h) { q.setText(''); q.clipboard.dangerouslyPasteHTML(0, decodeURIComponent(h)); } };
-                safePaste(quills.subs[uid].content, data.content);
-                safePaste(quills.subs[uid].explanation, data.explanation);
-                checkFn(); // 觸發一次檢查
+                            <!-- 正確答案選擇 (仿 General Form UI) -->
+                            <div class="answer-selector-section mt-3">
+                                <span class="selector-label"><i class="bi bi-check-circle"></i> 正確答案</span>
+                                <select class="answer-dropdown" id="ans-${id}">
+                                    <option value="">請選擇...</option>
+                                    <option value="A" ${data.ans === 'A' ? 'selected' : ''}>選項 A</option>
+                                    <option value="B" ${data.ans === 'B' ? 'selected' : ''}>選項 B</option>
+                                    <option value="C" ${data.ans === 'C' ? 'selected' : ''}>選項 C</option>
+                                    <option value="D" ${data.ans === 'D' ? 'selected' : ''}>選項 D</option>
+                                </select>
+                                <span class="selector-hint">
+                                    <i class="bi bi-info-circle me-1"></i> 選擇後會在對應選項顯示標記
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- 解析 -->
+                        <div class="mb-2">
+                             <label class="form-label fw-bold small text-secondary">解析</label>
+                            <div class="editor-preview-box border rounded-3 p-3 bg-white" 
+                                    id="preview-${id}_explanation" 
+                                    data-field="${id}_explanation" 
+                                    data-placeholder="輸入解析(批說)..."
+                                    onclick="openCommonEditor(this)">${data.explanation ? decodeURIComponent(data.explanation) : ''}</div>
+                            <input type="hidden" id="hidden-${id}_explanation" value="${data.explanation || ''}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    };
+
+    return {
+        init: function () {
+            const addBtn = document.getElementById('btn-add-s-sub');
+            if (addBtn) {
+                // 清除舊事件
+                const newBtn = addBtn.cloneNode(true);
+                addBtn.replaceWith(newBtn);
+                newBtn.addEventListener('click', () => {
+                    this.addSubQuestion(null, false);
+                });
             }
+            window.ShortArticle_RemoveSub = (id) => this.removeSub(id);
         },
-        removeSubQuestion: function (uid) {
+
+        addSubQuestion: function (data = null, isOpen = false) {
+            const container = document.getElementById('s-sub-questions-container');
+            const id = generateId();
+
+            // ★ 遞增題號 (不重置)
+            displaySequence++;
+
+            container.insertAdjacentHTML('beforeend', createSubQuestionHTML(id, displaySequence, data || {}, isOpen));
+
+            // ★ 綁定事件監聽
+            // 1. 下拉選單變更
+            const ansSelect = document.getElementById(`ans-${id}`);
+            if (ansSelect) {
+                ansSelect.addEventListener('change', function () {
+                    updateSubCorrectAnswerDisplay(id, this.value);
+                    checkSubCompletion(id);
+                });
+                // 初始化狀態
+                if (data && data.ans) {
+                    updateSubCorrectAnswerDisplay(id, data.ans);
+                }
+            }
+
+            // 2. 監聽 Preview Box 的變化 (透過 MutationObserver 監聽 CommonEditor 回填的變化)
+            ['content', 'optA', 'optB', 'optC', 'optD'].forEach(key => {
+                const box = document.getElementById(`preview-${id}_${key}`);
+                if (box) {
+                    const observer = new MutationObserver(() => {
+                        checkSubCompletion(id);
+                    });
+                    observer.observe(box, { childList: true, subtree: true, characterData: true });
+                }
+            });
+
+            this.checkEmptyState();
+            checkSubCompletion(id); // 初始檢查
+        },
+
+        removeSub: function (id) {
             Swal.fire({
                 title: '確定刪除此子題？',
                 icon: 'warning',
@@ -1076,83 +1483,148 @@ const ShortArticleHandler = (function () {
                 cancelButtonText: '取消'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    const el = document.getElementById(`card-${uid}`);
+                    const el = document.getElementById(`card-${id}`);
                     if (el) el.remove();
-                    if (quills.subs[uid]) delete quills.subs[uid];
+                    // ★ 注意：這裡不再重新編號 (符合 ReadingHandler 的新邏輯)
                     this.checkEmptyState();
-
-                    // ★ 修改：移除重新編號的邏輯
-                    // 這樣刪除中間的項目後，後面的代號不會遞補，保留原代號
                 }
             });
         },
+
         checkEmptyState: function () {
-            const container = document.getElementById('short-sub-container');
+            const container = document.getElementById('s-sub-questions-container');
             const emptyMsg = document.getElementById('short-sub-empty');
             if (container && emptyMsg) {
                 emptyMsg.style.display = container.children.length === 0 ? 'block' : 'none';
             }
         },
-        toggleEditable: function (editable) {
-            if (quills.main) quills.main.enable(editable);
-            Object.values(quills.subs).forEach(s => Object.values(s).forEach(q => q.enable(editable)));
 
-            const addBtn = document.getElementById('btn-add-short-sub');
+        clear: function () {
+            ['sLevel', 'sDifficulty', 'sGenre'].forEach(id => {
+                const el = document.getElementById(id); if (el) el.value = '';
+            });
+
+            // sTopic (母題標題) 改為 Common Editor
+            const hTopic = document.getElementById('hidden-sTopic');
+            const pTopic = document.getElementById('preview-sTopic');
+            if (hTopic) hTopic.value = '';
+            if (pTopic) pTopic.innerHTML = '';
+
+            const hMain = document.getElementById('hidden-s-article');
+            const pMain = document.getElementById('preview-s-article');
+            if (hMain) hMain.value = '';
+            if (pMain) pMain.innerHTML = '';
+
+            const fMain = document.getElementById('file-s-article');
+            if (fMain) fMain.value = '';
+
+            document.getElementById('s-sub-questions-container').innerHTML = '';
+
+            // ★ 重置狀態
+            displaySequence = 0;
+            this.checkEmptyState();
+            this.toggleEditable(true);
+        },
+
+        fill: function (data, isViewMode) {
+            const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+            setVal('sLevel', data.level);
+            setVal('sDifficulty', data.difficulty);
+            setVal('sGenre', data.genre);
+
+            // sTopic (母題標題)
+            const hTopic = document.getElementById('hidden-sTopic');
+            const pTopic = document.getElementById('preview-sTopic');
+            if (hTopic && pTopic) {
+                hTopic.value = data.topic || '';
+                pTopic.innerHTML = data.topic ? decodeURIComponent(data.topic) : '';
+            }
+
+            const hMain = document.getElementById('hidden-s-article');
+            const pMain = document.getElementById('preview-s-article');
+            if (hMain && pMain) {
+                hMain.value = data.article || '';
+                pMain.innerHTML = data.article ? decodeURIComponent(data.article) : '';
+            }
+
+            const container = document.getElementById('s-sub-questions-container');
+            container.innerHTML = '';
+
+            // ★ 重置並回填
+            displaySequence = 0;
+
+            if (data.questions && Array.isArray(data.questions)) {
+                data.questions.forEach(q => this.addSubQuestion(q, false)); // 預設收合
+            }
+
+            this.checkEmptyState();
+            this.toggleEditable(!isViewMode);
+        },
+
+        collect: function () {
+            const getVal = (id) => {
+                const el = document.getElementById(id);
+                return el ? el.value : '';
+            };
+
+            const result = {
+                mainCat: '文義判讀',
+                subCat: '篇章辨析',
+                level: document.getElementById('sLevel').value,
+                difficulty: document.getElementById('sDifficulty').value,
+                genre: document.getElementById('sGenre').value,
+                topic: getVal('hidden-sTopic'), // 改為從 hidden input 取值
+                article: getVal('hidden-s-article'),
+                summary: getVal('hidden-sTopic') || '未命名短文題組',
+                questions: []
+            };
+
+            document.querySelectorAll('#s-sub-questions-container .sub-question-card').forEach(card => {
+                const id = card.id.replace('card-', '');
+
+                result.questions.push({
+                    content: getVal(`hidden-${id}_content`),
+                    optA: getVal(`hidden-${id}_optA`),
+                    optB: getVal(`hidden-${id}_optB`),
+                    optC: getVal(`hidden-${id}_optC`),
+                    optD: getVal(`hidden-${id}_optD`),
+                    ans: document.getElementById(`ans-${id}`).value,
+                    explanation: getVal(`hidden-${id}_explanation`)
+                });
+            });
+
+            return result;
+        },
+
+        toggleEditable: function (editable) {
+            const addBtn = document.getElementById('btn-add-s-sub');
             if (addBtn) addBtn.hidden = !editable;
 
-            document.querySelectorAll('#form-shortarticle .sub-remove-btn').forEach(btn => btn.hidden = !editable);
-            document.querySelectorAll('#form-shortarticle input, #form-shortarticle select').forEach(el => {
-                if (['sPropositioner', 'sMainCat', 'sSubCat'].includes(el.id)) el.disabled = true;
-                else el.disabled = !editable;
+            document.querySelectorAll('#s-sub-questions-container .sub-remove-btn').forEach(btn => btn.hidden = !editable);
+
+            const inputs = document.querySelectorAll('#form-shortarticle input:not(.readonly-field), #form-shortarticle select');
+            inputs.forEach(el => el.disabled = !editable);
+
+            const previews = document.querySelectorAll('#form-shortarticle .editor-preview-box');
+            previews.forEach(el => {
+                if (!editable) {
+                    el.style.pointerEvents = 'none';
+                    el.style.backgroundColor = '#f8f9fa';
+                    el.style.borderColor = '#e9ecef';
+                } else {
+                    el.style.pointerEvents = 'auto';
+                    el.style.backgroundColor = '#fff';
+                    el.style.borderColor = '#dee2e6';
+                }
             });
-            document.querySelectorAll('#form-shortarticle .punc-btn').forEach(b => b.disabled = !editable);
         }
     };
 })();
 
 // --- Handler 映射表 ---
-const TypeHandlers = {
-    '一般題目': GeneralHandler,
-    '精選題目': GeneralHandler,
-    '閱讀題組': ReadingHandler,
-    '長文題目': LongArticleHandler,
-    '短文題組': ShortArticleHandler,
-    '聽力題目': ListenHandler,
-    '聽力題組': ListenGroupHandler
-};
 
-// ==========================================
-//  3. 核心邏輯 (App Logic)
-// ==========================================
 
-document.addEventListener("DOMContentLoaded", function () {
-    const modalEl = document.getElementById('propModal');
-    if (modalEl) propModal = new bootstrap.Modal(modalEl);
-    const toastEl = document.getElementById('liveToast');
-    if (toastEl) toastInstance = new bootstrap.Toast(toastEl);
 
-    Object.values(TypeHandlers).forEach(h => { if (h && h.init) h.init(); });
-
-    initProjectHeader();
-    initCheckboxLogic();
-    initFilter();
-    initTypeSwitcher();
-    initAutoSelect();
-    updateStats();
-    sortPropList();
-
-    document.querySelectorAll('tbody tr').forEach(row => {
-        const badge = row.querySelector('.badge-outline');
-        if (badge) {
-            const txt = badge.innerText.trim();
-            if (txt === '命題送審' || txt === '不採用') {
-                row.classList.add('row-locked');
-                const cb = row.querySelector('input[type="checkbox"]');
-                if (cb) cb.disabled = true;
-            }
-        }
-    });
-});
 
 // 專案切換
 function initProjectHeader() {
@@ -1196,6 +1668,8 @@ window.openPropModal = function (btn, mode) {
 
     const typeSelect = document.getElementById('mType');
     const statusBadge = document.getElementById('mStatusBadge');
+    // 修正：無論是新增還是編輯，都先清空所有表單，避免殘留
+    Object.values(TypeHandlers).forEach(h => { if (h && h.clear) h.clear(); });
 
     if (mode === 'create') {
         document.getElementById('editRowFrom').value = '';
@@ -1203,7 +1677,6 @@ window.openPropModal = function (btn, mode) {
         typeSelect.disabled = false;
         statusBadge.innerText = '未儲存';
         statusBadge.className = 'badge-outline badge-unsaved';
-        Object.values(TypeHandlers).forEach(h => { if (h.clear) h.clear(); });
         toggleGlobalEditable(true);
         typeSelect.dispatchEvent(new Event('change'));
     } else {
@@ -1352,11 +1825,21 @@ function updateStats() {
         else if (st === '改後再審') s.revise++;
         else if (st === '不採用') s.rejected++;
     });
+    // 有效總計 (排除不採用)
     s.total = s.draft + s.confirmed + s.sent + s.adopted + s.revise;
 
     const setT = (id, v) => { const el = document.getElementById(id); if (el) el.innerText = v; };
-    setT('stat-total', s.total); setT('stat-draft', s.draft); setT('stat-confirmed', s.confirmed);
-    setT('stat-sent', s.sent); setT('stat-adopted', s.adopted); setT('stat-revise', s.revise); setT('stat-rejected', s.rejected);
+
+    // 更新兩個區域的總計
+    setT('stat-total-working', s.total);
+    setT('stat-total-review', s.total);
+
+    setT('stat-draft', s.draft);
+    setT('stat-confirmed', s.confirmed);
+    setT('stat-sent', s.sent);
+    setT('stat-adopted', s.adopted);
+    setT('stat-revise', s.revise);
+    setT('stat-rejected', s.rejected);
 }
 
 function sortPropList() {
@@ -1388,162 +1871,6 @@ function initCheckboxLogic() {
 // ==========================================
 //  ★ 修改：核心篩選邏輯 (修復等級篩選 & Tab 連動)
 // ==========================================
-function initFilter() {
-    const tabState = { current: 'working' };
-    const statusGroups = {
-        'working': ['命題草稿', '命題完成', '命題送審'],
-        'review': ['採用', '改後再審', '不採用']
-    };
-
-    // 1. 更新狀態下拉選單
-    const updateStatusDropdown = (group) => {
-        const select = document.getElementById('filterStatus');
-        const currentVal = select.value;
-        select.innerHTML = '<option value="all" selected>全部狀態</option>';
-        statusGroups[group].forEach(status => {
-            select.add(new Option(status, status));
-        });
-        if (!statusGroups[group].includes(currentVal)) select.value = 'all';
-        else select.value = currentVal;
-    };
-
-    // 2. ★ 更新等級下拉選單 (修復失效問題)
-    const updateLevelDropdown = () => {
-        const typeSelect = document.getElementById('filterType');
-        const levelSelect = document.getElementById('filterLevel');
-        const currentType = typeSelect.value;
-        const oldVal = levelSelect.value;
-
-        levelSelect.innerHTML = '<option value="all">全部等級</option>';
-
-        let opts = ['初級', '中級', '中高級', '高級', '優級'];
-        if (currentType.includes('聽力')) {
-            opts = ['難度一', '難度二', '難度三', '難度四']; // 聽力專用
-        }
-
-        opts.forEach(o => levelSelect.add(new Option(o, o)));
-
-        // 嘗試保留原選擇
-        if (opts.includes(oldVal)) levelSelect.value = oldVal;
-        else levelSelect.value = 'all';
-    };
-
-    // 3. 核心篩選與 UI 切換
-    const doFilter = () => {
-        const type = document.getElementById('filterType').value;
-        const status = document.getElementById('filterStatus').value;
-        const level = document.getElementById('filterLevel').value;
-        const key = document.getElementById('searchInput').value.toLowerCase();
-        const allowedStatuses = statusGroups[tabState.current];
-
-        let visibleCount = 0;
-        document.querySelectorAll('.data-row').forEach(row => {
-            const rt = row.getAttribute('data-type');
-            const rs = row.getAttribute('data-status');
-            const rl = row.getAttribute('data-level');
-            const txt = row.cells[1].textContent.toLowerCase();
-
-            let show = true;
-            if (!allowedStatuses.includes(rs)) show = false; // Tab 過濾
-            if (show) {
-                if (type !== 'all' && rt !== type) show = false;
-                if (status !== 'all' && rs !== status) show = false;
-                if (level !== 'all' && rl !== level) show = false;
-                if (key && !txt.includes(key)) show = false;
-            }
-            row.style.display = show ? '' : 'none';
-            if (show) visibleCount++;
-        });
-
-        const noData = document.getElementById('noDataRow');
-        if (noData) noData.style.display = visibleCount === 0 ? 'table-row' : 'none';
-    };
-    ['filterType', 'filterStatus', 'filterLevel', 'searchInput'].forEach(id => {
-        const el = document.getElementById(id); if (el) el.addEventListener(el.tagName === 'INPUT' ? 'input' : 'change', doFilter);
-    });
-    document.getElementById('filterType').addEventListener('change', function () {
-        const lvl = document.getElementById('filterLevel');
-        lvl.innerHTML = '<option value="all">全部等級</option>';
-        const opts = this.value.includes('聽力') ? ['難度一', '難度二', '難度三', '難度四'] : ['初級', '中級', '中高級', '高級', '優級'];
-        opts.forEach(o => lvl.add(new Option(o, o)));
-    });
-    document.getElementById('filterType').dispatchEvent(new Event('change'));
-
-
-}
-
-window.filterByStatus = function (s) {
-    const el = document.getElementById('filterStatus');
-    if (el) { el.value = s; el.dispatchEvent(new Event('change')); }
-};
-
-window.changeFontSize = function (dir) {
-    if (dir === 1 && currentZoom < 150) currentZoom += 10;
-    else if (dir === -1 && currentZoom > 80) currentZoom -= 10;
-    document.documentElement.style.fontSize = `${currentZoom}%`;
-    document.getElementById('fontSizeDisplay').innerText = `${currentZoom}%`;
-};
-window.resetFontSize = function () { currentZoom = 100; changeFontSize(0); };
-
-function initTypeSwitcher() {
-    const s = document.getElementById('mType');
-    if (!s) return;
-    s.addEventListener('change', function () {
-        const v = this.value;
-        document.querySelectorAll('.question-form-group').forEach(el => el.classList.add('d-none'));
-        let tid = 'form-general';
-        if (v === '長文題目') tid = 'form-longarticle';
-        else if (v === '短文題組') tid = 'form-shortarticle';
-        else if (v === '閱讀題組') tid = 'form-reading';
-        else if (v === '聽力題目') tid = 'form-listen';
-        else if (v === '聽力題組') tid = 'form-listengroup';
-        const t = document.getElementById(tid); if (t) t.classList.remove('d-none');
-    });
-}
-
-function initAutoSelect() {
-    document.querySelectorAll('select').forEach(sel => {
-        if (!sel.multiple && sel.options.length > 0) {
-            const valid = Array.from(sel.options).filter(o => o.value && !o.disabled);
-            if (valid.length === 1 && sel.value !== valid[0].value) sel.value = valid[0].value;
-        }
-    });
-}
-
-function toggleGlobalEditable(editable) {
-    const inputs = document.querySelectorAll('#propModal input:not(#mType):not(.readonly-field), #propModal select:not(#mType):not(.readonly-field), #propModal textarea:not(.readonly-field)');
-    inputs.forEach(el => el.disabled = !editable);
-    document.querySelectorAll('.modal-footer button:not([data-bs-dismiss])').forEach(b => b.hidden = !editable);
-}
-
-function getStatusClass(s) {
-    if (s === '命題草稿') return 'draft';
-    if (s === '命題完成') return 'confirmed';
-    if (s === '命題送審') return 'sent';
-    if (s === '改後再審') return 'returned';
-    if (s === '不採用') return 'rejected';
-    return 'secondary';
-}
-
-function getCurrentTime() {
-    const n = new Date();
-    return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')} ${String(n.getHours()).padStart(2, '0')}:${String(n.getMinutes()).padStart(2, '0')}`;
-}
-
-function showToast(msg, type = 'success') {
-    const el = document.getElementById('liveToast');
-    if (!el) return;
-    el.className = `toast align-items-center text-white border-0 bg-${type === 'error' ? 'danger' : (type === 'secondary' ? 'secondary' : 'primary')}`;
-    el.querySelector('.toast-body').innerText = msg;
-    if (toastInstance) toastInstance.show(); else new bootstrap.Toast(el).show();
-}
-
-function resetSelection() {
-    const m = document.querySelector('thead input[type="checkbox"]');
-    if (m) m.checked = false;
-    document.querySelectorAll('tbody input[type="checkbox"]').forEach(c => c.checked = false);
-}
-
 // ==========================================
 //  ★ 修改：核心篩選邏輯 (修復等級篩選 & Tab 連動)
 // ==========================================
@@ -1634,11 +1961,11 @@ function initFilter() {
             if (targetType === 'working') {
                 workingStats.classList.remove('d-none');
                 reviewStats.classList.add('d-none');
-                if (hint) hint.classList.remove('d-none'); // 顯示操作提示 (移除 d-none, 恢復 d-flex)
+                if (hint) hint.classList.remove('d-none');
             } else {
                 workingStats.classList.add('d-none');
                 reviewStats.classList.remove('d-none');
-                if (hint) hint.classList.add('d-none'); // 隱藏操作提示
+                if (hint) hint.classList.add('d-none');
             }
 
             updateStatusDropdown(targetType);
@@ -1665,17 +1992,15 @@ function initFilter() {
 
     // 綁定全域 Filter
     window.filterByStatus = function (targetStatus) {
-        // ★ 修改 4: 支援 "all" (不切換 Tab，只重置篩選)
         if (targetStatus === 'all') {
             const select = document.getElementById('filterStatus');
             if (select) {
                 select.value = 'all';
                 select.dispatchEvent(new Event('change'));
             }
-            return; // 結束
+            return;
         }
 
-        // 一般狀態切換
         let targetTab = 'working';
         if (statusGroups['review'].includes(targetStatus)) {
             targetTab = 'review';
@@ -1697,34 +2022,70 @@ function initFilter() {
     };
 }
 
-// ==========================================
-//  ★ 修改：統計數據更新 (支援雙總計欄位)
-// ==========================================
-function updateStats() {
-    let s = { total: 0, draft: 0, confirmed: 0, sent: 0, adopted: 0, revise: 0, rejected: 0 };
-    document.querySelectorAll('.data-row').forEach(r => {
-        const st = r.getAttribute('data-status');
-        if (st === '命題草稿') s.draft++;
-        else if (st === '命題完成') s.confirmed++;
-        else if (st === '命題送審') s.sent++;
-        else if (st === '採用') s.adopted++;
-        else if (st === '改後再審') s.revise++;
-        else if (st === '不採用') s.rejected++;
+window.changeFontSize = function (dir) {
+    if (dir === 1 && currentZoom < 150) currentZoom += 10;
+    else if (dir === -1 && currentZoom > 80) currentZoom -= 10;
+    document.documentElement.style.fontSize = `${currentZoom}%`;
+    document.getElementById('fontSizeDisplay').innerText = `${currentZoom}%`;
+};
+window.resetFontSize = function () { currentZoom = 100; changeFontSize(0); };
+
+function initTypeSwitcher() {
+    const s = document.getElementById('mType');
+    if (!s) return;
+    s.addEventListener('change', function () {
+        const v = this.value;
+        document.querySelectorAll('.question-form-group').forEach(el => el.classList.add('d-none'));
+        let tid = 'form-general';
+        if (v === '長文題目') tid = 'form-longarticle';
+        else if (v === '短文題組') tid = 'form-shortarticle';
+        else if (v === '閱讀題組') tid = 'form-reading';
+        else if (v === '聽力題目') tid = 'form-listen';
+        else if (v === '聽力題組') tid = 'form-listengroup';
+        const t = document.getElementById(tid); if (t) t.classList.remove('d-none');
     });
-    // 有效總計 (排除不採用) - 根據需求，這裡通常是所有可見命題，或是特定邏輯
-    // 這裡維持原本邏輯：有效 = 除了不採用以外的所有
-    s.total = s.draft + s.confirmed + s.sent + s.adopted + s.revise;
-
-    const setT = (id, v) => { const el = document.getElementById(id); if (el) el.innerText = v; };
-
-    // 更新兩個區域的總計
-    setT('stat-total-working', s.total);
-    setT('stat-total-review', s.total);
-
-    setT('stat-draft', s.draft);
-    setT('stat-confirmed', s.confirmed);
-    setT('stat-sent', s.sent);
-    setT('stat-adopted', s.adopted);
-    setT('stat-revise', s.revise);
-    setT('stat-rejected', s.rejected);
 }
+
+function initAutoSelect() {
+    document.querySelectorAll('select').forEach(sel => {
+        if (!sel.multiple && sel.options.length > 0) {
+            const valid = Array.from(sel.options).filter(o => o.value && !o.disabled);
+            if (valid.length === 1 && sel.value !== valid[0].value) sel.value = valid[0].value;
+        }
+    });
+}
+
+function toggleGlobalEditable(editable) {
+    const inputs = document.querySelectorAll('#propModal input:not(#mType):not(.readonly-field), #propModal select:not(#mType):not(.readonly-field), #propModal textarea:not(.readonly-field)');
+    inputs.forEach(el => el.disabled = !editable);
+    document.querySelectorAll('.modal-footer button:not([data-bs-dismiss])').forEach(b => b.hidden = !editable);
+}
+
+function getStatusClass(s) {
+    if (s === '命題草稿') return 'draft';
+    if (s === '命題完成') return 'confirmed';
+    if (s === '命題送審') return 'sent';
+    if (s === '改後再審') return 'returned';
+    if (s === '不採用') return 'rejected';
+    return 'secondary';
+}
+
+function getCurrentTime() {
+    const n = new Date();
+    return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')} ${String(n.getHours()).padStart(2, '0')}:${String(n.getMinutes()).padStart(2, '0')}`;
+}
+
+function showToast(msg, type = 'success') {
+    const el = document.getElementById('liveToast');
+    if (!el) return;
+    el.className = `toast align-items-center text-white border-0 bg-${type === 'error' ? 'danger' : (type === 'secondary' ? 'secondary' : 'primary')}`;
+    el.querySelector('.toast-body').innerText = msg;
+    if (toastInstance) toastInstance.show(); else new bootstrap.Toast(el).show();
+}
+
+function resetSelection() {
+    const m = document.querySelector('thead input[type="checkbox"]');
+    if (m) m.checked = false;
+    document.querySelectorAll('tbody input[type="checkbox"]').forEach(c => c.checked = false);
+}
+

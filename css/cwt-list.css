@@ -116,7 +116,6 @@ body {
     padding: 0.5rem 0.75rem;
     border-bottom: 1px solid #f0f0f0;
     background-color: transparent;
-    cursor: pointer;
     user-select: none;
     transition: background-color 0.2s;
 }
@@ -738,7 +737,7 @@ body {
 #propModal .modal-body {
     background: linear-gradient(180deg, #f1f5f9 0%, #f8fafc 30%, #ffffff 100%);
     padding: 1.5rem;
-    max-height: 70vh;
+    /* max-height: 70vh; */
     overflow-y: auto;
 }
 
@@ -884,7 +883,7 @@ body {
     border-color: #94a3b8 !important;
 }
 
-#propModal .option-card.is-correct-answer::after {
+/* #propModal .option-card.is-correct-answer::after {
     content: '';
     position: absolute;
     top: 0;
@@ -898,7 +897,7 @@ body {
 #propModal .option-card.is-correct-answer .option-header-styled {
     background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
     border-bottom-color: #bbf7d0;
-}
+} */
 
 #propModal .option-card.is-correct-answer .option-header-styled .badge {
     background: linear-gradient(135deg, #10b981, #059669) !important;
@@ -1416,6 +1415,7 @@ body {
 .stat-card:not(.interactive-card) {
     cursor: default;
 }
+
 /* Sticky Title Section */
 .top-section {
     position: sticky;
@@ -1426,4 +1426,64 @@ body {
     padding-bottom: 1rem;
     margin-bottom: 1rem;
     border-bottom: 1px solid #e5e7eb;
+}
+
+/* ==========================================================================
+   6. 編輯器預覽盒
+   ========================================================================== */
+/* 共用編輯器滑動特效 */
+#common-editor-wrapper {
+    /* 1. 預設狀態：移到畫面最下方看不到的地方 */
+    transform: translateY(100%);
+    /* 2. 設定動畫時間：0.3秒，效果為 ease-out (由快變慢) */
+    transition: transform 0.3s ease-out;
+    /* 3. 確保 display: none 時也能正確運作動畫的前置準備 */
+    display: none;
+}
+
+/* 當加上 .show 類別時，滑回原本位置 */
+#common-editor-wrapper.show {
+    transform: translateY(0);
+}
+
+.editor-preview-box {
+    /* min-height: 80px; */
+    max-height: 100px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    /* border: 1px solid #dee2e6; */
+    overflow-wrap: break-word;
+    overflow-y: auto;
+    background-color: #fff;
+}
+
+/* ★ 文章類預覽框特別加高 */
+.article-preview-box {
+    max-height: 100px !important;
+}
+
+.editor-preview-box:hover {
+    border-color: #3b82f6;
+    background-color: #f8fbff !important;
+}
+
+.editor-preview-box:empty:before {
+    content: attr(data-placeholder);
+    color: #adb5bd;
+    font-size: 0.9rem;
+}
+
+/* 附檔區塊簡化樣式 */
+.attachment-wrapper {
+    margin-top: -5px;
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+}
+
+.attachment-wrapper .form-control-sm {
+    font-size: 0.75rem;
+}
+
+.editor-preview-box p {
+    margin-bottom: 0;
 }

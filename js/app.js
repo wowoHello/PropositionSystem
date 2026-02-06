@@ -7,6 +7,23 @@
 //  1. 全域設定 (Configs & Constants)
 // ==========================================
 // --- 註冊 Quill 自訂字體 ---
+// 標點符號工具列 HTML 模板 (確保全站一致)
+const PUNCTUATION_BAR_HTML = `
+<div class="punctuation-toolbar d-flex flex-wrap gap-2 p-2 border-bottom bg-light rounded-top-3">
+    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
+    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
+    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
+    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="？">？</button>
+    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="！">！</button>
+    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="：">：</button>
+    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="；">；</button>
+    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」" data-back="1">「」</button>
+    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』" data-back="1">『』</button>
+    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）" data-back="1">（）</button>
+    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】" data-back="1">【】</button>
+    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="……">……</button>
+</div>`;
+
 // 必須在建立 Quill 實體前執行
 if (typeof Quill !== 'undefined') {
     try {
@@ -162,6 +179,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const toastEl = document.getElementById('liveToast');
     if (toastEl) toastInstance = new bootstrap.Toast(toastEl);
+
+    // B. 初始化 Common Editor (如果存在)
+    if (typeof CommonEditorManager !== 'undefined' && CommonEditorManager.init) {
+        CommonEditorManager.init();
+    }
 
     // B. 初始化 Handlers (如果有的話)
     if (TypeHandlers['一般題目'] && TypeHandlers['一般題目'].init) TypeHandlers['一般題目'].init();
