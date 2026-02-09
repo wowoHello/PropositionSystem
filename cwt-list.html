@@ -1345,7 +1345,8 @@
     </div>
   </div>
   <!-- 表單區塊 -->
-  <div class="modal fade" id="propModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+  <div class="modal fade" id="propModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
+    data-bs-focus="false">
     <div class="modal-dialog modal-fullscreen modal-dialog-centered p-3">
       <div class="modal-content border-0 rounded-4 shadow">
 
@@ -1358,10 +1359,10 @@
           <form id="propForm">
             <input type="hidden" id="editRowFrom" value="">
 
-            <div class="row g-3 top-section">
-              <div class="col-md-6 m-0">
-                <label class="form-label fw-bold small text-secondary">題型選擇</label>
-                <select class="form-select" id="mType">
+            <div class="row g-2 top-section mb-3">
+              <div class="col-md-2">
+                <label class="form-label fw-bold small text-secondary mb-1">題型選擇</label>
+                <select class="form-select form-select-sm" id="mType">
                   <option value="一般題目" selected>一般題目</option>
                   <option value="長文題目">長文題目</option>
                   <option value="短文題組">短文題組</option>
@@ -1371,9 +1372,34 @@
                   <option value="聽力題組">聽力題組</option>
                 </select>
               </div>
-              <div class="col-md-6 m-0">
-                <label class="form-label fw-bold small text-secondary">目前狀態</label>
-                <div>
+
+              <div class="col-md-2">
+                <label class="form-label fw-bold small text-secondary mb-1 required-star">適用等級</label>
+                <select class="form-select form-select-sm" id="commonLevel">
+                  <option value="">請選擇...</option>
+                  <option value="初級">初級</option>
+                  <option value="中級">中級</option>
+                  <option value="中高級">中高級</option>
+                  <option value="高級">高級</option>
+                  <option value="優級">優級</option>
+                </select>
+              </div>
+
+              <div class="col-md-2">
+                <label class="form-label fw-bold small text-secondary mb-1">命題者</label>
+                <input type="text" class="form-control form-control-sm readonly-field" id="commonPropositioner"
+                  value="沈雅茹" disabled readonly>
+              </div>
+
+              <div class="col-md-3">
+                <label class="form-label fw-bold small text-secondary mb-1">最後修訂日</label>
+                <input type="text" class="form-control form-control-sm readonly-field" id="commonLastModified" value="-"
+                  disabled readonly>
+              </div>
+
+              <div class="col-md-3">
+                <label class="form-label fw-bold small text-secondary mb-1">目前狀態</label>
+                <div class="d-flex align-items-center">
                   <span class="badge-outline badge-draft" id="mStatusBadge">命題草稿</span>
                 </div>
               </div>
@@ -1382,171 +1408,151 @@
             <div id="dynamicFormContainer">
               <!-- 一般題目 -->
               <!-- 精選題目 -->
-              <div id="form-general" class="question-form-group">
+              <div id="form-general" class="question-form-group prop-grid-layout">
 
-                <!-- 第一區塊：基本資料 -->
-                <div class="section-card">
-                  <h6 class="section-title">
-                    <i class="bi bi-info-circle"></i>
-                    一、題目基本資料
-                  </h6>
-                  <div class="row g-3">
-                    <div class="col-md-4">
-                      <label class="form-label fw-bold small text-secondary required-star">適用等級</label>
-                      <select class="form-select" id="gLevel">
-                        <option value="">請選擇...</option>
-                        <option value="初級">初級</option>
-                        <option value="中級">中級</option>
-                        <option value="中高級">中高級</option>
-                        <option value="高級">高級</option>
-                        <option value="優級">優級</option>
-                      </select>
-                    </div>
-                    <div class="col-md-4">
-                      <label class="form-label fw-bold small text-secondary required-star">主類</label>
+                <div class="row g-0 border rounded-3 overflow-hidden shadow-sm" style="min-height: 600px;">
+
+                  <div class="col-md-3 bg-light border-end p-4 d-flex flex-column gap-4 sidebar-panel">
+
+                    <div class="sidebar-item">
+                      <label class="prop-label-large">主類</label>
                       <select class="form-select" id="gMainCategory">
                         <option value="">請選擇...</option>
                       </select>
                     </div>
-                    <div class="col-md-4">
-                      <label class="form-label fw-bold small text-secondary required-star">次類</label>
+
+                    <div class="sidebar-item">
+                      <label class="prop-label-large">次類</label>
                       <select class="form-select readonly-field" id="gSubCategory" disabled>
-                        <option value="">請先選擇主題</option>
+                        <option value="">請先選擇主類</option>
                       </select>
                     </div>
-                    <div class="col-md-4">
-                      <label class="form-label fw-bold small text-secondary">難度</label>
-                      <select class="form-select" id="gDifficulty">
-                        <option value="">請選擇...</option>
+
+                    <div class="sidebar-item">
+                      <label class="prop-label-large">難度</label>
+                      <div class="btn-group w-100" role="group">
+                        <input type="radio" class="btn-check" name="gDifficultyRadio" id="gDiff1" value="易"
+                          onclick="syncDifficulty('易')">
+                        <label class="btn btn-outline-secondary" for="gDiff1">易</label>
+
+                        <input type="radio" class="btn-check" name="gDifficultyRadio" id="gDiff2" value="中"
+                          onclick="syncDifficulty('中')" checked>
+                        <label class="btn btn-outline-secondary" for="gDiff2">中</label>
+
+                        <input type="radio" class="btn-check" name="gDifficultyRadio" id="gDiff3" value="難"
+                          onclick="syncDifficulty('難')">
+                        <label class="btn btn-outline-secondary" for="gDiff3">難</label>
+                      </div>
+                      <select id="gDifficulty" class="d-none">
                         <option value="易">易</option>
                         <option value="中" selected>中</option>
                         <option value="難">難</option>
                       </select>
                     </div>
-                    <div class="col-md-4">
-                      <label class="form-label fw-bold small text-secondary">命題者 (您)</label>
-                      <input type="text" class="form-control readonly-field" id="gPropositioner" value="沈雅茹" disabled
-                        readonly>
-                    </div>
-                  </div>
-                </div>
 
-                <!-- 第二區塊：題目內容 (含選項) -->
-                <div class="section-card">
-                  <h6 class="section-title">
-                    <i class="bi bi-file-text"></i>
-                    二、題目內容與選項
-                  </h6>
-                  <div class="mb-4">
-                    <label class="form-label fw-bold small text-secondary required-star">題幹內容</label>
-                    <div class="editor-preview-box border rounded-3 p-3 bg-white mb-2" id="preview-g-content"
-                      data-field="g-content" data-placeholder="點擊輸入題幹內容..." onclick="openCommonEditor(this)"></div>
-                    <input type="hidden" id="hidden-g-content" name="g-content">
+                    <hr class="my-2">
 
-                    <div class="attachment-wrapper p-2 border rounded bg-light">
-                      <label class="form-label small fw-bold text-muted mb-1">題幹附檔 (圖片/PNG)</label>
-                      <input class="form-control form-control-sm" type="file" id="file-g-content">
-                    </div>
-                  </div>
-
-                  <!-- 選項區域 (移至此處) -->
-                  <label class="form-label fw-bold small text-secondary mb-2 required-star">選項與正確答案</label>
-                  <div class="alert-hint">
-                    <i class="bi bi-exclamation-circle-fill"></i>
-                    請避免選項長短、語氣明顯差異，以免影響鑑別度
-                  </div>
-                  <div class="row g-3">
-                    <div class="col-md-6 mb-3">
-                      <div class="card option-card" id="optionCardA" data-option="A">
-                        <div class="option-header-styled">
-                          <span class="badge bg-secondary">選項 A</span>
-                        </div>
-                        <div class="editor-preview-box p-3" id="preview-g-optA" data-field="g-optA"
-                          data-placeholder="點擊輸入選項 A 內容..." onclick="openCommonEditor(this)"></div>
-                        <input type="hidden" id="hidden-g-optA">
-
-                        <div class="attachment-wrapper p-2 border-top bg-light">
-                          <input class="form-control form-control-sm" type="file" id="file-g-optA">
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                      <div class="card option-card" id="optionCardB" data-option="B">
-                        <div class="option-header-styled">
-                          <span class="badge bg-secondary">選項 B</span>
-                        </div>
-                        <div class="editor-preview-box p-3" id="preview-g-optB" data-field="g-optB"
-                          data-placeholder="點擊輸入選項 B 內容..." onclick="openCommonEditor(this)"></div>
-                        <input type="hidden" id="hidden-g-optB">
-
-                        <div class="attachment-wrapper p-2 border-top bg-light">
-                          <input class="form-control form-control-sm" type="file" id="file-g-optB">
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                      <div class="card option-card" id="optionCardC" data-option="C">
-                        <div class="option-header-styled">
-                          <span class="badge bg-secondary">選項 C</span>
-                        </div>
-                        <div class="editor-preview-box p-3" id="preview-g-optC" data-field="g-optC"
-                          data-placeholder="點擊輸入選項 C 內容..." onclick="openCommonEditor(this)"></div>
-                        <input type="hidden" id="hidden-g-optC">
-
-                        <div class="attachment-wrapper p-2 border-top bg-light">
-                          <input class="form-control form-control-sm" type="file" id="file-g-optC">
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                      <div class="card option-card" id="optionCardD" data-option="D">
-                        <div class="option-header-styled">
-                          <span class="badge bg-secondary">選項 D</span>
-                        </div>
-                        <div class="editor-preview-box p-3" id="preview-g-optD" data-field="g-optD"
-                          data-placeholder="點擊輸入選項 D 內容..." onclick="openCommonEditor(this)"></div>
-                        <input type="hidden" id="hidden-g-optD">
-
-                        <div class="attachment-wrapper p-2 border-top bg-light">
-                          <input class="form-control form-control-sm" type="file" id="file-g-optD">
-                        </div>
+                    <div class="sidebar-item">
+                      <label class="prop-label-large text-success">正確答案</label>
+                      <select class="form-select form-select-lg border-success text-success fw-bold" id="gCorrectAnswer"
+                        style="background-color: #f0fdf4;">
+                        <option value="">尚未選擇</option>
+                        <option value="A">選項 A</option>
+                        <option value="B">選項 B</option>
+                        <option value="C">選項 C</option>
+                        <option value="D">選項 D</option>
+                      </select>
+                      <div class="form-text small mt-2">
+                        <i class="bi bi-info-circle"></i> 選擇後右側選項框將顯示綠色邊框
                       </div>
                     </div>
                   </div>
-                  <!-- 答案選擇區塊 -->
-                  <div class="answer-selector-section">
-                    <span class="selector-label">
-                      <i class="bi bi-check-circle"></i>
-                      正確答案
-                    </span>
-                    <select class="answer-dropdown" id="gCorrectAnswer">
-                      <option value="">請選擇...</option>
-                      <option value="A">選項 A</option>
-                      <option value="B">選項 B</option>
-                      <option value="C">選項 C</option>
-                      <option value="D">選項 D</option>
-                    </select>
-                    <span class="selector-hint">
-                      <i class="bi bi-info-circle me-1"></i>
-                      選擇後會在對應選項顯示標記
-                    </span>
-                  </div>
-                </div>
 
-                <!-- 第三區塊：參考答案及解析 (只留解析) -->
-                <div class="section-card">
-                  <h6 class="section-title">
-                    <i class="bi bi-lightbulb"></i>
-                    三、詳解與解析改為試題解析（供審題與試後說明參考）
-                  </h6>
+                  <div class="col-md-9 bg-white p-4 main-panel">
 
-                  <div class="mb-3">
-                    <label class="form-label fw-bold small text-secondary">解析內容</label>
+                    <div class="mb-4">
+                      <h6 class="fw-bold text-dark border-start border-4 border-primary ps-2 mb-2">題目內容</h6>
+                      <div class="editor-preview-box border rounded-top-3 p-3" id="preview-g-content"
+                        data-field="g-content" data-placeholder="點擊輸入題幹內容..." onclick="openCommonEditor(this)"></div>
+                      <input type="hidden" id="hidden-g-content" name="g-content">
 
-                    <div class="editor-preview-box border rounded-3 p-3 bg-white" id="preview-g-explanation"
-                      data-field="g-explanation" data-placeholder="點擊輸入解析..." onclick="openCommonEditor(this)"></div>
+                      <div class="attachment-wrapper p-2 border rounded bg-light d-flex align-items-center gap-2">
+                        <input class="form-control form-control-sm" type="file" id="file-g-content">
+                      </div>
+                    </div>
 
-                    <input type="hidden" id="hidden-g-explanation" name="g-explanation">
+                    <hr class="border-secondary opacity-10">
+
+                    <div class="mb-4">
+                      <h6 class="fw-bold text-dark border-start border-4 border-primary ps-2 mb-3">選項設定</h6>
+                      <div class="row g-3">
+                        <div class="col-md-6">
+                          <div class="card option-card h-100 shadow-sm" id="optionCardA">
+                            <div
+                              class="card-header py-1 px-2 bg-light border-bottom text-muted small fw-bold d-flex justify-content-between">
+                              <span>選項 A</span><i class="bi bi-check-circle-fill text-success correct-mark d-none"></i>
+                            </div>
+                            <div class="editor-preview-box p-3 border-0" id="preview-g-optA" data-field="g-optA"
+                              data-placeholder="輸入選項 A..." onclick="openCommonEditor(this)" style="min-height: 100px;">
+                            </div>
+                            <input type="hidden" id="hidden-g-optA">
+                            <div class="card-footer p-1 bg-white border-top"><input
+                                class="form-control form-control-sm border-0" type="file" id="file-g-optA"></div>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="card option-card h-100 shadow-sm" id="optionCardB">
+                            <div
+                              class="card-header py-1 px-2 bg-light border-bottom text-muted small fw-bold d-flex justify-content-between">
+                              <span>選項 B</span><i class="bi bi-check-circle-fill text-success correct-mark d-none"></i>
+                            </div>
+                            <div class="editor-preview-box p-3 border-0" id="preview-g-optB" data-field="g-optB"
+                              data-placeholder="輸入選項 B..." onclick="openCommonEditor(this)" style="min-height: 100px;">
+                            </div>
+                            <input type="hidden" id="hidden-g-optB">
+                            <div class="card-footer p-1 bg-white border-top"><input
+                                class="form-control form-control-sm border-0" type="file" id="file-g-optB"></div>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="card option-card h-100 shadow-sm" id="optionCardC">
+                            <div
+                              class="card-header py-1 px-2 bg-light border-bottom text-muted small fw-bold d-flex justify-content-between">
+                              <span>選項 C</span><i class="bi bi-check-circle-fill text-success correct-mark d-none"></i>
+                            </div>
+                            <div class="editor-preview-box p-3 border-0" id="preview-g-optC" data-field="g-optC"
+                              data-placeholder="輸入選項 C..." onclick="openCommonEditor(this)" style="min-height: 100px;">
+                            </div>
+                            <input type="hidden" id="hidden-g-optC">
+                            <div class="card-footer p-1 bg-white border-top"><input
+                                class="form-control form-control-sm border-0" type="file" id="file-g-optC"></div>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="card option-card h-100 shadow-sm" id="optionCardD">
+                            <div
+                              class="card-header py-1 px-2 bg-light border-bottom text-muted small fw-bold d-flex justify-content-between">
+                              <span>選項 D</span><i class="bi bi-check-circle-fill text-success correct-mark d-none"></i>
+                            </div>
+                            <div class="editor-preview-box p-3 border-0" id="preview-g-optD" data-field="g-optD"
+                              data-placeholder="輸入選項 D..." onclick="openCommonEditor(this)" style="min-height: 100px;">
+                            </div>
+                            <input type="hidden" id="hidden-g-optD">
+                            <div class="card-footer p-1 bg-white border-top"><input
+                                class="form-control form-control-sm border-0" type="file" id="file-g-optD"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <hr class="border-secondary opacity-10">
+
+                    <div class="mb-2">
+                      <h6 class="fw-bold text-dark border-start border-4 border-secondary ps-2 mb-2">試題解析 (紀錄答案理由)</h6>
+                      <div class="editor-preview-box border rounded-3 p-3" id="preview-g-explanation"
+                        data-field="g-explanation" data-placeholder="輸入解析..." onclick="openCommonEditor(this)"></div>
+                      <input type="hidden" id="hidden-g-explanation" name="g-explanation">
+                    </div>
                   </div>
                 </div>
               </div>

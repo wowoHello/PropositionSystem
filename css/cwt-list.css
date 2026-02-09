@@ -736,9 +736,24 @@ body {
 
 #propModal .modal-body {
     background: linear-gradient(180deg, #f1f5f9 0%, #f8fafc 30%, #ffffff 100%);
-    padding: 1.5rem;
-    /* max-height: 70vh; */
+    padding: 0 !important;
+    overflow: hidden !important;
+    display: flex;
+    flex-direction: column;
+}
+
+#propForm {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+#dynamicFormContainer {
+    flex: 1;
     overflow-y: auto;
+    padding: 1.5rem;
+    overflow-x: hidden;
 }
 
 #propModal .modal-body::-webkit-scrollbar {
@@ -761,10 +776,12 @@ body {
 
 #propModal .top-section {
     background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-    margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+    margin: 0 !important;
     padding: 1.25rem 1.5rem !important;
     border-bottom: 1px solid var(--cwt-border-subtle) !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    z-index: 10;
+    flex-shrink: 0;
 }
 
 #propModal .section-card {
@@ -1441,6 +1458,11 @@ body {
     display: none;
 }
 
+/* Force transparent background for content inside the preview box (Fix white bg in view mode) */
+.editor-preview-box * {
+    background-color: transparent !important;
+}
+
 /* 當加上 .show 類別時，滑回原本位置 */
 #common-editor-wrapper.show {
     transform: translateY(0);
@@ -1487,3 +1509,57 @@ body {
 .editor-preview-box p {
     margin-bottom: 0;
 }
+
+/* ==========================================================================
+   7. 編輯器預覽盒
+   ========================================================================== */
+/* 左側屬性標籤大字體 */
+.prop-label-large {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #64748b;
+    margin-bottom: 0.5rem;
+    display: block;
+    letter-spacing: 0.05em;
+}
+
+/* Sidebar 項目間距 */
+.sidebar-panel .sidebar-item {
+    margin-bottom: 1.5rem;
+}
+
+/* 右側主要編輯區 */
+.main-panel {
+    background-color: #fff;
+    min-height: 600px;
+}
+
+/* === 選項卡片的新樣式 (對應附圖的綠色框框) === */
+.option-card {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid #e2e8f0;
+    /* 預設邊框稍粗 */
+}
+
+.option-card:hover {
+    border-color: #94a3b8;
+    transform: translateY(-2px);
+}
+
+/* 當 JS 標記為正確答案時的樣式 */
+.option-card.is-correct-answer {
+    border: 3px solid #10b981 !important;
+    background-color: #f0fdf4 !important;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2) !important;
+}
+
+/* 顯示勾勾圖示 */
+.option-card.is-correct-answer .correct-mark {
+    display: inline-block !important;
+}
+
+/* .option-card.is-correct-answer .card-header {
+    background-color: rgba(16, 185, 129, 0.1) !important;
+    border-bottom-color: rgba(16, 185, 129, 0.3) !important;
+    color: #065f46 !important;
+} */

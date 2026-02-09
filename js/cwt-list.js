@@ -9,6 +9,12 @@
 // ==========================================
 //  1. 全域設定與工具 (Globals & Utils)
 // ==========================================
+// 新增同步難度的 Helper 函數
+window.syncDifficulty = function (val) {
+    const select = document.getElementById('gDifficulty');
+    if (select) select.value = val;
+};
+
 // --- 註冊 Quill 自訂字體 ---
 if (typeof Quill !== 'undefined') {
     try {
@@ -196,6 +202,12 @@ const GeneralHandler = (function () {
                 });
             }
 
+            // 同步 Radio Button 到隱藏的 Select (供 JS 讀取)
+            window.syncDifficulty = function (val) {
+                const select = document.getElementById('gDifficulty');
+                if (select) select.value = val;
+            };
+
             // 綁定答案選擇連動
             const ansSelect = document.getElementById('gCorrectAnswer');
             if (ansSelect) {
@@ -210,9 +222,6 @@ const GeneralHandler = (function () {
                     if (this.value) {
                         const targetCard = document.getElementById(`optionCard${this.value}`);
                         if (targetCard) targetCard.classList.add('is-correct-answer');
-                        this.classList.add('has-answer');
-                    } else {
-                        this.classList.remove('has-answer');
                     }
                 });
             }
@@ -220,20 +229,33 @@ const GeneralHandler = (function () {
 
         // 清除表單
         clear: function () {
-            ['gLevel', 'gDifficulty', 'gMainCategory', 'gCorrectAnswer', 'hidden-g-content', 'hidden-g-optA', 'hidden-g-optB', 'hidden-g-optC', 'hidden-g-optD'].forEach(id => {
+            // 清除共用欄位
+            ['commonLevel'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            const elDate = document.getElementById('commonLastModified');
+            if (elDate) elDate.value = getCurrentTime();
+            // 命題者通常預設不變，或重置為當前使用者
+            document.getElementById('commonPropositioner').value = '沈雅茹';
+
+            // 清除一般欄位
+            ['gDifficulty', 'gMainCategory', 'gCorrectAnswer', 'hidden-g-content', 'hidden-g-optA', 'hidden-g-optB', 'hidden-g-optC', 'hidden-g-optD', 'hidden-g-explanation'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.value = '';
             });
 
-            // 清空預覽區塊
-            ['preview-g-content', 'preview-g-optA', 'preview-g-optB', 'preview-g-optC', 'preview-g-optD'].forEach(id => {
+            // 重置 Radio
+            const defaultRadio = document.getElementById('gDiff2'); // 預設中
+            if (defaultRadio) defaultRadio.checked = true;
+
+            // 清空預覽區
+            ['preview-g-content', 'preview-g-optA', 'preview-g-optB', 'preview-g-optC', 'preview-g-optD', 'preview-g-explanation'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.innerHTML = '';
             });
 
-            // 重置檔案欄位
-            document.querySelectorAll('#form-general input[type="file"]').forEach(el => el.value = '');
-
+            // 重置次類
             const sub = document.getElementById('gSubCategory');
             if (sub) {
                 sub.innerHTML = '<option value="">請先選擇主類</option>';
@@ -243,22 +265,32 @@ const GeneralHandler = (function () {
 
         // 回填資料 (編輯模式)
         fill: function (data, isViewMode) {
-            // 1. 回填下拉選單
-            ['gLevel', 'gDifficulty'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.value = data[id.replace('g', '').toLowerCase()] || '';
-            });
+            // 1. 回填共用欄位 (.top-section)
+            const elLevel = document.getElementById('commonLevel');
+            if (elLevel) elLevel.value = data.level || '';
+
+            // 回填最後修訂日 (假設 data.time 是修訂時間，或 data.lastModified)
+            const elDate = document.getElementById('commonLastModified');
+            if (elDate) elDate.value = data.time ? data.time.split(' ')[0] : getCurrentTime().split(' ')[0]; // 只取日期
+
+            // 2. 回填一般欄位
+            // 同步難度 Radio
+            const diff = data.difficulty || '中';
+            const radio = document.querySelector(`input[name="gDifficultyRadio"][value="${diff}"]`);
+            if (radio) radio.checked = true;
+            // 同步 hidden select (以防萬一)
+            const diffSelect = document.getElementById('gDifficulty');
+            if (diffSelect) diffSelect.value = diff;
 
             const main = document.getElementById('gMainCategory');
             if (main) {
                 main.value = data.mainCat || '';
-                // 觸發 change 以更新次類選單
                 main.dispatchEvent(new Event('change'));
             }
             const sub = document.getElementById('gSubCategory');
             if (sub && data.subCat) sub.value = data.subCat;
 
-            // 2. 回填：題幹 + 選項 A~D + 解析
+            // 3. 回填內容
             const setContent = (key, val) => {
                 const hidden = document.getElementById(`hidden-g-${key}`);
                 const preview = document.getElementById(`preview-g-${key}`);
@@ -270,37 +302,58 @@ const GeneralHandler = (function () {
             };
 
             setContent('content', data.content);
+            setContent('explanation', data.explanation);
             ['A', 'B', 'C', 'D'].forEach(opt => setContent(`opt${opt}`, data[`opt${opt}`]));
 
-            // 3. 回填答案
+            // 4. 回填答案
             const ans = document.getElementById('gCorrectAnswer');
             if (ans) {
                 ans.value = data.ans || '';
-                ans.dispatchEvent(new Event('change')); // 觸發高亮
+                ans.dispatchEvent(new Event('change'));
             }
+
+            // 5. 處理 isViewMode (鎖定)
+            const previews = document.querySelectorAll('#form-general .editor-preview-box');
+            previews.forEach(el => {
+                if (isViewMode) {
+                    el.style.pointerEvents = 'none';
+                    el.style.backgroundColor = '#f3f4f6';
+                    el.style.borderColor = '#e5e7eb';
+                } else {
+                    el.style.pointerEvents = 'auto';
+                    el.style.backgroundColor = '#fff';
+                    el.style.borderColor = '#dee2e6';
+                }
+            });
+
+            // 鎖定 Radio
+            document.querySelectorAll('input[name="gDifficultyRadio"]').forEach(r => {
+                r.disabled = isViewMode;
+            });
+            // 鎖定共用欄位 (雖然 toggleGlobalEditable 會處理，但這裡顯式處理更安全)
+            if (elLevel) elLevel.disabled = isViewMode;
         },
 
         // 收集資料 (儲存時)
         collect: function () {
-            // 輔助函數：取得隱藏欄位並編碼
-            const getVal = (id) => {
-                const el = document.getElementById(id);
-                // 共用編輯器已經將內容編碼存入 value 了，所以這裡直接取 value 即可
-                return el ? el.value : '';
-            };
+            // 從 Radio 取得難度
+            const diffRadio = document.querySelector('input[name="gDifficultyRadio"]:checked');
 
             return {
-                level: document.getElementById('gLevel').value,
+                // 從 .top-section 取得等級
+                level: document.getElementById('commonLevel').value,
+
                 mainCat: document.getElementById('gMainCategory').value,
                 subCat: document.getElementById('gSubCategory').value,
-                content: getVal('hidden-g-content'),
-                optA: getVal('hidden-g-optA'),
-                optB: getVal('hidden-g-optB'),
-                optC: getVal('hidden-g-optC'),
-                optD: getVal('hidden-g-optD'),
-                explanation: getVal('hidden-g-explanation'), // 收集解析
+                difficulty: diffRadio ? diffRadio.value : '中',
 
-                // 這裡摘要只抓文字
+                content: document.getElementById('hidden-g-content').value,
+                optA: document.getElementById('hidden-g-optA').value,
+                optB: document.getElementById('hidden-g-optB').value,
+                optC: document.getElementById('hidden-g-optC').value,
+                optD: document.getElementById('hidden-g-optD').value,
+                explanation: document.getElementById('hidden-g-explanation').value,
+
                 summary: document.getElementById('preview-g-content').innerText.trim().substring(0, 20) + '...',
                 ans: document.getElementById('gCorrectAnswer').value
             };
