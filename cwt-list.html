@@ -1374,7 +1374,8 @@
               </div>
 
               <div class="col-md-2">
-                <label class="form-label fw-bold small text-secondary mb-1 required-star">適用等級</label>
+                <label class="form-label fw-bold small text-secondary mb-1 required-star"
+                  id="lblCommonLevel">適用等級</label>
                 <select class="form-select form-select-sm" id="commonLevel">
                   <option value="">請選擇...</option>
                   <option value="初級">初級</option>
@@ -1405,756 +1406,748 @@
               </div>
             </div>
 
-            <div id="dynamicFormContainer">
-              <!-- 一般題目 -->
-              <!-- 精選題目 -->
-              <div id="form-general" class="question-form-group prop-grid-layout">
 
-                <div class="row g-0 border rounded-3 overflow-hidden shadow-sm" style="min-height: 600px;">
+            <!-- 一般題目 -->
+            <!-- 精選題目 -->
+            <div id="form-general" class="question-form-group prop-grid-layout">
 
-                  <div class="col-md-3 bg-light border-end p-4 d-flex flex-column gap-4 sidebar-panel">
+              <div class="row g-0 border rounded-3 overflow-hidden shadow-sm">
 
-                    <div class="sidebar-item">
-                      <label class="prop-label-large">主類</label>
-                      <select class="form-select" id="gMainCategory">
-                        <option value="">請選擇...</option>
-                      </select>
-                    </div>
+                <div class="col-md-3 bg-light border-end p-4 d-flex flex-column gap-3 sidebar-panel">
 
-                    <div class="sidebar-item">
-                      <label class="prop-label-large">次類</label>
-                      <select class="form-select readonly-field" id="gSubCategory" disabled>
-                        <option value="">請先選擇主類</option>
-                      </select>
-                    </div>
-
-                    <div class="sidebar-item">
-                      <label class="prop-label-large">難度</label>
-                      <div class="btn-group w-100" role="group">
-                        <input type="radio" class="btn-check" name="gDifficultyRadio" id="gDiff1" value="易"
-                          onclick="syncDifficulty('易')">
-                        <label class="btn btn-outline-secondary" for="gDiff1">易</label>
-
-                        <input type="radio" class="btn-check" name="gDifficultyRadio" id="gDiff2" value="中"
-                          onclick="syncDifficulty('中')" checked>
-                        <label class="btn btn-outline-secondary" for="gDiff2">中</label>
-
-                        <input type="radio" class="btn-check" name="gDifficultyRadio" id="gDiff3" value="難"
-                          onclick="syncDifficulty('難')">
-                        <label class="btn btn-outline-secondary" for="gDiff3">難</label>
-                      </div>
-                      <select id="gDifficulty" class="d-none">
-                        <option value="易">易</option>
-                        <option value="中" selected>中</option>
-                        <option value="難">難</option>
-                      </select>
-                    </div>
-
-                    <hr class="my-2">
-
-                    <div class="sidebar-item">
-                      <label class="prop-label-large text-success">正確答案</label>
-                      <select class="form-select form-select-lg border-success text-success fw-bold" id="gCorrectAnswer"
-                        style="background-color: #f0fdf4;">
-                        <option value="">尚未選擇</option>
-                        <option value="A">選項 A</option>
-                        <option value="B">選項 B</option>
-                        <option value="C">選項 C</option>
-                        <option value="D">選項 D</option>
-                      </select>
-                      <div class="form-text small mt-2">
-                        <i class="bi bi-info-circle"></i> 選擇後右側選項框將顯示綠色邊框
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="col-md-9 bg-white p-4 main-panel">
-
-                    <div class="mb-4">
-                      <h6 class="fw-bold text-dark border-start border-4 border-primary ps-2 mb-2">題目內容</h6>
-                      <div class="editor-preview-box border rounded-top-3 p-3" id="preview-g-content"
-                        data-field="g-content" data-placeholder="點擊輸入題幹內容..." onclick="openCommonEditor(this)"></div>
-                      <input type="hidden" id="hidden-g-content" name="g-content">
-
-                      <div class="attachment-wrapper p-2 border rounded bg-light d-flex align-items-center gap-2">
-                        <input class="form-control form-control-sm" type="file" id="file-g-content">
-                      </div>
-                    </div>
-
-                    <hr class="border-secondary opacity-10">
-
-                    <div class="mb-4">
-                      <h6 class="fw-bold text-dark border-start border-4 border-primary ps-2 mb-3">選項設定</h6>
-                      <div class="row g-3">
-                        <div class="col-md-6">
-                          <div class="card option-card h-100 shadow-sm" id="optionCardA">
-                            <div
-                              class="card-header py-1 px-2 bg-light border-bottom text-muted small fw-bold d-flex justify-content-between">
-                              <span>選項 A</span><i class="bi bi-check-circle-fill text-success correct-mark d-none"></i>
-                            </div>
-                            <div class="editor-preview-box p-3 border-0" id="preview-g-optA" data-field="g-optA"
-                              data-placeholder="輸入選項 A..." onclick="openCommonEditor(this)" style="min-height: 100px;">
-                            </div>
-                            <input type="hidden" id="hidden-g-optA">
-                            <div class="card-footer p-1 bg-white border-top"><input
-                                class="form-control form-control-sm border-0" type="file" id="file-g-optA"></div>
-                          </div>
-                        </div>
-                        <div class="col-md-6">
-                          <div class="card option-card h-100 shadow-sm" id="optionCardB">
-                            <div
-                              class="card-header py-1 px-2 bg-light border-bottom text-muted small fw-bold d-flex justify-content-between">
-                              <span>選項 B</span><i class="bi bi-check-circle-fill text-success correct-mark d-none"></i>
-                            </div>
-                            <div class="editor-preview-box p-3 border-0" id="preview-g-optB" data-field="g-optB"
-                              data-placeholder="輸入選項 B..." onclick="openCommonEditor(this)" style="min-height: 100px;">
-                            </div>
-                            <input type="hidden" id="hidden-g-optB">
-                            <div class="card-footer p-1 bg-white border-top"><input
-                                class="form-control form-control-sm border-0" type="file" id="file-g-optB"></div>
-                          </div>
-                        </div>
-                        <div class="col-md-6">
-                          <div class="card option-card h-100 shadow-sm" id="optionCardC">
-                            <div
-                              class="card-header py-1 px-2 bg-light border-bottom text-muted small fw-bold d-flex justify-content-between">
-                              <span>選項 C</span><i class="bi bi-check-circle-fill text-success correct-mark d-none"></i>
-                            </div>
-                            <div class="editor-preview-box p-3 border-0" id="preview-g-optC" data-field="g-optC"
-                              data-placeholder="輸入選項 C..." onclick="openCommonEditor(this)" style="min-height: 100px;">
-                            </div>
-                            <input type="hidden" id="hidden-g-optC">
-                            <div class="card-footer p-1 bg-white border-top"><input
-                                class="form-control form-control-sm border-0" type="file" id="file-g-optC"></div>
-                          </div>
-                        </div>
-                        <div class="col-md-6">
-                          <div class="card option-card h-100 shadow-sm" id="optionCardD">
-                            <div
-                              class="card-header py-1 px-2 bg-light border-bottom text-muted small fw-bold d-flex justify-content-between">
-                              <span>選項 D</span><i class="bi bi-check-circle-fill text-success correct-mark d-none"></i>
-                            </div>
-                            <div class="editor-preview-box p-3 border-0" id="preview-g-optD" data-field="g-optD"
-                              data-placeholder="輸入選項 D..." onclick="openCommonEditor(this)" style="min-height: 100px;">
-                            </div>
-                            <input type="hidden" id="hidden-g-optD">
-                            <div class="card-footer p-1 bg-white border-top"><input
-                                class="form-control form-control-sm border-0" type="file" id="file-g-optD"></div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <hr class="border-secondary opacity-10">
-
-                    <div class="mb-2">
-                      <h6 class="fw-bold text-dark border-start border-4 border-secondary ps-2 mb-2">試題解析 (紀錄答案理由)</h6>
-                      <div class="editor-preview-box border rounded-3 p-3" id="preview-g-explanation"
-                        data-field="g-explanation" data-placeholder="輸入解析..." onclick="openCommonEditor(this)"></div>
-                      <input type="hidden" id="hidden-g-explanation" name="g-explanation">
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <!-- 長文題目 -->
-              <div id="form-longarticle" class="question-form-group d-none">
-                <div class="section-card">
-                  <h6 class="section-title">
-                    <i class="bi bi-info-circle"></i>
-                    一、題目基本資料
-                  </h6>
-                  <div class="row g-3">
-                    <div class="col-md-6">
-                      <label class="form-label fw-bold small text-secondary required-star">適用等級</label>
-                      <select class="form-select" id="lLevel">
-                        <option value="">請選擇...</option>
-                        <option value="初級">初級</option>
-                        <option value="中級">中級</option>
-                        <option value="中高級">中高級</option>
-                        <option value="高級">高級</option>
-                        <option value="優級">優級</option>
-                      </select>
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label fw-bold small text-secondary required-star">題型</label>
-                      <select class="form-select" id="lType">
-                        <option value="">請選擇...</option>
-                        <option value="引導寫作">引導寫作</option>
-                        <option value="資訊整合">資訊整合</option>
-                      </select>
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label fw-bold small text-secondary">難度</label>
-                      <select class="form-select" id="lDifficulty">
-                        <option value="">請選擇...</option>
-                        <option value="易">易</option>
-                        <option value="中">中</option>
-                        <option value="難">難</option>
-                      </select>
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label fw-bold small text-secondary">命題者</label>
-                      <input type="text" class="form-control readonly-field" id="lPropositioner" value="沈雅茹" disabled
-                        readonly>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="section-card">
-                  <h6 class="section-title">
-                    <i class="bi bi-file-text"></i>
-                    二、題目內容
-                  </h6>
-
-                  <div class="mb-3">
-                    <label class="form-label fw-bold small text-secondary required-star">題目</label>
-                    <input type="text" class="form-control" id="lTopic" placeholder="請輸入標題...">
-                  </div>
-
-                  <div class="mb-3">
-                    <label class="form-label fw-bold small text-secondary required-star">文章內容</label>
-
-                    <div class="editor-preview-box border rounded-3 p-3 bg-white mb-2" id="preview-l-content"
-                      data-field="l-content" data-placeholder="點擊輸入文章內容..." onclick="openCommonEditor(this)"></div>
-                    <input type="hidden" id="hidden-l-content" name="l-content">
-
-                    <div class="attachment-wrapper p-2 border rounded bg-light">
-                      <label class="form-label small fw-bold text-muted mb-1">題目附檔 (圖片/PNG)</label>
-                      <input class="form-control form-control-sm" type="file" id="lAttachment">
-                    </div>
-                  </div>
-
-                  <div class="section-card">
-                    <h6 class="section-title">
-                      <i class="bi bi-lightbulb"></i>
-                      三、詳解與解析改為試題解析（供審題與試後說明參考）
-                    </h6>
-                    <div class="mb-3">
-                      <label class="form-label fw-bold small text-secondary">解析 (紀錄答案理由)</label>
-
-                      <div class="editor-preview-box border rounded-3 p-3 bg-white" id="preview-l-explanation"
-                        data-field="l-explanation" data-placeholder="點擊輸入解析..." onclick="openCommonEditor(this)"></div>
-                      <input type="hidden" id="hidden-l-explanation" name="l-explanation">
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <!-- 短文題組 -->
-              <div id="form-shortarticle" class="question-form-group d-none">
-                <div class="section-card">
-                  <h6 class="section-title">
-                    <i class="bi bi-info-circle"></i>
-                    一、題目基本資料
-                  </h6>
-                  <div class="row g-3">
-                    <div class="col-md-4">
-                      <label class="form-label fw-bold small text-secondary">主類</label>
-                      <input type="text" class="form-control readonly-field" id="sMainCat" value="文義判讀" disabled
-                        readonly>
-                    </div>
-                    <div class="col-md-4">
-                      <label class="form-label fw-bold small text-secondary">次類</label>
-                      <input type="text" class="form-control readonly-field" id="sSubCat" value="篇章辨析" disabled
-                        readonly>
-                    </div>
-                    <div class="col-md-4">
-                      <label class="form-label fw-bold small text-secondary">命題者</label>
-                      <input type="text" class="form-control readonly-field" id="sPropositioner" value="沈雅茹" disabled
-                        readonly>
-                    </div>
-                    <div class="col-md-4">
-                      <label class="form-label fw-bold small text-secondary required-star">適用等級</label>
-                      <select class="form-select" id="sLevel">
-                        <option value="">請選擇...</option>
-                        <option value="高級">高級</option>
-                        <option value="優級">優級</option>
-                      </select>
-                    </div>
-                    <div class="col-md-4">
-                      <label class="form-label fw-bold small text-secondary required-star">文體</label>
-                      <select class="form-select" id="sGenre">
-                        <option value="">請選擇...</option>
-                        <option value="文言文">文言文</option>
-                        <option value="應用文">應用文</option>
-                        <option value="語體文">語體文</option>
-                      </select>
-                    </div>
-                    <div class="col-md-4">
-                      <label class="form-label fw-bold small text-secondary">難度</label>
-                      <select class="form-select" id="sDifficulty">
-                        <option value="">請選擇...</option>
-                        <option value="易">易</option>
-                        <option value="中">中</option>
-                        <option value="難">難</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="section-card">
-                  <h6 class="section-title">
-                    <i class="bi bi-file-text"></i>
-                    二、題目內容 (母題與子題)
-                  </h6>
-
-                  <div class="mb-3">
-                    <label class="form-label fw-bold small text-secondary required-star">題目 (母題)</label>
-                    <div class="editor-preview-box article-preview-box border rounded-3 p-3 bg-white mb-2"
-                      id="preview-sTopic" data-field="sTopic" data-placeholder="點擊輸入母題題目..."
-                      onclick="openCommonEditor(this)"></div>
-                    <input type="hidden" id="hidden-sTopic" name="sTopic">
-                  </div>
-
-                  <div class="mb-3">
-                    <label class="form-label fw-bold small text-secondary required-star">母題文章內容</label>
-                    <div class="editor-preview-box border rounded-3 p-3 bg-white mb-2" id="preview-s-article"
-                      data-field="s-article" data-placeholder="點擊輸入短文內容..." onclick="openCommonEditor(this)"></div>
-                    <input type="hidden" id="hidden-s-article" name="s-article">
-
-                    <div class="attachment-wrapper p-2 border rounded bg-light">
-                      <label class="form-label small fw-bold text-muted mb-1">短文附檔 (圖片/PNG)</label>
-                      <input class="form-control form-control-sm" type="file" id="file-s-article">
-                    </div>
-                  </div>
-
-                  <div class="sub-question-container">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                      <h6 class="fw-bold text-dark m-0"><i class="bi bi-list-ol"></i> 子題列表</h6>
-                      <button type="button" class="btn btn-sm btn-primary" id="btn-add-s-sub">
-                        <i class="bi bi-plus-lg"></i> 新增子題
-                      </button>
-                    </div>
-
-                    <div id="s-sub-questions-container"></div>
-
-                    <div id="short-sub-empty" class="text-center py-4 text-muted border border-dashed rounded bg-white">
-                      尚未新增任何子題，請點擊右上方按鈕新增。
-                    </div>
-                  </div>
-                </div>
-
-                <div class="section-card">
-                  <h6 class="section-title">
-                    <i class="bi bi-lightbulb"></i>
-                    三、批說 (選填)
-                  </h6>
-                  <p class="text-muted small m-0">
-                    <i class="bi bi-info-circle me-1"></i>
-                    短文題組的批說請於上方「子題列表」中逐題設定。
-                  </p>
-                </div>
-              </div>
-              <!-- 閱讀題組 -->
-              <div id="form-reading" class="question-form-group d-none">
-
-                <!-- 第一區塊：題目基本資料 -->
-                <div class="section-card">
-                  <h6 class="section-title">
-                    <i class="bi bi-info-circle"></i>
-                    一、題目基本資料
-                  </h6>
-                  <div class="row g-3">
-                    <div class="col-md-6">
-                      <label class="form-label fw-bold small text-secondary required-star">適用等級</label>
-                      <select class="form-select" id="rLevel">
-                        <option value="">請選擇...</option>
-                        <option value="初級">初級</option>
-                        <option value="中級">中級</option>
-                        <option value="中高級">中高級</option>
-                        <option value="高級">高級</option>
-                        <option value="優級">優級</option>
-                      </select>
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label fw-bold small text-secondary required-star">文體</label>
-                      <select class="form-select" id="rGenre">
-                        <option value="">請選擇...</option>
-                        <option value="文言文">文言文</option>
-                        <option value="應用文">應用文</option>
-                        <option value="語體文">語體文</option>
-                      </select>
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label fw-bold small text-secondary">難度</label>
-                      <select class="form-select" id="rDifficulty">
-                        <option value="">請選擇...</option>
-                        <option value="易">易</option>
-                        <option value="中">中</option>
-                        <option value="難">難</option>
-                      </select>
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label fw-bold small text-secondary">命題者</label>
-                      <input type="text" class="form-control readonly-field" id="rPropositioner" value="沈雅茹" disabled
-                        readonly>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- 第二區塊：題目內容 -->
-                <div class="section-card">
-                  <h6 class="section-title">
-                    <i class="bi bi-file-text"></i>
-                    二、題目內容 (母題與子題)
-                  </h6>
-
-                  <div class="mb-3">
-                    <div class="mb-3">
-                      <label class="form-label fw-bold small text-secondary required-star">母題文章內容</label>
-                      <div class="editor-preview-box article-preview-box border rounded-3 p-3 bg-white mb-2"
-                        id="preview-rArticle" data-field="rArticle" data-placeholder="點擊輸入文章內容..."
-                        onclick="openCommonEditor(this)"></div>
-                      <input type="hidden" id="hidden-rArticle" name="rArticle">
-                    </div>
-                  </div>
-
-                  <div class="mb-4">
-                    <label class="form-label fw-bold small text-secondary">題目附檔 (圖片/PNG)</label>
-                    <input class="form-control" type="file" id="rAttachment">
-                  </div>
-
-                  <!-- 子題列表區塊 -->
-                  <div class="sub-question-container">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                      <h6 class="fw-bold text-dark m-0">
-                        <i class="bi bi-list-ol"></i>
-                        子題列表
-                      </h6>
-                      <button type="button" class="btn btn-sm btn-primary" onclick="Reading_AddSub()">
-                        + 新增子題
-                      </button>
-                    </div>
-
-                    <div id="sub-questions-container"></div>
-
-                    <div id="sub-questions-empty"
-                      class="text-center py-4 text-muted border border-dashed rounded bg-white">
-                      尚未新增任何子題，請點擊右上方按鈕新增。
-                    </div>
-                  </div>
-                </div>
-
-                <!-- 第三區塊：(閱讀題組無統一解析，保留區塊結構或隱藏) -->
-                <!-- 註：使用者要求三個區塊，但對閱讀題組而言，解析通常在子題內。
-                     這裡可以放一個全域備註或暫時隱藏，或者說明「請於子題內編輯解析」。 -->
-                <div class="p-3 bg-white border rounded mb-3 shadow-sm">
-                  <h6 class="section-title">
-                    <i class="bi bi-lightbulb"></i>
-                    三、詳解與解析改為試題解析（供審題與試後說明參考）
-                  </h6>
-                  <p class="text-muted small m-0">
-                    <i class="bi bi-info-circle me-1"></i>
-                    閱讀題組的答案與解析請於上方「子題列表」中逐題設定。
-                  </p>
-                </div>
-
-              </div>
-              <!-- 聽力題目 -->
-              <div id="form-listen" class="question-form-group d-none">
-
-                <div class="section-card">
-                  <h6 class="section-title">
-                    <i class="bi bi-info-circle"></i>
-                    一、題目基本資料
-                  </h6>
-                  <div class="row g-3">
-                    <div class="col-md-4">
-                      <label class="form-label fw-bold small text-secondary required-star">難度</label>
-                      <select class="form-select" id="liLevel">
-                        <option value="">請選擇...</option>
-                        <option value="難度一">難度一</option>
-                        <option value="難度二">難度二</option>
-                        <option value="難度三">難度三</option>
-                        <option value="難度四">難度四</option>
-                        <option value="難度五">難度五</option>
-                      </select>
-                    </div>
-                    <div class="col-md-4">
-                      <label class="form-label fw-bold small text-secondary required-star">核心能力</label>
-                      <select class="form-select readonly-field" id="liCore" disabled>
-                        <option value="">請先選擇難度</option>
-                      </select>
-                    </div>
-                    <div class="col-md-4">
-                      <label class="form-label fw-bold small text-secondary required-star">細目指標</label>
-                      <select class="form-select readonly-field" id="liIndicator" disabled>
-                        <option value="">請先選擇難度</option>
-                      </select>
-                    </div>
-
-                    <div class="col-md-4">
-                      <label class="form-label fw-bold small text-secondary required-star">語音類型</label>
-                      <select class="form-select" id="liVoiceType">
-                        <option value="">請選擇...</option>
-                        <option value="對話">對話</option>
-                        <option value="情境">情境</option>
-                        <option value="陳述">陳述</option>
-                      </select>
-                    </div>
-                    <div class="col-md-4">
-                      <label class="form-label fw-bold small text-secondary required-star">素材分類</label>
-                      <select class="form-select" id="liMaterial">
-                        <option value="">請選擇...</option>
-                        <option value="生活">生活</option>
-                        <option value="教育">教育</option>
-                        <option value="職場">職場</option>
-                        <option value="專業">專業</option>
-                      </select>
-                    </div>
-                    <div class="col-md-4">
-                      <label class="form-label fw-bold small text-secondary">命題者</label>
-                      <input type="text" class="form-control readonly-field" id="liPropositioner" value="沈雅茹" disabled
-                        readonly>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="section-card">
-                  <h6 class="section-title">
-                    <i class="bi bi-file-text"></i>
-                    二、題目內容
-                  </h6>
-
-                  <div class="mb-3">
-                    <label class="form-label fw-bold small text-secondary required-star">題目</label>
-                    <input type="text" class="form-control" id="liTopic" placeholder="請輸入標題...">
-                  </div>
-
-                  <div class="mb-3">
-                    <label class="form-label fw-bold small text-secondary required-star">語音內容</label>
-                    <div class="editor-preview-box border rounded-3 p-3 bg-white mb-2" id="preview-listen-content"
-                      data-field="listen-content" data-placeholder="請輸入語音內容..." onclick="openCommonEditor(this)"></div>
-                    <input type="hidden" id="hidden-listen-content" name="listen-content">
-                  </div>
-
-                  <div class="mb-4">
-                    <label class="form-label fw-bold small text-secondary">題目附檔 (音檔/MP3)</label>
-                    <div class="input-group">
-                      <input class="form-control" type="file" id="liAttachment">
-                    </div>
-                    <div class="form-text small mt-1 text-primary d-none" id="liAttachmentName"></div>
-                  </div>
-
-                  <label class="form-label fw-bold small text-secondary mb-2 required-star">選項與正確答案</label>
-                  <div class="alert-hint">
-                    <i class="bi bi-exclamation-circle-fill"></i>
-                    請避免選項長短、語氣明顯差異，以免影響鑑別度
-                  </div>
-                  <div class="row g-3">
-                    <div class="col-md-6 mb-1">
-                      <div class="card option-card h-100" id="liOptionCardA" data-option="A">
-                        <div class="option-header-styled">
-                          <span class="badge bg-secondary">選項 A</span>
-                        </div>
-                        <div class="editor-preview-box p-3 border-0 bg-white h-100" id="preview-listen-optA"
-                          data-field="listen-optA" data-placeholder="輸入選項 A..." onclick="openCommonEditor(this)"></div>
-                        <input type="hidden" id="hidden-listen-optA">
-
-                        <div class="attachment-wrapper p-2 border-top bg-light">
-                          <input class="form-control form-control-sm" type="file" id="file-listen-optA">
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-md-6 mb-1">
-                      <div class="card option-card h-100" id="liOptionCardB" data-option="B">
-                        <div class="option-header-styled">
-                          <span class="badge bg-secondary">選項 B</span>
-                        </div>
-                        <div class="editor-preview-box p-3 border-0 bg-white h-100" id="preview-listen-optB"
-                          data-field="listen-optB" data-placeholder="輸入選項 B..." onclick="openCommonEditor(this)"></div>
-                        <input type="hidden" id="hidden-listen-optB">
-
-                        <div class="attachment-wrapper p-2 border-top bg-light">
-                          <input class="form-control form-control-sm" type="file" id="file-listen-optB">
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-md-6 mb-1">
-                      <div class="card option-card h-100" id="liOptionCardC" data-option="C">
-                        <div class="option-header-styled">
-                          <span class="badge bg-secondary">選項 C</span>
-                        </div>
-                        <div class="editor-preview-box p-3 border-0 bg-white h-100" id="preview-listen-optC"
-                          data-field="listen-optC" data-placeholder="輸入選項 C..." onclick="openCommonEditor(this)"></div>
-                        <input type="hidden" id="hidden-listen-optC">
-
-                        <div class="attachment-wrapper p-2 border-top bg-light">
-                          <input class="form-control form-control-sm" type="file" id="file-listen-optC">
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-md-6 mb-1">
-                      <div class="card option-card h-100" id="liOptionCardD" data-option="D">
-                        <div class="option-header-styled">
-                          <span class="badge bg-secondary">選項 D</span>
-                        </div>
-                        <div class="editor-preview-box p-3 border-0 bg-white h-100" id="preview-listen-optD"
-                          data-field="listen-optD" data-placeholder="輸入選項 D..." onclick="openCommonEditor(this)"></div>
-                        <input type="hidden" id="hidden-listen-optD">
-
-                        <div class="attachment-wrapper p-2 border-top bg-light">
-                          <input class="form-control form-control-sm" type="file" id="file-listen-optD">
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <!-- 答案選擇區塊 -->
-                  <div class="answer-selector-section">
-                    <span class="selector-label">
-                      <i class="bi bi-check-circle"></i>
-                      正確答案
-                    </span>
-                    <select class="answer-dropdown" id="liCorrectAnswer">
+                  <div class="sidebar-item">
+                    <label class="prop-label-large">主類</label>
+                    <select class="form-select" id="gMainCategory">
                       <option value="">請選擇...</option>
+                    </select>
+                  </div>
+
+                  <div class="sidebar-item">
+                    <label class="prop-label-large">次類</label>
+                    <select class="form-select readonly-field" id="gSubCategory" disabled>
+                      <option value="">請先選擇主類</option>
+                    </select>
+                  </div>
+
+                  <div class="sidebar-item">
+                    <label class="prop-label-large">難度</label>
+                    <div class="btn-group w-100" role="group">
+                      <input type="radio" class="btn-check" name="gDifficultyRadio" id="gDiff1" value="易"
+                        onclick="syncDifficulty('易')">
+                      <label class="btn btn-outline-secondary" for="gDiff1">易</label>
+
+                      <input type="radio" class="btn-check" name="gDifficultyRadio" id="gDiff2" value="中"
+                        onclick="syncDifficulty('中')" checked>
+                      <label class="btn btn-outline-secondary" for="gDiff2">中</label>
+
+                      <input type="radio" class="btn-check" name="gDifficultyRadio" id="gDiff3" value="難"
+                        onclick="syncDifficulty('難')">
+                      <label class="btn btn-outline-secondary" for="gDiff3">難</label>
+                    </div>
+                    <select id="gDifficulty" class="d-none">
+                      <option value="易">易</option>
+                      <option value="中" selected>中</option>
+                      <option value="難">難</option>
+                    </select>
+                  </div>
+
+                  <hr class="my-2">
+
+                  <div class="sidebar-item">
+                    <label class="prop-label-large text-success">正確答案</label>
+                    <select class="form-select form-select-lg border-success text-success fw-bold" id="gCorrectAnswer"
+                      style="background-color: #f0fdf4;">
+                      <option value="">尚未選擇</option>
                       <option value="A">選項 A</option>
                       <option value="B">選項 B</option>
                       <option value="C">選項 C</option>
                       <option value="D">選項 D</option>
                     </select>
-                    <span class="selector-hint">
-                      <i class="bi bi-info-circle me-1"></i>
-                      選擇後會在對應選項顯示標記
-                    </span>
-                  </div>
-                </div>
-
-                <div class="section-card">
-                  <h6 class="section-title">
-                    <i class="bi bi-lightbulb"></i>
-                    三、詳解與解析改為試題解析（供審題與試後說明參考）
-                  </h6>
-
-                  <div class="mb-3">
-                    <label class="form-label fw-bold small text-secondary">解析 (紀錄答案理由)</label>
-                    <div class="editor-preview-box border rounded-3 p-3 bg-white" id="preview-listen-explanation"
-                      data-field="listen-explanation" data-placeholder="點擊輸入解析..." onclick="openCommonEditor(this)">
-                    </div>
-                    <input type="hidden" id="hidden-listen-explanation" name="listen-explanation">
-                  </div>
-
-                  <div id="div-ref-answer" class="mb-3 d-none">
-                    <label class="form-label fw-bold small text-secondary required-star">參考答案 (難度五必填)</label>
-                    <div class="quill-master-container border rounded-3">
-                      <div class="punctuation-toolbar d-flex flex-wrap gap-2 p-2 border-bottom bg-light rounded-top-3">
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="？">？</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="！">！</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="：">：</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="；">；</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」"
-                          data-back="1">「」</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』"
-                          data-back="1">『』</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）"
-                          data-back="1">（）</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】"
-                          data-back="1">【】</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary punc-btn"
-                          data-char="……">……</button>
-                      </div>
-                      <div id="q-listen-ref-answer"></div>
-                      <div
-                        class="word-count-bar d-flex justify-content-between align-items-center p-2 border-top bg-light small text-secondary rounded-bottom-3">
-                        <span>字數：<span class="count-num" id="count-q-listen-ref-answer">0</span></span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <!-- 聽力題組 -->
-              <div id="form-listengroup" class="question-form-group d-none">
-
-                <div class="section-card">
-                  <h6 class="section-title">
-                    <i class="bi bi-info-circle"></i>
-                    一、題目基本資料
-                  </h6>
-                  <div class="row g-3">
-                    <div class="col-md-6">
-                      <label class="form-label fw-bold small text-secondary required-star">適用等級</label>
-                      <select class="form-select" id="lgLevel">
-                        <option value="">請選擇...</option>
-                        <option value="難度一">難度一</option>
-                        <option value="難度二">難度二</option>
-                        <option value="難度三">難度三</option>
-                        <option value="難度四">難度四</option>
-                        <option value="難度五">難度五</option>
-                      </select>
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label fw-bold small text-secondary required-star">語音類型</label>
-                      <select class="form-select" id="lgVoiceType">
-                        <option value="">請選擇...</option>
-                        <option value="對話">對話</option>
-                        <option value="情境">情境</option>
-                        <option value="陳述">陳述</option>
-                      </select>
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label fw-bold small text-secondary required-star">素材分類</label>
-                      <select class="form-select" id="lgMaterial">
-                        <option value="">請選擇...</option>
-                        <option value="生活">生活</option>
-                        <option value="教育">教育</option>
-                        <option value="職場">職場</option>
-                        <option value="專業">專業</option>
-                      </select>
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label fw-bold small text-secondary">命題者</label>
-                      <input type="text" class="form-control readonly-field" id="lgPropositioner" value="沈雅茹" disabled
-                        readonly>
+                    <div class="form-text small mt-2">
+                      <i class="bi bi-info-circle me-1"></i> 選擇後右側選項框將顯示綠色邊框
                     </div>
                   </div>
                 </div>
 
-                <div class="section-card">
-                  <h6 class="section-title">
-                    <i class="bi bi-file-text"></i>
-                    二、題目內容
-                  </h6>
-
-                  <div class="mb-3">
-                    <label class="form-label fw-bold small text-secondary required-star">語音內容</label>
-                    <div class="editor-preview-box border rounded-3 p-3 bg-white mb-2" id="preview-lg-content"
-                      data-field="lg-content" data-placeholder="點擊輸入語音內容..." onclick="openCommonEditor(this)"></div>
-                    <input type="hidden" id="hidden-lg-content" name="lg-content">
-                  </div>
+                <div class="col-md-9 bg-white p-4 main-panel">
 
                   <div class="mb-4">
-                    <label class="form-label fw-bold small text-secondary">題目附檔 (音檔/MP3)</label>
-                    <div class="input-group">
-                      <input class="form-control" type="file" id="lgAttachment">
+                    <h6 class="fw-bold text-dark border-start border-4 border-primary ps-2 mb-2">題目內容</h6>
+                    <div class="editor-preview-box border rounded-top-3 p-3" id="preview-g-content"
+                      data-field="g-content" data-placeholder="點擊輸入題幹內容..." onclick="openCommonEditor(this)"></div>
+                    <input type="hidden" id="hidden-g-content" name="g-content">
+
+                    <div class="attachment-wrapper p-2 border rounded bg-light d-flex align-items-center gap-2">
+                      <label class="small fw-bold text-muted text-nowrap">附檔 (圖片)</label>
+                      <input class="form-control form-control-sm" type="file" id="file-g-content">
                     </div>
-                    <div class="form-text small mt-1 text-primary d-none" id="lgAttachmentName"></div>
                   </div>
 
-                  <div class="sub-question-container">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                      <h6 class="fw-bold text-dark m-0">
-                        <i class="bi bi-list-ol"></i>
-                        子題列表
-                      </h6>
+                  <hr class="border-secondary opacity-10">
+
+                  <div class="mb-4">
+                    <h6 class="fw-bold text-dark border-start border-4 border-primary ps-2 mb-3">選項與正確答案</h6>
+                    <div class="alert-hint">
+                      <i class="bi bi-exclamation-circle-fill"></i>
+                      請避免選項長短、語氣明顯差異，以免影響鑑別度
                     </div>
-
-                    <div id="listengroup-sub-container"></div>
+                    <div class="row g-3">
+                      <div class="col-md-6">
+                        <div class="card option-card h-100 shadow-sm" id="optionCardA">
+                          <div
+                            class="card-header py-1 px-2 bg-light border-bottom text-muted small fw-bold d-flex justify-content-between">
+                            <span>選項 A</span><i class="bi bi-check-circle-fill text-success correct-mark d-none"></i>
+                          </div>
+                          <div class="editor-preview-box p-3 border-0 h-100" id="preview-g-optA" data-field="g-optA"
+                            data-placeholder="輸入選項 A..." onclick="openCommonEditor(this)">
+                          </div>
+                          <input type="hidden" id="hidden-g-optA">
+                          <div class="card-footer p-1 bg-white border-top"><input
+                              class="form-control form-control-sm border-0" type="file" id="file-g-optA"></div>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="card option-card h-100 shadow-sm" id="optionCardB">
+                          <div
+                            class="card-header py-1 px-2 bg-light border-bottom text-muted small fw-bold d-flex justify-content-between">
+                            <span>選項 B</span><i class="bi bi-check-circle-fill text-success correct-mark d-none"></i>
+                          </div>
+                          <div class="editor-preview-box p-3 border-0 h-100" id="preview-g-optB" data-field="g-optB"
+                            data-placeholder="輸入選項 B..." onclick="openCommonEditor(this)">
+                          </div>
+                          <input type="hidden" id="hidden-g-optB">
+                          <div class="card-footer p-1 bg-white border-top"><input
+                              class="form-control form-control-sm border-0" type="file" id="file-g-optB"></div>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="card option-card h-100 shadow-sm" id="optionCardC">
+                          <div
+                            class="card-header py-1 px-2 bg-light border-bottom text-muted small fw-bold d-flex justify-content-between">
+                            <span>選項 C</span><i class="bi bi-check-circle-fill text-success correct-mark d-none"></i>
+                          </div>
+                          <div class="editor-preview-box p-3 border-0 h-100" id="preview-g-optC" data-field="g-optC"
+                            data-placeholder="輸入選項 C..." onclick="openCommonEditor(this)">
+                          </div>
+                          <input type="hidden" id="hidden-g-optC">
+                          <div class="card-footer p-1 bg-white border-top"><input
+                              class="form-control form-control-sm border-0" type="file" id="file-g-optC"></div>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="card option-card h-100 shadow-sm" id="optionCardD">
+                          <div
+                            class="card-header py-1 px-2 bg-light border-bottom text-muted small fw-bold d-flex justify-content-between">
+                            <span>選項 D</span><i class="bi bi-check-circle-fill text-success correct-mark d-none"></i>
+                          </div>
+                          <div class="editor-preview-box p-3 border-0 h-100" id="preview-g-optD" data-field="g-optD"
+                            data-placeholder="輸入選項 D..." onclick="openCommonEditor(this)">
+                          </div>
+                          <input type="hidden" id="hidden-g-optD">
+                          <div class="card-footer p-1 bg-white border-top"><input
+                              class="form-control form-control-sm border-0" type="file" id="file-g-optD"></div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
 
-                <div class="section-card">
-                  <h6 class="section-title">
-                    <i class="bi bi-lightbulb"></i>
-                    三、詳解與解析改為試題解析（供審題與試後說明參考）
-                  </h6>
-                  <p class="text-muted small m-0">
-                    <i class="bi bi-info-circle me-1"></i>
-                    閱讀題組的答案與解析請於上方「子題列表」中逐題設定。
-                  </p>
+                  <hr class="border-secondary opacity-10">
+
+                  <div class="mb-2">
+                    <h6 class="fw-bold text-dark border-start border-4 border-secondary ps-2 mb-2">試題解析 (紀錄答案理由)</h6>
+                    <div class="editor-preview-box border rounded-3 p-3" id="preview-g-explanation"
+                      data-field="g-explanation" data-placeholder="輸入解析..." onclick="openCommonEditor(this)"></div>
+                    <input type="hidden" id="hidden-g-explanation" name="g-explanation">
+                  </div>
                 </div>
               </div>
             </div>
+            <!-- 長文題目 -->
+            <div id="form-longarticle" class="question-form-group prop-grid-layout d-none">
+
+              <div class="row g-0 border rounded-3 overflow-hidden shadow-sm">
+
+                <div class="col-md-3 bg-light border-end p-4 d-flex flex-column gap-3 sidebar-panel">
+
+                  <div class="sidebar-item">
+                    <label class="prop-label-large">題型</label>
+                    <select class="form-select" id="lType">
+                      <option value="">請選擇...</option>
+                      <option value="引導寫作">引導寫作</option>
+                      <option value="資訊整合">資訊整合</option>
+                    </select>
+                  </div>
+
+                  <div class="sidebar-item">
+                    <label class="prop-label-large">難度</label>
+                    <div class="btn-group w-100" role="group">
+                      <input type="radio" class="btn-check" name="lDifficultyRadio" id="lDiff1" value="易"
+                        onclick="syncDifficultyL('易')">
+                      <label class="btn btn-outline-secondary" for="lDiff1">易</label>
+
+                      <input type="radio" class="btn-check" name="lDifficultyRadio" id="lDiff2" value="中"
+                        onclick="syncDifficultyL('中')" checked>
+                      <label class="btn btn-outline-secondary" for="lDiff2">中</label>
+
+                      <input type="radio" class="btn-check" name="lDifficultyRadio" id="lDiff3" value="難"
+                        onclick="syncDifficultyL('難')">
+                      <label class="btn btn-outline-secondary" for="lDiff3">難</label>
+                    </div>
+                    <select id="lDifficulty" class="d-none">
+                      <option value="易">易</option>
+                      <option value="中" selected>中</option>
+                      <option value="難">難</option>
+                    </select>
+                  </div>
+
+                  <div class="mt-auto">
+                    <div class="alert alert-light border small text-muted">
+                      <i class="bi bi-info-circle-fill me-1"></i>
+                      長文題目請務必填寫標題與文章內容，若有圖片請使用附檔上傳。
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-md-9 bg-white p-4 main-panel">
+
+                  <div class="mb-4">
+                    <h6 class="fw-bold text-dark border-start border-4 border-primary ps-2 mb-2">題目 (標題)</h6>
+                    <input type="text" class="form-control" id="lTopic" placeholder="請輸入長文題目標題...">
+                  </div>
+
+                  <div class="mb-4">
+                    <h6 class="fw-bold text-dark border-start border-4 border-primary ps-2 mb-2">文章內容</h6>
+                    <div class="editor-preview-box border rounded-top-3 p-3 bg-white" id="preview-l-content"
+                      data-field="l-content" data-placeholder="點擊輸入文章內容..." onclick="openCommonEditor(this)"
+                      style="min-height: 150px;"></div>
+                    <input type="hidden" id="hidden-l-content" name="l-content">
+
+                    <div class="attachment-wrapper p-2 border rounded bg-light d-flex align-items-center gap-2">
+                      <label class="small fw-bold text-muted text-nowrap">附檔 (圖片)</label>
+                      <input class="form-control form-control-sm" type="file" id="lAttachment">
+                    </div>
+                  </div>
+
+                  <hr class="border-secondary opacity-10">
+
+                  <div class="mb-2">
+                    <h6 class="fw-bold text-dark border-start border-4 border-secondary ps-2 mb-2">試題解析</h6>
+                    <div class="editor-preview-box border rounded-3 p-3 bg-white" id="preview-l-explanation"
+                      data-field="l-explanation" data-placeholder="輸入解析..." onclick="openCommonEditor(this)"></div>
+                    <input type="hidden" id="hidden-l-explanation" name="l-explanation">
+                  </div>
+
+                </div>
+              </div>
+            </div>
+            <!-- 短文題組 -->
+            <div id="form-shortarticle" class="question-form-group prop-grid-layout d-none">
+              <div class="row g-0 border rounded-3 overflow-hidden shadow-sm">
+
+                <div class="col-md-3 bg-light border-end p-4 d-flex flex-column gap-3 sidebar-panel">
+
+                  <div class="sidebar-item">
+                    <label class="prop-label-large">主類 / 次類</label>
+                    <div class="p-2 bg-white border rounded text-secondary small">
+                      文義判讀 / 篇章辨析
+                    </div>
+                  </div>
+
+                  <div class="sidebar-item">
+                    <label class="prop-label-large required-star">文體</label>
+                    <select class="form-select" id="sGenre">
+                      <option value="">請選擇...</option>
+                      <option value="文言文">文言文</option>
+                      <option value="應用文">應用文</option>
+                      <option value="語體文">語體文</option>
+                    </select>
+                  </div>
+
+                  <div class="sidebar-item">
+                    <label class="prop-label-large">難度</label>
+                    <div class="btn-group w-100" role="group">
+                      <input type="radio" class="btn-check" name="sDifficultyRadio" id="sDiff1" value="易"
+                        onclick="syncDifficultyS('易')">
+                      <label class="btn btn-outline-secondary" for="sDiff1">易</label>
+
+                      <input type="radio" class="btn-check" name="sDifficultyRadio" id="sDiff2" value="中"
+                        onclick="syncDifficultyS('中')" checked>
+                      <label class="btn btn-outline-secondary" for="sDiff2">中</label>
+
+                      <input type="radio" class="btn-check" name="sDifficultyRadio" id="sDiff3" value="難"
+                        onclick="syncDifficultyS('難')">
+                      <label class="btn btn-outline-secondary" for="sDiff3">難</label>
+                    </div>
+                    <select id="sDifficulty" class="d-none">
+                      <option value="易">易</option>
+                      <option value="中" selected>中</option>
+                      <option value="難">難</option>
+                    </select>
+                  </div>
+
+                  <div class="mt-auto">
+                    <div class="alert alert-light border small text-muted">
+                      <i class="bi bi-info-circle-fill me-1"></i>
+                      短文題組請先填寫右側母題文章，再新增子題。
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-md-9 bg-white p-4 main-panel">
+
+                  <div>
+                    <h5 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                      <i class="bi bi-journal-text me-2 text-primary"></i>母題 (文章設定)
+                    </h5>
+
+                    <div class="mb-3">
+                      <h6 class="fw-bold border-start border-4 border-primary text-secondary ps-2 mb-2">題目名稱 (標題)</h6>
+                      <div class="editor-preview-box article-preview-box border rounded-3 p-3 bg-white"
+                        id="preview-sTopic" data-field="sTopic" data-placeholder="點擊輸入母題標題..."
+                        onclick="openCommonEditor(this)"></div>
+                      <input type="hidden" id="hidden-sTopic" name="sTopic">
+                    </div>
+
+                    <div class="mb-3">
+                      <h6 class="fw-bold border-start border-4 border-primary text-secondary ps-2 mb-2">文章內容</h6>
+                      <div class="editor-preview-box border rounded-top-3 p-3 bg-white" id="preview-s-article"
+                        data-field="s-article" data-placeholder="點擊輸入短文內容..." onclick="openCommonEditor(this)"></div>
+                      <input type="hidden" id="hidden-s-article" name="s-article">
+
+                      <div class="attachment-wrapper p-2 border rounded bg-light d-flex align-items-center gap-2">
+                        <label class="small fw-bold text-muted text-nowrap">附檔 (圖片)</label>
+                        <input class="form-control form-control-sm" type="file" id="file-s-article">
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="sub-question-container bg-light border rounded-3 p-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                      <h5 class="fw-bold text-dark m-0">
+                        <i class="bi bi-list-ol me-2 text-primary"></i>子題列表
+                      </h5>
+                      <button type="button" class="btn btn-primary btn-sm shadow-sm" id="btn-add-s-sub">
+                        <i class="bi bi-plus-lg me-1"></i>新增子題
+                      </button>
+                    </div>
+
+                    <div id="s-sub-questions-container">
+                    </div>
+
+                    <div id="short-sub-empty" class="text-center py-5 text-muted border border-dashed rounded bg-white">
+                      <div class="opacity-50 mb-2">
+                        <i class="bi bi-clipboard-plus" style="font-size: 2rem;"></i>
+                      </div>
+                      <p class="mb-0">尚未新增任何子題</p>
+                      <small>請點擊右上方按鈕新增</small>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+            <!-- 閱讀題組 -->
+            <div id="form-reading" class="question-form-group prop-grid-layout d-none">
+              <div class="row g-0 border rounded-3 shadow-sm">
+
+                <div class="col-md-3 bg-light border-end p-4 d-flex flex-column gap-3 sidebar-panel">
+
+                  <div class="sidebar-item">
+                    <label class="prop-label-large required-star">文體</label>
+                    <select class="form-select" id="rGenre">
+                      <option value="">請選擇...</option>
+                      <option value="文言文">文言文</option>
+                      <option value="應用文">應用文</option>
+                      <option value="語體文">語體文</option>
+                    </select>
+                  </div>
+
+                  <div class="sidebar-item">
+                    <label class="prop-label-large">難度</label>
+                    <div class="btn-group w-100" role="group">
+                      <input type="radio" class="btn-check" name="rDifficultyRadio" id="rDiff1" value="易"
+                        onclick="syncDifficultyR('易')">
+                      <label class="btn btn-outline-secondary" for="rDiff1">易</label>
+
+                      <input type="radio" class="btn-check" name="rDifficultyRadio" id="rDiff2" value="中"
+                        onclick="syncDifficultyR('中')" checked>
+                      <label class="btn btn-outline-secondary" for="rDiff2">中</label>
+
+                      <input type="radio" class="btn-check" name="rDifficultyRadio" id="rDiff3" value="難"
+                        onclick="syncDifficultyR('難')">
+                      <label class="btn btn-outline-secondary" for="rDiff3">難</label>
+                    </div>
+                    <select id="rDifficulty" class="d-none">
+                      <option value="易">易</option>
+                      <option value="中" selected>中</option>
+                      <option value="難">難</option>
+                    </select>
+                  </div>
+
+                  <hr class="my-2">
+
+                  <div class="sidebar-item">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                      <label class="prop-label-large text-success mb-0">正確答案</label>
+                      <span class="badge bg-primary-subtle text-primary border border-primary-subtle"
+                        id="rSidebarSubLabel" style="display:none;">
+                        <i class="bi bi-pencil-fill me-1"></i><span id="rSidebarSubText">子題代碼：1</span>
+                      </span>
+                    </div>
+
+                    <select class="form-select form-select-lg border-success text-success fw-bold" id="rSidebarAnswer"
+                      style="background-color: #f0fdf4;" disabled>
+                      <option value="">尚未選擇</option>
+                      <option value="A">選項 A</option>
+                      <option value="B">選項 B</option>
+                      <option value="C">選項 C</option>
+                      <option value="D">選項 D</option>
+                    </select>
+                    <div class="form-text small mt-2">
+                      <i class="bi bi-info-circle me-1"></i> 選取後將同步至右側展開的子題
+                    </div>
+                  </div>
+
+                  <div class="mt-auto">
+                    <div class="alert alert-light border small text-muted">
+                      <i class="bi bi-info-circle-fill me-1"></i>
+                      點擊右側子題展開後，即可在左側設定該題答案。
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-md-9 bg-white p-4 main-panel">
+
+                  <div class="mb-4">
+                    <h5 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                      <i class="bi bi-book me-2 text-primary"></i>母題 (閱讀文章)
+                    </h5>
+
+                    <div class="mb-3">
+                      <label class="form-label fw-bold small text-secondary required-star">文章標題 (題目名稱)</label>
+                      <div class="editor-preview-box article-preview-box border rounded-3 p-3 bg-white"
+                        id="preview-rTopic" data-field="rTopic" data-placeholder="點擊輸入文章標題..."
+                        onclick="openCommonEditor(this)"></div>
+                      <input type="hidden" id="hidden-rTopic" name="rTopic">
+                    </div>
+
+                    <div class="mb-3">
+                      <label class="form-label fw-bold small text-secondary required-star">文章內容</label>
+                      <div class="editor-preview-box border rounded-top-3 p-3 bg-white" id="preview-rArticle"
+                        data-field="rArticle" data-placeholder="點擊輸入文章內容..." onclick="openCommonEditor(this)"
+                        style="min-height: 150px;"></div>
+                      <input type="hidden" id="hidden-rArticle" name="rArticle">
+
+                      <div class="attachment-wrapper p-2 border rounded bg-light d-flex align-items-center gap-2">
+                        <label class="small fw-bold text-muted text-nowrap">附檔 (圖片)</label>
+                        <input class="form-control form-control-sm" type="file" id="file-rArticle">
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="sub-question-container bg-light border rounded-3 p-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                      <h5 class="fw-bold text-dark m-0">
+                        <i class="bi bi-list-ol me-2 text-primary"></i>子題列表
+                      </h5>
+                      <button type="button" class="btn btn-primary btn-sm shadow-sm" id="btn-add-reading-sub">
+                        <i class="bi bi-plus-lg me-1"></i>新增子題
+                      </button>
+                    </div>
+
+                    <div id="reading-sub-container">
+                    </div>
+
+                    <div id="reading-sub-empty"
+                      class="text-center py-5 text-muted border border-dashed rounded bg-white">
+                      <div class="opacity-50 mb-2">
+                        <i class="bi bi-clipboard-plus" style="font-size: 2rem;"></i>
+                      </div>
+                      <p class="mb-0">尚未新增任何子題</p>
+                      <small>請點擊右上方按鈕新增</small>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+            <!-- 聽力題目 -->
+            <div id="form-listen" class="question-form-group prop-grid-layout d-none">
+
+              <div class="row g-0 border rounded-3 overflow-hidden shadow-sm">
+
+                <div class="col-md-3 bg-light border-end p-4 d-flex flex-column gap-3 sidebar-panel">
+
+                  <div class="sidebar-item">
+                    <label class="prop-label-large">核心能力</label>
+                    <input type="text" class="form-control readonly-field" id="liCore" readonly disabled value="請先選擇難度">
+                    <div class="form-text small mt-2 text-muted">
+                      <i class="bi bi-info-circle me-1"></i>僅有一項，故依據難度自動帶入。
+                    </div>
+                  </div>
+
+                  <div class="sidebar-item">
+                    <label class="prop-label-large">細目指標</label>
+                    <input type="text" class="form-control readonly-field" id="liIndicator" readonly disabled
+                      value="請先選擇難度">
+                    <div class="form-text small mt-2 text-muted">
+                      <i class="bi bi-info-circle me-1"></i>僅有一項，故依據難度自動帶入。
+                    </div>
+                  </div>
+
+                  <hr class="my-2">
+
+                  <div class="sidebar-item">
+                    <label class="prop-label-large required-star">語音類型</label>
+                    <select class="form-select" id="liVoiceType">
+                      <option value="">請選擇...</option>
+                      <option value="對話">對話</option>
+                      <option value="情境">情境</option>
+                      <option value="陳述">陳述</option>
+                    </select>
+                  </div>
+
+                  <div class="sidebar-item">
+                    <label class="prop-label-large required-star">素材分類</label>
+                    <select class="form-select" id="liMaterial">
+                      <option value="">請選擇...</option>
+                      <option value="生活">生活</option>
+                      <option value="教育">教育</option>
+                      <option value="職場">職場</option>
+                      <option value="專業">專業</option>
+                    </select>
+                  </div>
+
+                  <hr class="my-2">
+
+                  <div class="sidebar-item">
+                    <label class="prop-label-large text-success required-star">正確答案</label>
+                    <select class="form-select form-select-lg border-success text-success fw-bold" id="liCorrectAnswer"
+                      style="background-color: #f0fdf4;">
+                      <option value="">尚未選擇</option>
+                      <option value="A">選項 A</option>
+                      <option value="B">選項 B</option>
+                      <option value="C">選項 C</option>
+                      <option value="D">選項 D</option>
+                    </select>
+                    <div class="form-text small mt-2">
+                      <i class="bi bi-info-circle me-1"></i> 選擇後右側選項框將顯示綠色邊框
+                    </div>
+                  </div>
+
+                  <input type="hidden" id="liPropositioner" value="沈雅茹">
+                </div>
+
+                <div class="col-md-9 bg-white p-4 main-panel">
+
+                  <div class="mb-4">
+                    <h6 class="fw-bold text-dark border-start border-4 border-primary ps-2 mb-2">題目 (標題)</h6>
+                    <input type="text" class="form-control" id="liTopic" placeholder="請輸入標題...">
+                  </div>
+
+                  <div class="mb-4">
+                    <h6 class="fw-bold text-dark border-start border-4 border-primary ps-2 mb-2">語音內容 (腳本)</h6>
+                    <div class="editor-preview-box border rounded-top-3 p-3 bg-white" id="preview-listen-content"
+                      data-field="listen-content" data-placeholder="點擊輸入語音內容腳本..." onclick="openCommonEditor(this)">
+                    </div>
+                    <input type="hidden" id="hidden-listen-content" name="listen-content">
+
+                    <div
+                      class="attachment-wrapper p-2 border rounded-bottom bg-light d-flex align-items-center gap-2 border-top-0">
+                      <label class="small fw-bold text-primary text-nowrap"><i
+                          class="bi bi-volume-up-fill me-1"></i>題目音檔 (MP3)</label>
+                      <input class="form-control form-control-sm" type="file" id="liAttachment" accept="audio/*">
+                    </div>
+                    <div class="form-text small mt-1 text-primary d-none" id="liAttachmentName"></div>
+                  </div>
+
+                  <hr class="border-secondary opacity-10">
+
+                  <div class="mb-4">
+                    <h6 class="fw-bold text-dark border-start border-4 border-primary ps-2 mb-3">選項設定</h6>
+                    <div class="alert-hint">
+                      <i class="bi bi-exclamation-circle-fill"></i>
+                      聽力選項通常為圖片或短語，請盡量保持長度一致。
+                    </div>
+
+                    <div class="row g-3">
+                      <div class="col-md-6">
+                        <div class="card option-card h-100 shadow-sm" id="liOptionCardA">
+                          <div
+                            class="card-header py-1 px-2 bg-light border-bottom text-muted small fw-bold d-flex justify-content-between">
+                            <span>選項 A</span><i class="bi bi-check-circle-fill text-success correct-mark d-none"></i>
+                          </div>
+                          <div class="editor-preview-box p-3 border-0 h-100" id="preview-listen-optA"
+                            data-field="listen-optA" data-placeholder="輸入選項 A..." onclick="openCommonEditor(this)">
+                          </div>
+                          <input type="hidden" id="hidden-listen-optA">
+                          <div class="card-footer p-1 bg-white border-top">
+                            <input class="form-control form-control-sm border-0" type="file" id="file-listen-optA">
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="col-md-6">
+                        <div class="card option-card h-100 shadow-sm" id="liOptionCardB">
+                          <div
+                            class="card-header py-1 px-2 bg-light border-bottom text-muted small fw-bold d-flex justify-content-between">
+                            <span>選項 B</span><i class="bi bi-check-circle-fill text-success correct-mark d-none"></i>
+                          </div>
+                          <div class="editor-preview-box p-3 border-0 h-100" id="preview-listen-optB"
+                            data-field="listen-optB" data-placeholder="輸入選項 B..." onclick="openCommonEditor(this)">
+                          </div>
+                          <input type="hidden" id="hidden-listen-optB">
+                          <div class="card-footer p-1 bg-white border-top">
+                            <input class="form-control form-control-sm border-0" type="file" id="file-listen-optB">
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="col-md-6">
+                        <div class="card option-card h-100 shadow-sm" id="liOptionCardC">
+                          <div
+                            class="card-header py-1 px-2 bg-light border-bottom text-muted small fw-bold d-flex justify-content-between">
+                            <span>選項 C</span><i class="bi bi-check-circle-fill text-success correct-mark d-none"></i>
+                          </div>
+                          <div class="editor-preview-box p-3 border-0 h-100" id="preview-listen-optC"
+                            data-field="listen-optC" data-placeholder="輸入選項 C..." onclick="openCommonEditor(this)">
+                          </div>
+                          <input type="hidden" id="hidden-listen-optC">
+                          <div class="card-footer p-1 bg-white border-top">
+                            <input class="form-control form-control-sm border-0" type="file" id="file-listen-optC">
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="col-md-6">
+                        <div class="card option-card h-100 shadow-sm" id="liOptionCardD">
+                          <div
+                            class="card-header py-1 px-2 bg-light border-bottom text-muted small fw-bold d-flex justify-content-between">
+                            <span>選項 D</span><i class="bi bi-check-circle-fill text-success correct-mark d-none"></i>
+                          </div>
+                          <div class="editor-preview-box p-3 border-0 h-100" id="preview-listen-optD"
+                            data-field="listen-optD" data-placeholder="輸入選項 D..." onclick="openCommonEditor(this)">
+                          </div>
+                          <input type="hidden" id="hidden-listen-optD">
+                          <div class="card-footer p-1 bg-white border-top">
+                            <input class="form-control form-control-sm border-0" type="file" id="file-listen-optD">
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <hr class="border-secondary opacity-10">
+
+                  <div class="mb-2">
+                    <h6 class="fw-bold text-dark border-start border-4 border-secondary ps-2 mb-2">試題解析 (紀錄答案理由)</h6>
+                    <div class="editor-preview-box border rounded-3 p-3 bg-white" id="preview-listen-explanation"
+                      data-field="listen-explanation" data-placeholder="輸入解析..." onclick="openCommonEditor(this)"></div>
+                    <input type="hidden" id="hidden-listen-explanation" name="listen-explanation">
+                  </div>
+
+                </div>
+              </div>
+            </div>
+            <!-- 聽力題組 -->
+            <div id="form-listengroup" class="question-form-group prop-grid-layout d-none">
+              <div class="row g-0 border rounded-3 overflow-hidden shadow-sm h-100">
+
+                <div class="col-md-3 bg-light border-end p-4 d-flex flex-column gap-3 sidebar-panel">
+
+                  <div class="sidebar-item">
+                    <label class="prop-label-large required-star">語音類型</label>
+                    <select class="form-select" id="lgVoiceType">
+                      <option value="">請選擇...</option>
+                      <option value="對話">對話</option>
+                      <option value="情境">情境</option>
+                      <option value="陳述">陳述</option>
+                    </select>
+                  </div>
+
+                  <div class="sidebar-item">
+                    <label class="prop-label-large required-star">素材分類</label>
+                    <select class="form-select" id="lgMaterial">
+                      <option value="">請選擇...</option>
+                      <option value="生活">生活</option>
+                      <option value="教育">教育</option>
+                      <option value="職場">職場</option>
+                      <option value="專業">專業</option>
+                    </select>
+                  </div>
+
+                  <hr class="my-2">
+
+                  <div class="sidebar-item">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                      <label class="prop-label-large text-success mb-0">正確答案</label>
+                      <span class="badge bg-primary-subtle text-primary border border-primary-subtle"
+                        id="lgSidebarSubLabel" style="display:none;">
+                        <i class="bi bi-pencil-fill me-1"></i><span id="lgSidebarSubText">子題代碼：1</span>
+                      </span>
+                    </div>
+
+                    <select class="form-select form-select-lg border-success text-success fw-bold" id="lgSidebarAnswer"
+                      style="background-color: #f0fdf4;" disabled>
+                      <option value="">尚未選擇</option>
+                      <option value="A">A</option>
+                      <option value="B">B</option>
+                      <option value="C">C</option>
+                      <option value="D">D</option>
+                    </select>
+                    <div class="form-text mt-2 text-muted small">
+                      <i class="bi bi-info-circle me-1"></i>選取後將同步至右側展開的子題
+                    </div>
+                  </div>
+
+                  <div class="mt-auto">
+                    <div class="alert alert-light border small text-muted">
+                      <i class="bi bi-info-circle-fill me-1"></i>
+                      本題組包含兩小題，屬性已固定：
+                      <ul class="mb-0 ps-3 mt-1">
+                        <li>第1題：難度三 / 推斷訊息</li>
+                        <li>第2題：難度四 / 歸納分析</li>
+                      </ul>
+                    </div>
+                  </div>
+
+                </div>
+
+                <div class="col-md-9 bg-white p-4 main-panel">
+
+                  <div class="mb-4">
+                    <h5 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                      <i class="bi bi-soundwave me-2 text-primary"></i>母題 (語音內容)
+                    </h5>
+
+                    <div class="mb-3">
+                      <label class="form-label fw-bold small text-secondary required-star">語音內容 (腳本)</label>
+                      <div class="editor-preview-box border rounded-top-3 p-3 bg-white" id="preview-lg-content"
+                        data-field="lg-content" data-placeholder="點擊輸入語音內容..." onclick="openCommonEditor(this)"></div>
+                      <input type="hidden" id="hidden-lg-content" name="lg-content">
+                      <div
+                        class="attachment-wrapper p-2 border rounded-bottom bg-light d-flex align-items-center gap-2 border-top-0">
+                        <label class="small fw-bold text-primary text-nowrap"><i
+                            class="bi bi-volume-up-fill me-1"></i>母題音檔</label>
+                        <input class="form-control form-control-sm" type="file" id="lgAttachment">
+                      </div>
+                      <div class="form-text small mt-1 text-primary d-none" id="lgAttachmentName"></div>
+                    </div>
+                  </div>
+
+                  <div class="mb-4">
+                    <div class="sub-question-container bg-light border rounded-3 p-3">
+                      <h5 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                        <i class="bi bi-list-ol me-2 text-primary"></i>子題列表
+                      </h5>
+                      <div id="listengroup-sub-container"></div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
           </form>
         </div>
         <div class="modal-footer">

@@ -7,6 +7,45 @@
  */
 
 // ==========================================
+//  0. 設定資料 (Config)
+// ==========================================
+
+// 定義各題型允許的等級
+const LevelConstraints = {
+    'default': ['初級', '中級', '中高級', '高級', '優級'],
+    '短文題組': ['高級', '優級'],
+    '聽力題目': ['難度一', '難度二', '難度三', '難度四', '難度五'],
+    '聽力題組': ['難度一', '難度二', '難度三', '難度四', '難度五']
+};
+
+/**
+ * 根據題型更新 [共用等級] 下拉選單
+ */
+function updateCommonLevelOptions(type) {
+    const levelSelect = document.getElementById('commonLevel');
+    if (!levelSelect) return;
+
+    // 1. 取得該題型允許的等級列表 (若無設定則使用預設)
+    const allowedLevels = LevelConstraints[type] || LevelConstraints['default'];
+
+    // 2. 暫存當前選中的值 (避免切換時被清空，如果該值在新清單中合法則保留)
+    const currentVal = levelSelect.value;
+
+    // 3. 清空並重建選項
+    levelSelect.innerHTML = '<option value="">請選擇...</option>';
+    allowedLevels.forEach(lvl => {
+        levelSelect.add(new Option(lvl, lvl));
+    });
+
+    // 4. 嘗試回填值
+    if (allowedLevels.includes(currentVal)) {
+        levelSelect.value = currentVal;
+    } else {
+        levelSelect.value = ''; // 如果原值不合法（例如從初級切換到短文題組），則重置
+    }
+}
+
+// ==========================================
 //  1. 全域設定與工具 (Globals & Utils)
 // ==========================================
 // 新增同步難度的 Helper 函數
@@ -473,10 +512,16 @@ const GeneralHandler = (function () {
 /* --- LongArticleHandler (長文題目) --- */
 const LongArticleHandler = (function () {
     return {
-        init: function () { },
+        init: function () {
+            // 定義長文專用的難度同步函式
+            window.syncDifficultyL = function (val) {
+                const select = document.getElementById('lDifficulty');
+                if (select) select.value = val;
+            };
+        },
         clear: function () {
             // 1. 清空一般欄位
-            ['lLevel', 'lType', 'lDifficulty', 'lTopic'].forEach(id => {
+            ['lType', 'lDifficulty', 'lTopic'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.value = '';
             });
@@ -492,46 +537,89 @@ const LongArticleHandler = (function () {
             // 3. 清空附檔
             const file = document.getElementById('lAttachment');
             if (file) file.value = '';
+
+            // 4. 重置 Radio (預設中)
+            const defaultRadio = document.getElementById('lDiff2');
+            if (defaultRadio) defaultRadio.checked = true;
         },
         fill: function (data, isViewMode) {
-            // 1. 回填基本資料
+            // 1. 回填共用欄位 (Level)
+            const elLevel = document.getElementById('commonLevel');
+            if (elLevel) elLevel.value = data.level || '';
+
+            // 2. 回填長文專屬欄位
             const setVal = (id, val) => {
                 const el = document.getElementById(id);
                 if (el) el.value = val || '';
             };
-            setVal('lType', data.subType);
-            setVal('lLevel', data.level);
-            setVal('lDifficulty', data.difficulty);
+            setVal('lType', data.subType); // JSON 中儲存為 subType
             setVal('lTopic', data.topic);
 
-            // 修正點：隱藏欄位存編碼，預覽區存 HTML
+            // 3. 同步難度 Radio
+            const diff = data.difficulty || '中';
+            const radio = document.querySelector(`input[name="lDifficultyRadio"][value="${diff}"]`);
+            if (radio) radio.checked = true;
+            // 同步 hidden select
+            const diffSelect = document.getElementById('lDifficulty');
+            if (diffSelect) diffSelect.value = diff;
+
+            // 4. 回填編輯器內容
             const setContent = (key, val) => {
                 const hidden = document.getElementById(`hidden-l-${key}`);
                 const preview = document.getElementById(`preview-l-${key}`);
                 if (hidden && preview) {
-                    preview.innerHTML = val ? decodeURIComponent(val) : '';
-                    hidden.value = val || ''; // 保持編碼
+                    const decoded = val ? decodeURIComponent(val) : '';
+                    hidden.value = decoded; // 保持解碼後的值 (或根據您的後端需求保持編碼)
+                    // 注意: 這裡 hidden.value 應該存編碼還是解碼視您 collect 的邏輯
+                    // 根據 GeneralHandler，我們這裡存 decoded 到 value 似乎怪怪的？
+                    // 修正：依照 collect 邏輯，這裡 hidden 應該存 "值"，preview 顯示 HTML
+                    // 如果 data.content 是 URL Encoded 的，這裡解碼顯示
+                    hidden.value = val || '';
+                    preview.innerHTML = decoded;
                 }
             };
             setContent('content', data.content);
             setContent('explanation', data.explanation);
+
+            // 5. 處理 View Mode 鎖定
+            const previews = document.querySelectorAll('#form-longarticle .editor-preview-box');
+            previews.forEach(el => {
+                if (isViewMode) {
+                    el.style.pointerEvents = 'none';
+                    el.style.backgroundColor = '#f3f4f6';
+                    el.style.borderColor = '#e5e7eb';
+                } else {
+                    el.style.pointerEvents = 'auto';
+                    el.style.backgroundColor = '#fff';
+                    el.style.borderColor = '#dee2e6';
+                }
+            });
+
+            // 鎖定 Radio
+            document.querySelectorAll('input[name="lDifficultyRadio"]').forEach(r => {
+                r.disabled = isViewMode;
+            });
+            // 鎖定一般 Input (lTopic) 會由 toggleGlobalEditable 處理，但明確寫出也無妨
+            const lTopic = document.getElementById('lTopic');
+            if (lTopic) lTopic.disabled = isViewMode;
         },
         collect: function () {
-            // 輔助函數：取得隱藏欄位並編碼
-            const getVal = (id) => {
-                const el = document.getElementById(id);
-                return el ? el.value : '';
-            };
+            // 從 Radio 取得難度
+            const diffRadio = document.querySelector('input[name="lDifficultyRadio"]:checked');
 
             return {
                 mainCat: '長文題目',
+
+                // 從共用欄位取得等級
+                level: document.getElementById('commonLevel').value,
+
                 subType: document.getElementById('lType').value,
-                level: document.getElementById('lLevel').value,
-                difficulty: document.getElementById('lDifficulty').value,
+                difficulty: diffRadio ? diffRadio.value : '中',
                 topic: document.getElementById('lTopic').value,
-                // 從隱藏欄位取值
-                content: getVal('hidden-l-content'),
-                explanation: getVal('hidden-l-explanation'),
+
+                content: document.getElementById('hidden-l-content').value,
+                explanation: document.getElementById('hidden-l-explanation').value,
+
                 // 摘要使用標題
                 summary: document.getElementById('lTopic').value || '未命名長文題目'
             };
@@ -552,7 +640,16 @@ const ListenHandler = (function () {
     function updateCorrectAnswerDisplay(val) {
         ['A', 'B', 'C', 'D'].forEach(opt => {
             const card = document.getElementById(`liOptionCard${opt}`);
-            if (card) val === opt ? card.classList.add('is-correct-answer') : card.classList.remove('is-correct-answer');
+            if (card) {
+                const icon = card.querySelector('.correct-mark');
+                if (val === opt) {
+                    card.classList.add('is-correct-answer');
+                    if (icon) icon.classList.remove('d-none');
+                } else {
+                    card.classList.remove('is-correct-answer');
+                    if (icon) icon.classList.add('d-none');
+                }
+            }
         });
         const d = document.getElementById('liCorrectAnswer');
         if (d) val ? d.classList.add('has-answer') : d.classList.remove('has-answer');
@@ -560,36 +657,69 @@ const ListenHandler = (function () {
 
     return {
         init: function () {
-            // 移除原本 Quill 初始化，改由 HTML 直接綁定 onclick="openCommonEditor(this)"
+            // 綁定等級連動核心能力與指標
+            const commonLvl = document.getElementById('commonLevel');
+            if (commonLvl) {
+                const updateCoreIndicator = () => {
+                    // 只有在當前題型是「聽力題目」時才執行連動
+                    const mType = document.getElementById('mType');
+                    if (mType && mType.value !== '聽力題目') return;
 
-            const lvl = document.getElementById('liLevel');
-            if (lvl) {
-                const newLvl = lvl.cloneNode(true);
-                lvl.parentNode.replaceChild(newLvl, lvl);
-                newLvl.addEventListener('change', function () {
-                    const c = document.getElementById('liCore'), i = document.getElementById('liIndicator');
-                    c.innerHTML = '<option value="">請選擇...</option>'; i.innerHTML = '<option value="">請選擇...</option>';
-                    if (this.value && levelData[this.value]) {
-                        c.disabled = false; i.disabled = false;
-                        levelData[this.value].cores.forEach(v => c.add(new Option(v, v)));
-                        levelData[this.value].indicators.forEach(v => i.add(new Option(v, v)));
-                    } else { c.disabled = true; i.disabled = true; }
-                });
+                    const c = document.getElementById('liCore');
+                    const i = document.getElementById('liIndicator');
+                    const val = commonLvl.value; // 例如 "難度一"
+
+                    if (!c || !i) return;
+
+                    if (val && levelData[val]) {
+                        // 直接帶入對應的第一個值
+                        c.value = levelData[val].cores[0];
+                        i.value = levelData[val].indicators[0];
+                    } else {
+                        // 若無選擇或無對應資料，顯示預設提示
+                        c.value = '請先選擇難度';
+                        i.value = '請先選擇難度';
+                    }
+                };
+
+                // 綁定事件
+                commonLvl.addEventListener('change', updateCoreIndicator);
+
+                // 初次載入時若已經是聽力題目，也要初始化
+                // 但因為 ListenHandler.init 可能在 mType change 之前或之後，這裡暫不強制執行，
+                // 而是依賴 mType change 時會觸發 updateCommonLevelOptions -> 進而可能連動
+                // 或者我們可以公開一個 update 方法供外部調用
+                // 簡單作法：將此函式掛載到 window 或實例上，以便切換題型時呼叫
+                this.updateCoreIndicator = updateCoreIndicator;
             }
+
+            // 綁定正確答案連動
             const ans = document.getElementById('liCorrectAnswer');
             if (ans) {
                 const newAns = ans.cloneNode(true);
                 ans.parentNode.replaceChild(newAns, ans);
                 newAns.addEventListener('change', function () { updateCorrectAnswerDisplay(this.value); });
             }
-
-            // 綁定 MutationObserver 監聽 Preview Box 變更 (若需要即時檢查可在此實作，目前保持簡單)
         },
         clear: function () {
-            ['liLevel', 'liTopic', 'liCorrectAnswer', 'liCore', 'liIndicator', 'liVoiceType', 'liMaterial', 'liAttachment'].forEach(id => {
+            // 清空 Sidebar Inputs
+            ['liLevel', 'liCore', 'liIndicator', 'liVoiceType', 'liMaterial', 'liCorrectAnswer'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.value = '';
             });
+
+            // 重置唯讀欄位
+            const c = document.getElementById('liCore');
+            const i = document.getElementById('liIndicator');
+            if (c) c.value = '請先選擇難度';
+            if (i) i.value = '請先選擇難度';
+
+            // 清空 Main Inputs
+            const topic = document.getElementById('liTopic');
+            if (topic) topic.value = '';
+
+            const attach = document.getElementById('liAttachment');
+            if (attach) attach.value = '';
 
             // 清空 Preview Boxes & Hidden Inputs
             ['listen-content', 'listen-optA', 'listen-optB', 'listen-optC', 'listen-optD', 'listen-explanation'].forEach(key => {
@@ -599,23 +729,47 @@ const ListenHandler = (function () {
                 if (p) p.innerHTML = '';
             });
 
-            // 清空選項附檔 (新增)
+            // 清空選項附檔
             ['A', 'B', 'C', 'D'].forEach(opt => {
                 const f = document.getElementById(`file-listen-opt${opt}`);
                 if (f) f.value = '';
             });
 
+            // 重置連動狀態
+            const core = document.getElementById('liCore');
+            const ind = document.getElementById('liIndicator');
+            if (core) { core.innerHTML = '<option value="">請先選擇難度</option>'; core.disabled = true; }
+            if (ind) { ind.innerHTML = '<option value="">請先選擇難度</option>'; ind.disabled = true; }
+
             updateCorrectAnswerDisplay('');
-            this.toggleEditable(true);
         },
         fill: function (data, isViewMode) {
-            document.getElementById('liLevel').value = data.level || '';
-            document.getElementById('liLevel').dispatchEvent(new Event('change')); // 觸發連動
+            // 回填 Level (使用 commonLevel) 並手動觸發連動
+            // 注意：聽力題目使用的是上方的 commonLevel，但 init 綁定的是它
+            // fill 執行時，commonLevel 可能已經由 updateCommonLevelOptions 設定好值了
+            const lvl = document.getElementById('commonLevel');
+            if (lvl) {
+                lvl.value = data.level || '';
+            }
+            // 為了保險，我們手動執行一次 updateCoreIndicator 邏輯
+            if (data.level && levelData[data.level]) {
+                const c = document.getElementById('liCore');
+                const i = document.getElementById('liIndicator');
+                if (c) c.value = levelData[data.level].cores[0];
+                if (i) i.value = levelData[data.level].indicators[0];
+            } else {
+                // 如果沒有資料，試著從 saved data 回填 (以此為優先)
+                const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
+                setVal('liCore', data.core);
+                setVal('liIndicator', data.indicator);
+            }
 
-            document.getElementById('liTopic').value = data.topic || '';
-            document.getElementById('liVoiceType').value = data.voiceType || '';
-            document.getElementById('liMaterial').value = data.material || '';
-            document.getElementById('liCorrectAnswer').value = data.ans || '';
+            const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
+            setVal('liTopic', data.topic);
+            setVal('liVoiceType', data.voiceType);
+            setVal('liMaterial', data.material);
+            setVal('liCorrectAnswer', data.ans);
+
             updateCorrectAnswerDisplay(data.ans || '');
 
             // 回填 Preview Boxes
@@ -635,24 +789,57 @@ const ListenHandler = (function () {
             fillBox('listen-optD', data.optD);
             fillBox('listen-explanation', data.explanation);
 
-            this.toggleEditable(!isViewMode);
+            // 處理 View Mode (鎖定)
+            const previews = document.querySelectorAll('#form-listen .editor-preview-box');
+            previews.forEach(el => {
+                if (isViewMode) {
+                    el.style.pointerEvents = 'none';
+                    el.style.backgroundColor = '#f3f4f6';
+                    el.style.borderColor = '#e5e7eb';
+                } else {
+                    el.style.pointerEvents = 'auto';
+                    el.style.backgroundColor = '#fff';
+                    el.style.borderColor = '#dee2e6';
+                }
+            });
+
+            // 鎖定 Inputs
+            const inputs = document.querySelectorAll('#form-listen input, #form-listen select');
+            inputs.forEach(el => {
+                // Core/Indicator 的鎖定狀態由 Level 決定，先不強制覆蓋
+                if (el.id !== 'liCore' && el.id !== 'liIndicator') {
+                    el.disabled = isViewMode;
+                }
+            });
+            // 若是 View Mode，強制鎖定所有
+            if (isViewMode) {
+                inputs.forEach(el => el.disabled = true);
+            }
         },
         collect: function () {
             const getVal = (id) => { const el = document.getElementById(id); return el ? el.value : ''; };
 
             return {
-                level: getVal('liLevel'),
+                mainCat: '聽力題目', // 補上主類別方便辨識
+                level: document.getElementById('commonLevel').value,
+                core: getVal('liCore'),
+                indicator: getVal('liIndicator'),
                 voiceType: getVal('liVoiceType'),
                 material: getVal('liMaterial'),
                 topic: getVal('liTopic'),
-                summary: getVal('liTopic'),
+
                 content: getVal('hidden-listen-content'),
                 optA: getVal('hidden-listen-optA'),
                 optB: getVal('hidden-listen-optB'),
                 optC: getVal('hidden-listen-optC'),
                 optD: getVal('hidden-listen-optD'),
                 ans: getVal('liCorrectAnswer'),
-                explanation: getVal('hidden-listen-explanation')
+                explanation: getVal('hidden-listen-explanation'),
+
+                summary: (function () {
+                    const t = getVal('liTopic');
+                    return t ? (t.substring(0, 20) + (t.length > 20 ? '...' : '')) : '未命名聽力題目';
+                })()
             };
         },
         toggleEditable: function (editable) {
@@ -671,17 +858,20 @@ const ListenHandler = (function () {
             });
 
             document.querySelectorAll('#form-listen input, #form-listen select').forEach(el => {
-                if (!el.classList.contains('readonly-field')) el.disabled = !editable;
+                // 關鍵：只有不是 liCore 和 liIndicator 的欄位才根據 editable 開關
+                // 且不包含 .readonly-field (雙重保險)
+                if (el.id !== 'liCore' && el.id !== 'liIndicator' && !el.classList.contains('readonly-field')) {
+                    el.disabled = !editable;
+                }
             });
-            // 標點符號列已移除，無需處理
         }
     };
 })();
 
 
 const ListenGroupHandler = (function () {
-    const quills = { main: null, subs: {} };
-
+    // 定義目前活動中的子題 ID
+    let activeSubUid = null;
     // 定義兩題子題的固定規格
     const subConfigs = [
         {
@@ -689,14 +879,14 @@ const ListenGroupHandler = (function () {
             title: "第一小題：難度三",
             level: "難度三",
             cores: ["推斷訊息"],
-            indicators: ["推斷訊息邏輯性", "能掌握語意轉折", "能推斷語意變化"]
+            indicators: ["推斷訊息邏輯性"]
         },
         {
             index: 1,
             title: "第二小題：難度四",
             level: "難度四",
-            cores: ["歸納分析訊息", "區辨詞語多義性"],
-            indicators: ["歸納或總結訊息內容", "分解或辨析訊息內容", "區辨詞語的多義性"]
+            cores: ["歸納分析訊息"],
+            indicators: ["歸納或總結訊息內容"]
         }
     ];
 
@@ -705,8 +895,14 @@ const ListenGroupHandler = (function () {
         ['A', 'B', 'C', 'D'].forEach(opt => {
             const card = document.getElementById(`lgOptCard-${uid}-${opt}`);
             if (card) {
-                if (opt === selectedValue) card.classList.add('is-correct-answer');
-                else card.classList.remove('is-correct-answer');
+                const mark = card.querySelector('.correct-mark');
+                if (opt === selectedValue) {
+                    card.classList.add('is-correct-answer');
+                    if (mark) mark.classList.remove('d-none');
+                } else {
+                    card.classList.remove('is-correct-answer');
+                    if (mark) mark.classList.add('d-none');
+                }
             }
         });
         const dropdown = document.getElementById(`lg-ans-select-${uid}`);
@@ -717,22 +913,22 @@ const ListenGroupHandler = (function () {
     }
 
     // 產生選項 HTML (改為 Preview Box + 附檔輸入框)
-    // 注意：外部容器會負責 col-md-6 的佈局
+    // 改為與 ReadingHandler 相同的樣式結構
     function generateOptionHTML(uid, opt) {
         return `
-        <div class="col-md-6 mb-3">
-            <div class="card option-card h-100" id="lgOptCard-${uid}-${opt}">
-                <div class="option-header-styled"><span class="badge bg-secondary">選項 ${opt}</span></div>
-                
-                <div class="editor-preview-box p-3 border-0 bg-white" style="min-height: 80px;"
-                     id="preview-${uid}-opt${opt}" 
-                     data-field="${uid}-opt${opt}" 
-                     data-placeholder="輸入選項 ${opt}..."
-                     onclick="openCommonEditor(this)"></div>
+        <div class="col-md-6">
+            <div class="card option-card h-100 shadow-sm" id="lgOptCard-${uid}-${opt}">
+                <div class="card-header py-1 px-2 bg-light border-bottom text-muted small fw-bold d-flex justify-content-between">
+                    <span>選項 ${opt}</span><i class="bi bi-check-circle-fill text-success correct-mark d-none"></i>
+                </div>
+                <div class="editor-preview-box p-3 border-0 h-100" 
+                        id="preview-${uid}-opt${opt}" 
+                        data-field="${uid}-opt${opt}" 
+                        data-placeholder="輸入選項 ${opt}..."
+                        onclick="openCommonEditor(this)"></div>
                 <input type="hidden" id="hidden-${uid}-opt${opt}">
-
-                <div class="attachment-wrapper p-2 border-top bg-light">
-                    <input class="form-control form-control-sm" type="file" id="file-${uid}-opt${opt}">
+                <div class="card-footer p-1 bg-white border-top">
+                    <input class="form-control form-control-sm border-0" type="file" id="file-${uid}-opt${opt}">
                 </div>
             </div>
         </div>`;
@@ -755,18 +951,20 @@ const ListenGroupHandler = (function () {
                 const card = document.createElement('div');
                 card.className = 'card mb-3 sub-question-card shadow-sm border-0';
                 card.innerHTML = `
-                    <div class="card-header sub-accordion-btn bg-white border d-flex justify-content-between align-items-center" 
-                         data-bs-toggle="collapse" data-bs-target="#collapse-${uid}" aria-expanded="true" style="cursor:pointer">
+                    <div class="card-header sub-accordion-btn bg-white border d-flex justify-content-between align-items-center collapsed" 
+                         data-bs-toggle="collapse" data-bs-target="#collapse-${uid}" aria-expanded="false" style="cursor:pointer">
                         <div class="d-flex align-items-center gap-2">
                             <i class="bi bi-chevron-down accordion-arrow"></i>
                             <span class="fw-bold text-primary sub-index-label">子題代碼：${idx + 1} (${config.title})</span>
                             <i class="bi bi-check-circle-fill text-success ms-2 d-none" id="check-icon-${uid}" title="內容完整"></i>
                         </div>
                     </div>
-                    <div id="collapse-${uid}" class="collapse show border border-top-0 rounded-bottom" data-bs-parent="#listengroup-sub-container">
-                        <div class="card-body bg-light">
-                            
+                    <div id="collapse-${uid}" class="collapse border border-top-0 rounded-bottom" data-bs-parent="#listengroup-sub-container">
+                        <div class="card-body bg-light p-4">
                             <div class="row g-2 mb-3 p-3 bg-white border rounded">
+                                <div class="col-md-12 mb-2">
+                                     <span class="badge bg-info text-dark"><i class="bi bi-lock-fill me-1"></i>固定屬性</span>
+                                </div>
                                 <div class="col-md-6">
                                     <label class="form-label small fw-bold text-secondary">核心能力</label>
                                     <select class="form-select form-select-sm" id="lg-core-${uid}" disabled>
@@ -781,8 +979,8 @@ const ListenGroupHandler = (function () {
                                 </div>
                             </div>
 
-                            <div class="mb-4">
-                                <label class="form-label fw-bold small text-secondary required-star">子題內容 (語音腳本)</label>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small text-secondary border-start border-4 border-primary ps-2 mb-2">子題內容 (語音腳本)</label>
                                 <div class="editor-preview-box border rounded-3 p-3 bg-white mb-2" 
                                      id="preview-${uid}-content" 
                                      data-field="${uid}-content" 
@@ -791,26 +989,30 @@ const ListenGroupHandler = (function () {
                                 <input type="hidden" id="hidden-${uid}-content">
                             </div>
 
+                            <hr class="border-secondary opacity-10 my-3">
+
                             <div class="mb-4">
-                                <label class="form-label fw-bold small text-secondary required-star">選項與正確答案</label>
+                                <label class="form-label fw-bold small text-secondary border-start border-4 border-primary ps-2 mb-3">選項與正確答案</label>
+                                <div class="alert-hint">
+                                    <i class="bi bi-exclamation-circle-fill"></i>
+                                    請避免選項長短、語氣明顯差異，以免影響鑑別度
+                                </div>
+
                                 <div class="row g-3">
                                     ${['A', 'B', 'C', 'D'].map(opt => generateOptionHTML(uid, opt)).join('')}
                                 </div>
                             </div>
                             
-                            <div class="answer-selector-section">
-                                <span class="selector-label"><i class="bi bi-check-circle"></i> 正確答案</span>
-                                <select class="answer-dropdown" id="lg-ans-select-${uid}" onchange="ListenGroupHandler.onSubAnswerChange('${uid}', this.value)">
-                                    <option value="">請選擇...</option>
-                                    <option value="A">選項 A</option>
-                                    <option value="B">選項 B</option>
-                                    <option value="C">選項 C</option>
-                                    <option value="D">選項 D</option>
-                                </select>
-                            </div>
+                            <select class="d-none" id="lg-ans-select-${uid}">
+                                <option value="">請選擇...</option>
+                                <option value="A">選項 A</option>
+                                <option value="B">選項 B</option>
+                                <option value="C">選項 C</option>
+                                <option value="D">選項 D</option>
+                            </select>
 
                             <div class="mt-3">
-                                <label class="form-label fw-bold small text-secondary">解析</label>
+                                <label class="form-label fw-bold small text-secondary border-start border-4 border-secondary ps-2 mb-2">試題解析</label>
                                 <div class="editor-preview-box border rounded-3 p-3 bg-white" 
                                      id="preview-${uid}-explanation" 
                                      data-field="${uid}-explanation" 
@@ -821,12 +1023,57 @@ const ListenGroupHandler = (function () {
                         </div>
                     </div>`;
                 container.appendChild(card);
+
+                // 綁定 Accordion 展開事件
+                const collapseEl = document.getElementById(`collapse-${uid}`);
+                if (collapseEl) {
+                    collapseEl.addEventListener('show.bs.collapse', () => {
+                        this.setActiveSub(uid, idx + 1);
+                    });
+                }
             });
+
+            // 預設展開第一題
+            // setTimeout(() => this.setActiveSub('lgsub-0', 1), 100);
+
+            // 監聽 Sidebar Answer 本身
+            const sidebarAns = document.getElementById('lgSidebarAnswer');
+            if (sidebarAns) {
+                sidebarAns.addEventListener('change', function () {
+                    if (activeSubUid) {
+                        updateSubCorrectAnswerDisplay(activeSubUid, this.value);
+                        // 同步回隱藏的 Select
+                        const hiddenSelect = document.getElementById(`lg-ans-select-${activeSubUid}`);
+                        if (hiddenSelect) hiddenSelect.value = this.value;
+                    }
+                });
+            }
         },
 
-        onSubAnswerChange: function (uid, val) {
-            updateSubCorrectAnswerDisplay(uid, val);
+        setActiveSub: function (uid, idx) {
+            activeSubUid = uid;
+            const badge = document.getElementById('lgSidebarSubLabel');
+            const text = document.getElementById('lgSidebarSubText');
+            const sidebarSelect = document.getElementById('lgSidebarAnswer');
+
+            if (badge && text && sidebarSelect) {
+                // Update badge visibility and text
+                badge.style.display = 'inline-block';
+                // Note: The text is now inside a span with id lgSidebarSubText
+                text.innerText = `子題代碼：${idx}`;
+
+                // 只有綁定子題後，才開啟選單
+                sidebarSelect.disabled = false;
+
+                // Sync value
+                const ans = document.getElementById(`lg-ans-select-${uid}`).value;
+                sidebarSelect.value = ans;
+            }
         },
+
+        // onSubAnswerChange: function (uid, val) {
+        //     updateSubCorrectAnswerDisplay(uid, val);
+        // },
 
 
 
@@ -848,6 +1095,18 @@ const ListenGroupHandler = (function () {
         },
 
         clear: function () {
+            // 重置活動子題狀態
+            activeSubUid = null;
+
+            // 重置並鎖定 Sidebar 選單
+            const sidebarSelect = document.getElementById('lgSidebarAnswer');
+            const sidebarLabel = document.getElementById('lgSidebarSubLabel');
+            if (sidebarSelect) {
+                sidebarSelect.value = '';
+                sidebarSelect.disabled = true; // 預設鎖定
+            }
+            if (sidebarLabel) sidebarLabel.style.display = 'none';
+
             // 清空主欄位
             ['lgLevel', 'lgVoiceType', 'lgMaterial', 'lgAttachment'].forEach(id => {
                 const el = document.getElementById(id); if (el) el.value = '';
@@ -880,6 +1139,11 @@ const ListenGroupHandler = (function () {
                 const ans = document.getElementById(`lg-ans-select-${uid}`);
                 if (ans) ans.value = '';
                 updateSubCorrectAnswerDisplay(uid, '');
+            });
+
+            // 確保子題手風琴全部收起
+            document.querySelectorAll('#listengroup-sub-container .collapse').forEach(el => {
+                el.classList.remove('show');
             });
 
             this.toggleEditable(true);
@@ -926,6 +1190,11 @@ const ListenGroupHandler = (function () {
             }
 
             this.toggleEditable(!isViewMode);
+
+            // Sync initial state to sidebar if exists
+            setTimeout(() => {
+                if (subConfigs.length > 0) this.setActiveSub(`lgsub-0`, 1);
+            }, 200);
         },
 
         collect: function () {
@@ -938,7 +1207,7 @@ const ListenGroupHandler = (function () {
                     indicator: getVal(`lg-ind-${uid}`),
                     content: getVal(`hidden-${uid}-content`),
                     explanation: getVal(`hidden-${uid}-explanation`),
-                    ans: getVal(`lg-ans-select-${uid}`),
+                    ans: getVal(`lg-ans-select-${uid}`), // This hidden select is synced by sidebar
                     optA: getVal(`hidden-${uid}-optA`),
                     optB: getVal(`hidden-${uid}-optB`),
                     optC: getVal(`hidden-${uid}-optC`),
@@ -982,6 +1251,16 @@ const ListenGroupHandler = (function () {
                     el.style.borderColor = '#dee2e6';
                 }
             });
+            // 處理 Sidebar 選單的鎖定狀態
+            const sidebarSelect = document.getElementById('lgSidebarAnswer');
+            if (sidebarSelect) {
+                if (!editable) {
+                    sidebarSelect.disabled = true; // 檢視模式全鎖
+                } else {
+                    // 編輯模式下，只有當有選中子題時才開啟
+                    sidebarSelect.disabled = (activeSubUid === null);
+                }
+            }
         }
     };
 })();
@@ -1004,634 +1283,335 @@ function updateSubCorrectAnswerDisplay(uid, selectedValue) {
 
 /* --- ReadingHandler (閱讀題組) --- */
 const ReadingHandler = (function () {
-    // 用於 DOM ID 的唯一計數
-    let subQuestionUidCounter = 0;
-    // 用於顯示的題號計數器 (只增不減)
+    const generateId = () => 'rsub_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
     let displaySequence = 0;
 
+    // ★ 記錄目前「展開中」的子題 ID (用於 Sidebar 連動)
+    let activeSubUid = null;
 
-
-    return {
-        init: function () {
-            // 綁定全域函式供 HTML onclick 使用
-            window.Reading_AddSub = () => this.addSubQuestion(null, false);
-            window.Reading_RemoveSub = (uid) => this.removeSubQuestion(uid);
-        },
-
-        clear: function () {
-            ['rLevel', 'rGenre', 'rDifficulty'].forEach(id => document.getElementById(id).value = '');
-
-            // 清除母題文章 (Common Editor)
-            const hMain = document.getElementById('hidden-rArticle');
-            const pMain = document.getElementById('preview-rArticle');
-            if (hMain) hMain.value = '';
-            if (pMain) pMain.innerHTML = '';
-
-            document.getElementById('sub-questions-container').innerHTML = '';
-            displaySequence = 0;
-            this.toggleEditable(true);
-            this.checkEmptyState();
-        },
-
-        fill: function (data, isViewMode) {
-            document.getElementById('rLevel').value = data.level || '';
-            document.getElementById('rGenre').value = data.genre || '';
-            document.getElementById('rDifficulty').value = data.difficulty || '';
-
-            // 回填母題文章 (Common Editor)
-            const hMain = document.getElementById('hidden-rArticle');
-            const pMain = document.getElementById('preview-rArticle');
-            if (hMain && pMain) {
-                hMain.value = data.content || '';
-                pMain.innerHTML = data.content ? decodeURIComponent(data.content) : '';
-            }
-
-            document.getElementById('sub-questions-container').innerHTML = '';
-            // ★ 重置顯示編號
-            displaySequence = 0;
-            // 回填子題
-            if (data.subQuestions) data.subQuestions.forEach(sub => this.addSubQuestion(sub, false));
-            this.checkEmptyState();
-            this.toggleEditable(!isViewMode);
-        },
-
-        collect: function () {
-            const getVal = (id) => { const el = document.getElementById(id); return el ? el.value : ''; };
-
-            const result = {
-                level: document.getElementById('rLevel').value,
-                genre: document.getElementById('rGenre').value,
-                difficulty: document.getElementById('rDifficulty').value,
-                content: getVal('hidden-rArticle'), // 改為從 hidden input 取值
-                summary: '閱讀題組', // 實際可優化
-                subQuestions: []
-            };
-
-            document.querySelectorAll('#sub-questions-container .sub-question-card').forEach(card => {
-                const uid = card.id.replace('card-', '');
-                result.subQuestions.push({
-                    content: getVal(`hidden-${uid}_content`),
-                    optA: getVal(`hidden-${uid}_optA`),
-                    optB: getVal(`hidden-${uid}_optB`),
-                    optC: getVal(`hidden-${uid}_optC`),
-                    optD: getVal(`hidden-${uid}_optD`),
-                    ans: document.getElementById(`ans-select-${uid}`).value,
-                    explanation: getVal(`hidden-${uid}_explanation`)
-                });
-            });
-
-            return result;
-        },
-        addSubQuestion: function (data = null, isOpen = false) {
-            const container = document.getElementById('sub-questions-container');
-            const uid = `sub-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-            // ★ 修改：題號使用獨立計數器，只加不減
-            displaySequence++;
-            const currentSeq = displaySequence;
-
-            const card = document.createElement('div');
-            card.className = 'card mb-3 sub-question-card shadow-sm border-0';
-            card.id = `card-${uid}`;
-
-            // --- 內部 helpers (仿 ShortArticleHandler) ---
-
-            // 1. 一般欄位 (題目、解析)
-            const buildStandardField = (fieldKey, placeholder, label = '', showAttachment = false) => {
-                const uniqueFieldId = `${uid}_${fieldKey}`;
-                const valEncoded = data && data[fieldKey] ? data[fieldKey] : '';
-                const valDecoded = valEncoded ? decodeURIComponent(valEncoded) : '';
-
-                const attachmentHTML = showAttachment ? `
-                    <div class="attachment-wrapper p-2 border rounded bg-light mt-0">
-                        <label class="form-label small fw-bold text-muted mb-1">附檔 (圖片/PNG)</label>
-                        <input class="form-control form-control-sm" type="file" id="file-${uniqueFieldId}">
-                    </div>
-                ` : '';
-
-                return `
-                    <div class="mb-3">
-                        ${label ? `<label class="form-label fw-bold small text-secondary required-star">${label}</label>` : ''}                    
-                        <div class="editor-preview-box border rounded-3 p-3 bg-white mb-2" 
-                                id="preview-${uniqueFieldId}" 
-                                data-field="${uniqueFieldId}" 
-                                data-placeholder="${placeholder}"
-                                onclick="openCommonEditor(this)">${valDecoded}</div>
-                        <input type="hidden" id="hidden-${uniqueFieldId}" value="${valEncoded}">                    
-                        ${attachmentHTML}
-                    </div>
-                `;
-            };
-
-            // 2. 選項卡片 (仿 form-general 結構：Card + Attachment)
-            const buildOptionCard = (optLabel, fieldKey) => {
-                const uniqueFieldId = `${uid}_${fieldKey}`;
-                const valEncoded = data && data[fieldKey] ? data[fieldKey] : '';
-                const valDecoded = valEncoded ? decodeURIComponent(valEncoded) : '';
-
-                return `
-                    <div class="col-md-6 mb-1">
-                        <div class="card option-card" id="optCard-${uid}-${optLabel}" data-option="${optLabel}">
-                            <div class="option-header-styled">
-                                <span class="badge bg-secondary">選項 ${optLabel}</span>
-                            </div>
-                            <div class="p-0 d-flex flex-column">
-                                 <div class="editor-preview-box p-3"
-                                     id="preview-${uniqueFieldId}"
-                                     data-field="${uniqueFieldId}"
-                                     data-placeholder="輸入選項 ${optLabel}..."
-                                     onclick="openCommonEditor(this)">${valDecoded}</div>
-                                <input type="hidden" id="hidden-${uniqueFieldId}" value="${valEncoded}">
-                                
-                                <div class="attachment-wrapper p-2 border-top bg-light">
-                                    <input class="form-control form-control-sm" type="file" id="file-${uniqueFieldId}">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            };
-
-            // ★ 修正重點 1 & 3：手風琴結構 + 綠勾勾 + 刪除按鈕 (仿 ShortArticleHandler)
-            card.innerHTML = `
-                <div class="card-header sub-accordion-btn bg-white border d-flex justify-content-between align-items-center ${isOpen ? '' : 'collapsed'}" 
-                     data-bs-toggle="collapse" data-bs-target="#collapse-${uid}" aria-expanded="${isOpen}" style="cursor:pointer">
-                    <div class="d-flex align-items-center gap-2">
-                        <i class="bi bi-chevron-down accordion-arrow"></i>
-                        <span class="fw-bold text-primary sub-index-label">子題代碼：${currentSeq}</span>
-                        <i class="bi bi-check-circle-fill text-success ms-2 d-none" id="check-icon-${uid}" title="內容與答案皆已填寫"></i>
-                    </div>
-                    <button type="button" class="btn btn-sm btn-outline-danger border-0 sub-remove-btn" onclick="event.stopPropagation(); Reading_RemoveSub('${uid}')"><i class="bi bi-trash"></i></button>
-                </div>
-                
-                <div id="collapse-${uid}" class="collapse ${isOpen ? 'show' : ''} border border-top-0 rounded-bottom" data-bs-parent="#sub-questions-container">
-                    <div class="card-body bg-light">
-                        <!-- 題目 -->
-                        ${buildStandardField('content', '輸入子題題目...', '題目', true)}
-                        
-                        <div class="mb-4">
-                            <label class="form-label fw-bold small text-secondary required-star">選項與正確答案</label>
-                            <div class="alert-hint small py-2 mb-2">
-                                <i class="bi bi-exclamation-circle-fill"></i> 請避免選項長短、語氣明顯差異，以免影響鑑別度
-                            </div>
-                            <div class="row g-3">
-                                ${buildOptionCard('A', 'optA')}
-                                ${buildOptionCard('B', 'optB')}
-                                ${buildOptionCard('C', 'optC')}
-                                ${buildOptionCard('D', 'optD')}
-                            </div>
-                            
-                            <div class="answer-selector-section mt-3">
-                                <span class="selector-label"><i class="bi bi-check-circle"></i> 正確答案</span>
-                                <select class="answer-dropdown" id="ans-select-${uid}">
-                                    <option value="">請選擇...</option>
-                                    <option value="A" ${data && data.ans === 'A' ? 'selected' : ''}>選項 A</option>
-                                    <option value="B" ${data && data.ans === 'B' ? 'selected' : ''}>選項 B</option>
-                                    <option value="C" ${data && data.ans === 'C' ? 'selected' : ''}>選項 C</option>
-                                    <option value="D" ${data && data.ans === 'D' ? 'selected' : ''}>選項 D</option>
-                                </select>
-                                <span class="selector-hint">
-                                    <i class="bi bi-info-circle me-1"></i> 選擇後會在對應選項顯示標記
-                                </span>
-                            </div>
-                        </div>
-                        
-                        <!-- 解析 -->
-                        <div class="mb-2">
-                             <label class="form-label fw-bold small text-secondary">解析</label>
-                            <div class="editor-preview-box border rounded-3 p-3 bg-white" 
-                                    id="preview-${uid}_explanation" 
-                                    data-field="${uid}_explanation" 
-                                    data-placeholder="輸入解析(批說)..."
-                                    onclick="openCommonEditor(this)">${data && data.explanation ? decodeURIComponent(data.explanation) : ''}</div>
-                            <input type="hidden" id="hidden-${uid}_explanation" value="${data && data.explanation ? data.explanation : ''}">
-                        </div>
-                    </div>
-                </div>
-            `;
-            container.appendChild(card);
-            this.checkEmptyState();
-
-            // 綁定檢查事件
-            const checkFn = () => this.checkCompletion(uid);
-
-            // 監聽下拉選單變更
-            const ansSelect = document.getElementById(`ans-select-${uid}`);
-            ansSelect.addEventListener('change', function () {
-                updateSubCorrectAnswerDisplay(uid, this.value);
-                checkFn();
-            });
-
-            // 監聽 Preview Box 變更 (透過 MutationObserver)
-            ['content', 'optA', 'optB', 'optC', 'optD'].forEach(key => {
-                const box = document.getElementById(`preview-${uid}_${key}`);
-                if (box) {
-                    const observer = new MutationObserver(() => {
-                        checkFn();
-                    });
-                    observer.observe(box, { childList: true, subtree: true, characterData: true });
-                }
-            });
-
-            // 如果有資料則回填正確答案 (內容已在 HTML string 中回填)
-            if (data && data.ans) {
-                ansSelect.value = data.ans;
-                updateSubCorrectAnswerDisplay(uid, data.ans);
-            }
-            checkFn(); // 初始檢查
-        },
-        // ★ 修正重點 4：綠勾勾邏輯 (必須題目有內容 且 答案已選)
-        // ★ 修正重點 4：綠勾勾邏輯 (必須題目有內容 且 答案已選)
-        checkCompletion: function (uid) {
-            // 1. 題目要有字
-            const hasTopic = (document.getElementById(`hidden-${uid}_content`)?.value || '').trim().length > 0;
-
-            // 2. 答案要有選
-            const ans = document.getElementById(`ans-select-${uid}`).value;
-
-            // 3. 所有選項 (A, B, C, D) 都要有字
-            let hasAllOptions = true;
-            ['A', 'B', 'C', 'D'].forEach(opt => {
-                const val = (document.getElementById(`hidden-${uid}_opt${opt}`)?.value || '').trim();
-                if (val.length === 0) hasAllOptions = false;
-            });
-
-            const checkIcon = document.getElementById(`check-icon-${uid}`);
-            if (checkIcon) {
-                // 綜合判斷
-                if (hasTopic && ans && hasAllOptions) {
-                    checkIcon.classList.remove('d-none');
-                } else {
-                    checkIcon.classList.add('d-none');
-                }
-            }
-        },
-        // ★ 修正重點 2：刪除確認 (SweetAlert)
-        removeSubQuestion: function (uid) {
-            Swal.fire({
-                title: '確定刪除此子題？',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                confirmButtonText: '刪除',
-                cancelButtonText: '取消'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const el = document.getElementById(`card-${uid}`);
-                    if (el) el.remove();
-                    this.checkEmptyState();
-                    // 重新編號
-                    // const cards = document.querySelectorAll('#sub-questions-container .sub-question-card');
-                    // cards.forEach((card, idx) => {
-                    //     const label = card.querySelector('.sub-index-label');
-                    //     if (label) label.innerText = `子題代碼：${idx + 1}`;
-                    // });
-                }
-            });
-        },
-        checkEmptyState: function () {
-            const container = document.getElementById('sub-questions-container');
-            const emptyMsg = document.getElementById('sub-questions-empty');
-            if (container && emptyMsg) {
-                emptyMsg.style.display = container.children.length === 0 ? 'block' : 'none';
-            }
-        },
-        toggleEditable: function (editable) {
-            // 鎖定新增按鈕
-            const addBtn = document.getElementById('btn-add-reading-sub');
-            if (addBtn) addBtn.hidden = !editable;
-
-            // 鎖定移除按鈕
-            document.querySelectorAll('#form-reading .sub-remove-btn').forEach(btn => btn.hidden = !editable);
-
-            // 鎖定輸入框
-            document.querySelectorAll('#form-reading input, #form-reading select').forEach(el => {
-                if (el.id !== 'rPropositioner' && !el.classList.contains('readonly-field')) el.disabled = !editable;
-            });
-
-            // 鎖定 Preview Box
-            const previews = document.querySelectorAll('#form-reading .editor-preview-box');
-            previews.forEach(el => {
-                if (!editable) {
-                    el.style.pointerEvents = 'none';
-                    el.style.backgroundColor = '#f8f9fa';
-                    el.style.borderColor = '#e9ecef';
-                } else {
-                    el.style.pointerEvents = 'auto';
-                    el.style.backgroundColor = '#fff';
-                    el.style.borderColor = '#dee2e6';
-                }
-            });
-        }
+    // 難度同步
+    window.syncDifficultyR = function (val) {
+        const select = document.getElementById('rDifficulty');
+        if (select) select.value = val;
     };
-})();
 
-/* --- ShortArticleHandler (短文題組) --- */
-const ShortArticleHandler = (function () {
-    const generateId = () => 'ssub_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
-    // ★ 定義顯示用的題號計數器 (只增不減)
-    let displaySequence = 0;
-
-    // ★ 檢查子題完成狀態
-    function checkSubCompletion(id) {
-        // 1. 檢查題目與選項是否有內容
-        const checkField = (key) => {
-            const el = document.getElementById(`hidden-${id}_${key}`);
-            return el && el.value.trim().length > 0;
-        };
-        const hasContent = checkField('content');
-        const hasAllOpts = ['optA', 'optB', 'optC', 'optD'].every(key => checkField(key));
-
-        // 2. 檢查是否已選答案
-        const ans = document.getElementById(`ans-${id}`).value;
-
-        // 3. 綜合判斷
-        const checkIcon = document.getElementById(`check-icon-${id}`);
-        if (checkIcon) {
-            if (hasContent && hasAllOpts && ans) {
-                checkIcon.classList.remove('d-none');
-            } else {
-                checkIcon.classList.add('d-none');
-            }
-        }
-    }
-
-    // ★ 更新選項高亮 (完全仿照 ReadingHandler 的 CSS class 操作)
-    function updateSubCorrectAnswerDisplay(id, val) {
+    // ★ 更新子題 UI (綠色邊框) + 同步 Sidebar
+    // 參數 fromSidebar: 避免無窮迴圈 (如果是 Sidebar 觸發的，就不需要再回寫 Sidebar)
+    function updateSubCorrectAnswerDisplay(uid, selectedValue, fromSidebar = false) {
+        // 1. 更新右側選項卡片樣式
         ['A', 'B', 'C', 'D'].forEach(opt => {
-            // 注意：這裡 ID 改為 optCard-${id}-${opt} 配合 HTML
-            const card = document.getElementById(`optCard-${id}-${opt}`);
+            const card = document.getElementById(`optCard-${uid}-${opt}`);
             if (card) {
-                if (opt === val) card.classList.add('is-correct-answer');
-                else card.classList.remove('is-correct-answer');
+                const mark = card.querySelector('.correct-mark');
+                if (opt === selectedValue) {
+                    card.classList.add('is-correct-answer');
+                    if (mark) mark.classList.remove('d-none');
+                } else {
+                    card.classList.remove('is-correct-answer');
+                    if (mark) mark.classList.add('d-none');
+                }
             }
         });
 
-        const select = document.getElementById(`ans-${id}`);
-        if (select) {
-            if (val) select.classList.add('has-answer'); // CSS: .answer-dropdown.has-answer
-            else select.classList.remove('has-answer');
+        // 2. 更新右側子題內部的隱藏 Select (如果有的話，保持資料一致)
+        const subSelect = document.getElementById(`ans-${uid}`);
+        if (subSelect && subSelect.value !== selectedValue) {
+            subSelect.value = selectedValue;
+        }
+
+        // 3. ★ 如果此題是「當前展開」的題目，且不是 Sidebar 觸發的，則同步更新 Sidebar
+        if (activeSubUid === uid && !fromSidebar) {
+            const sidebarSelect = document.getElementById('rSidebarAnswer');
+            if (sidebarSelect) sidebarSelect.value = selectedValue;
         }
     }
 
-    // 產生子題 HTML
-    const createSubQuestionHTML = (id, seqNum, data = {}, isOpen = true) => {
-        // 1. 一般欄位 (題目、解析)
-        // ★ 修改：增加 attachment-wrapper (仿 form-general)
-        const buildStandardField = (fieldKey, placeholder, label = '', showAttachment = false) => {
-            const uniqueFieldId = `${id}_${fieldKey}`;
-            const valEncoded = data[fieldKey] || '';
-            const valDecoded = valEncoded ? decodeURIComponent(valEncoded) : '';
-
-            const attachmentHTML = showAttachment ? `
-                <div class="attachment-wrapper p-2 border rounded bg-light mt-0">
-                    <label class="form-label small fw-bold text-muted mb-1">附檔 (圖片/PNG)</label>
-                    <input class="form-control form-control-sm" type="file" id="file-${uniqueFieldId}">
-                </div>
-            ` : '';
-
-            return `
-                <div class="mb-3">
-                    ${label ? `<label class="form-label fw-bold small text-secondary required-star">${label}</label>` : ''}                    
-                    <div class="editor-preview-box border rounded-3 p-3 bg-white mb-2" 
-                            id="preview-${uniqueFieldId}" 
-                            data-field="${uniqueFieldId}" 
-                            data-placeholder="${placeholder}"
-                            onclick="openCommonEditor(this)">${valDecoded}</div>
-                    <input type="hidden" id="hidden-${uniqueFieldId}" value="${valEncoded}">                    
-                    ${attachmentHTML}
-                </div>
-            `;
+    // 檢查子題完成狀態
+    function checkSubCompletion(id) {
+        const getVal = (fieldId) => {
+            const el = document.getElementById(fieldId);
+            return el && el.value.trim().length > 0;
         };
+        const hasContent = getVal(`hidden-${id}_content`);
+        const hasAllOpts = ['A', 'B', 'C', 'D'].every(opt => getVal(`hidden-${id}_opt${opt}`));
+        const ans = document.getElementById(`ans-${id}`).value;
+        const checkIcon = document.getElementById(`check-icon-${id}`);
 
-        // 2. 選項卡片 (仿 form-general 結構：Card + Attachment)
-        // ★ 修改：包含 attachment-wrapper
-        const buildOptionCard = (optLabel, fieldKey) => {
-            const uniqueFieldId = `${id}_${fieldKey}`;
-            const valEncoded = data[fieldKey] || '';
-            const valDecoded = valEncoded ? decodeURIComponent(valEncoded) : '';
-
-            return `
-                <div class="col-md-6 mb-1">
-                    <div class="card option-card" id="optCard-${id}-${optLabel}" data-option="${optLabel}">
-                        <div class="option-header-styled">
-                            <span class="badge bg-secondary">選項 ${optLabel}</span>
-                        </div>
-                        <div class="p-0 d-flex flex-column">
-                             <div class="editor-preview-box p-3"
-                                 id="preview-${uniqueFieldId}"
-                                 data-field="${uniqueFieldId}"
-                                 data-placeholder="輸入選項 ${optLabel}..."
-                                 onclick="openCommonEditor(this)">${valDecoded}</div>
-                            <input type="hidden" id="hidden-${uniqueFieldId}" value="${valEncoded}">
-                            
-                            <div class="attachment-wrapper p-2 border-top bg-light">
-                                <input class="form-control form-control-sm" type="file" id="file-${uniqueFieldId}">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-        };
-
-        // ★ 手風琴結構
-        return `
-            <div class="card mb-3 sub-question-card border-0 shadow-sm" id="card-${id}">
-                <div class="card-header sub-accordion-btn bg-white border d-flex justify-content-between align-items-center ${isOpen ? '' : 'collapsed'}"
-                     data-bs-toggle="collapse" data-bs-target="#collapse-${id}" aria-expanded="${isOpen}" style="cursor:pointer">
-                    <div class="d-flex align-items-center gap-2">
-                        <i class="bi bi-chevron-down accordion-arrow"></i>
-                        <span class="fw-bold text-primary sub-index-label">子題代碼：${seqNum}</span>
-                        <i class="bi bi-check-circle-fill text-success ms-2 d-none" id="check-icon-${id}" title="內容與答案皆已填寫"></i>
-                    </div>
-                    <button type="button" class="btn btn-sm btn-outline-danger border-0 sub-remove-btn" onclick="event.stopPropagation(); ShortArticle_RemoveSub('${id}')">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                </div>
-
-                <div id="collapse-${id}" class="collapse ${isOpen ? 'show' : ''} border border-top-0 rounded-bottom" data-bs-parent="#s-sub-questions-container">
-                    <div class="card-body bg-light">
-                        <!-- 題目 (仿 form-general: 內容 + 附檔) -->
-                        ${buildStandardField('content', '點擊輸入子題題目...', '題目', true)}
-
-                        <!-- 選項 (A, B, C, D) - 2x2 Grid -->
-                        <div class="mb-4">
-                            <label class="form-label fw-bold small text-secondary required-star">選項與正確答案</label>
-                            <div class="alert-hint small py-2 mb-2">
-                                <i class="bi bi-exclamation-circle-fill"></i> 請避免選項長短、語氣明顯差異，以免影響鑑別度
-                            </div>
-                            <div class="row g-3">
-                                ${buildOptionCard('A', 'optA')}
-                                ${buildOptionCard('B', 'optB')}
-                                ${buildOptionCard('C', 'optC')}
-                                ${buildOptionCard('D', 'optD')}
-                            </div>
-
-                            <!-- 正確答案選擇 (仿 General Form UI) -->
-                            <div class="answer-selector-section mt-3">
-                                <span class="selector-label"><i class="bi bi-check-circle"></i> 正確答案</span>
-                                <select class="answer-dropdown" id="ans-${id}">
-                                    <option value="">請選擇...</option>
-                                    <option value="A" ${data.ans === 'A' ? 'selected' : ''}>選項 A</option>
-                                    <option value="B" ${data.ans === 'B' ? 'selected' : ''}>選項 B</option>
-                                    <option value="C" ${data.ans === 'C' ? 'selected' : ''}>選項 C</option>
-                                    <option value="D" ${data.ans === 'D' ? 'selected' : ''}>選項 D</option>
-                                </select>
-                                <span class="selector-hint">
-                                    <i class="bi bi-info-circle me-1"></i> 選擇後會在對應選項顯示標記
-                                </span>
-                            </div>
-                        </div>
-
-                        <!-- 解析 -->
-                        <div class="mb-2">
-                             <label class="form-label fw-bold small text-secondary">解析</label>
-                            <div class="editor-preview-box border rounded-3 p-3 bg-white" 
-                                    id="preview-${id}_explanation" 
-                                    data-field="${id}_explanation" 
-                                    data-placeholder="輸入解析(批說)..."
-                                    onclick="openCommonEditor(this)">${data.explanation ? decodeURIComponent(data.explanation) : ''}</div>
-                            <input type="hidden" id="hidden-${id}_explanation" value="${data.explanation || ''}">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-    };
+        if (checkIcon) {
+            if (hasContent && hasAllOpts && ans) checkIcon.classList.remove('d-none');
+            else checkIcon.classList.add('d-none');
+        }
+    }
 
     return {
         init: function () {
-            const addBtn = document.getElementById('btn-add-s-sub');
+            window.syncDifficultyR = (val) => {
+                const select = document.getElementById('rDifficulty');
+                if (select) select.value = val;
+            };
+
+            const addBtn = document.getElementById('btn-add-reading-sub');
             if (addBtn) {
-                // 清除舊事件
                 const newBtn = addBtn.cloneNode(true);
                 addBtn.replaceWith(newBtn);
-                newBtn.addEventListener('click', () => {
-                    this.addSubQuestion(null, false);
+                newBtn.addEventListener('click', () => this.addSubQuestion(null, false));
+            }
+            window.Reading_RemoveSub = (id) => this.removeSub(id);
+
+            // 綁定 Sidebar 下拉選單事件
+            const sidebarAns = document.getElementById('rSidebarAnswer');
+            if (sidebarAns) {
+                sidebarAns.addEventListener('change', function () {
+                    if (activeSubUid) {
+                        // 將 Sidebar 的值寫入當前子題
+                        updateSubCorrectAnswerDisplay(activeSubUid, this.value, true);
+                        checkSubCompletion(activeSubUid);
+                    }
                 });
             }
-            window.ShortArticle_RemoveSub = (id) => this.removeSub(id);
         },
 
         addSubQuestion: function (data = null, isOpen = false) {
-            const container = document.getElementById('s-sub-questions-container');
+            const container = document.getElementById('reading-sub-container');
             const id = generateId();
-
-            // ★ 遞增題號 (不重置)
             displaySequence++;
 
-            container.insertAdjacentHTML('beforeend', createSubQuestionHTML(id, displaySequence, data || {}, isOpen));
+            // 產生 HTML
+            container.insertAdjacentHTML('beforeend', this.createSubQuestionHTML(id, displaySequence, data || {}, isOpen));
 
-            // ★ 綁定事件監聽
-            // 1. 下拉選單變更
+            // --- 事件綁定 ---
+
+            // 1. 內部 Select 變更 (雙向綁定)
             const ansSelect = document.getElementById(`ans-${id}`);
             if (ansSelect) {
                 ansSelect.addEventListener('change', function () {
                     updateSubCorrectAnswerDisplay(id, this.value);
                     checkSubCompletion(id);
                 });
-                // 初始化狀態
                 if (data && data.ans) {
                     updateSubCorrectAnswerDisplay(id, data.ans);
                 }
             }
 
-            // 2. 監聽 Preview Box 的變化 (透過 MutationObserver 監聽 CommonEditor 回填的變化)
-            ['content', 'optA', 'optB', 'optC', 'optD'].forEach(key => {
+            // 2. 監聽 Preview Box 變化
+            ['content', 'optA', 'optB', 'optC', 'optD', 'explanation'].forEach(key => {
                 const box = document.getElementById(`preview-${id}_${key}`);
                 if (box) {
-                    const observer = new MutationObserver(() => {
-                        checkSubCompletion(id);
-                    });
+                    const observer = new MutationObserver(() => checkSubCompletion(id));
                     observer.observe(box, { childList: true, subtree: true, characterData: true });
                 }
             });
 
+            // 3. ★★★ 關鍵：監聽 Accordion 展開事件，切換 Sidebar 綁定 ★★★
+            const collapseEl = document.getElementById(`collapse-${id}`);
+            if (collapseEl) {
+                collapseEl.addEventListener('show.bs.collapse', () => {
+                    this.setActiveSub(id, displaySequence);
+                });
+
+                // 如果初始化時就是展開的 (新增時)，手動觸發一次設定
+                if (isOpen) {
+                    setTimeout(() => this.setActiveSub(id, displaySequence), 100); // 延遲確保 DOM 生成
+                }
+            }
+
             this.checkEmptyState();
-            checkSubCompletion(id); // 初始檢查
+            checkSubCompletion(id);
+        },
+
+        // ★ 設定當前活動子題 (綁定 Sidebar)
+        setActiveSub: function (id) {
+            activeSubUid = id;
+
+            // 1. 更新 Sidebar 標籤顯示
+            const badge = document.getElementById('rSidebarSubLabel');
+            const text = document.getElementById('rSidebarSubText');
+            const sidebarSelect = document.getElementById('rSidebarAnswer');
+
+            if (badge && text && sidebarSelect) {
+                badge.style.display = 'inline-block';
+                // 這裡我們需要重新獲取正確的序號，因為刪除中間項目會導致 seqNum 不連續
+                // 簡單作法：直接查找該卡片在容器中的 index + 1
+                const allCards = document.querySelectorAll('#reading-sub-container .sub-question-card');
+                let realIndex = Array.from(allCards).findIndex(c => c.id === `card-${id}`) + 1;
+
+                text.innerText = `子題代碼：${realIndex}`;
+                sidebarSelect.disabled = false;
+
+                // 2. 讀取該子題目前的答案，回填 Sidebar
+                const subAns = document.getElementById(`ans-${id}`).value;
+                sidebarSelect.value = subAns;
+            }
+        },
+
+        // HTML 產生器 (獨立出來比較整潔)
+        createSubQuestionHTML: function (id, seqNum, data, isOpen) {
+            const buildStandardField = (fieldKey, placeholder, label = '', showAttachment = false) => {
+                const uniqueFieldId = `${id}_${fieldKey}`;
+                const valDecoded = data[fieldKey] ? decodeURIComponent(data[fieldKey]) : '';
+                return `
+                    <div class="mb-3">
+                        ${label ? `<label class="form-label fw-bold small text-secondary border-start border-4 border-primary ps-2 mb-2">${label}</label>` : ''}                    
+                        <div class="editor-preview-box border rounded-top-3 p-3 bg-white" 
+                                id="preview-${uniqueFieldId}" data-field="${uniqueFieldId}" data-placeholder="${placeholder}" onclick="openCommonEditor(this)">${valDecoded}</div>
+                        <input type="hidden" id="hidden-${uniqueFieldId}" value="${data[fieldKey] || ''}">                    
+                        ${showAttachment ? `<div class="attachment-wrapper p-2 border rounded bg-light d-flex align-items-center gap-2">
+                            <label class="small fw-bold text-muted text-nowrap">附檔 (圖片)</label><input class="form-control form-control-sm" type="file" id="file-${uniqueFieldId}"></div>` : ''}
+                    </div>`;
+            };
+
+            const buildOptionCard = (optLabel, fieldKey) => {
+                const uniqueFieldId = `${id}_${fieldKey}`;
+                const valDecoded = data[fieldKey] ? decodeURIComponent(data[fieldKey]) : '';
+                return `
+                    <div class="col-md-6">
+                        <div class="card option-card h-100 shadow-sm" id="optCard-${id}-${optLabel}" data-option="${optLabel}">
+                            <div class="card-header py-1 px-2 bg-light border-bottom text-muted small fw-bold d-flex justify-content-between">
+                                <span>選項 ${optLabel}</span><i class="bi bi-check-circle-fill text-success correct-mark d-none"></i>
+                            </div>
+                            <div class="editor-preview-box p-3 border-0 h-100" id="preview-${uniqueFieldId}" data-field="${uniqueFieldId}" data-placeholder="輸入選項 ${optLabel}..." onclick="openCommonEditor(this)">${valDecoded}</div>
+                            <input type="hidden" id="hidden-${uniqueFieldId}" value="${data[fieldKey] || ''}">
+                            <div class="card-footer p-1 bg-white border-top"><input class="form-control form-control-sm border-0" type="file" id="file-${uniqueFieldId}"></div>
+                        </div>
+                    </div>`;
+            };
+
+            return `
+                <div class="card mb-3 sub-question-card border-0 shadow-sm" id="card-${id}">
+                    <div class="card-header sub-accordion-btn bg-white border d-flex justify-content-between align-items-center ${isOpen ? '' : 'collapsed'}"
+                         data-bs-toggle="collapse" data-bs-target="#collapse-${id}" aria-expanded="${isOpen}" style="cursor:pointer">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-chevron-down accordion-arrow"></i>
+                            <span class="fw-bold text-primary sub-index-label">子題代碼：${seqNum}</span>
+                            <i class="bi bi-check-circle-fill text-success ms-2 d-none" id="check-icon-${id}" title="已完成"></i>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-danger border-0 sub-remove-btn" onclick="event.stopPropagation(); Reading_RemoveSub('${id}')"><i class="bi bi-trash"></i></button>
+                    </div>
+
+                    <div id="collapse-${id}" class="collapse ${isOpen ? 'show' : ''} border border-top-0 rounded-bottom" data-bs-parent="#reading-sub-container">
+                        <div class="card-body bg-light p-4">
+                            ${buildStandardField('content', '點擊輸入子題題目...', '題目內容', true)}
+                            <hr class="border-secondary opacity-10 my-3">
+                            <div class="mb-4">
+                                <label class="form-label fw-bold small text-secondary border-start border-4 border-primary ps-2 mb-3">選項與正確答案</label>
+                                <div class="alert-hint">
+                                    <i class="bi bi-exclamation-circle-fill"></i>
+                                    請避免選項長短、語氣明顯差異，以免影響鑑別度
+                                </div>
+                                <div class="row g-3">
+                                    ${buildOptionCard('A', 'optA')} ${buildOptionCard('B', 'optB')}
+                                    ${buildOptionCard('C', 'optC')} ${buildOptionCard('D', 'optD')}
+                                </div>
+                                <select class="d-none" id="ans-${id}">
+                                    <option value="">請選擇...</option>
+                                    <option value="A" ${data.ans === 'A' ? 'selected' : ''}>A</option>
+                                    <option value="B" ${data.ans === 'B' ? 'selected' : ''}>B</option>
+                                    <option value="C" ${data.ans === 'C' ? 'selected' : ''}>C</option>
+                                    <option value="D" ${data.ans === 'D' ? 'selected' : ''}>D</option>
+                                </select>
+                            </div>
+                            <hr class="border-secondary opacity-10 my-3">
+                            <div class="mb-2">
+                                <label class="form-label fw-bold small text-secondary border-start border-4 border-secondary ps-2 mb-2">試題解析</label>
+                                <div class="editor-preview-box border rounded-3 p-3 bg-white" id="preview-${id}_explanation" data-field="${id}_explanation" data-placeholder="輸入解析..." onclick="openCommonEditor(this)">${data.explanation ? decodeURIComponent(data.explanation) : ''}</div>
+                                <input type="hidden" id="hidden-${id}_explanation" value="${data.explanation || ''}">
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
         },
 
         removeSub: function (id) {
             Swal.fire({
-                title: '確定刪除此子題？',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                confirmButtonText: '刪除',
-                cancelButtonText: '取消'
+                title: '確定刪除此子題？', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: '刪除'
             }).then((result) => {
                 if (result.isConfirmed) {
                     const el = document.getElementById(`card-${id}`);
                     if (el) el.remove();
-                    // ★ 注意：這裡不再重新編號 (符合 ReadingHandler 的新邏輯)
+
+                    // 移除後若該題是當前活動題，重置 Sidebar
+                    if (activeSubUid === id) {
+                        activeSubUid = null;
+                        document.getElementById('rSidebarAnswer').value = '';
+                        document.getElementById('rSidebarAnswer').disabled = true;
+                        document.getElementById('rSidebarSubLabel').style.display = 'none';
+                    }
                     this.checkEmptyState();
+                    // 重新計算編號顯示 (Optional)
+                    document.querySelectorAll('#reading-sub-container .sub-index-label').forEach((el, idx) => el.innerText = `子題 ${idx + 1}`);
                 }
             });
         },
 
         checkEmptyState: function () {
-            const container = document.getElementById('s-sub-questions-container');
-            const emptyMsg = document.getElementById('short-sub-empty');
-            if (container && emptyMsg) {
-                emptyMsg.style.display = container.children.length === 0 ? 'block' : 'none';
-            }
+            const container = document.getElementById('reading-sub-container');
+            const emptyMsg = document.getElementById('reading-sub-empty');
+            if (container && emptyMsg) emptyMsg.style.display = container.children.length === 0 ? 'block' : 'none';
         },
 
         clear: function () {
-            ['sLevel', 'sDifficulty', 'sGenre'].forEach(id => {
-                const el = document.getElementById(id); if (el) el.value = '';
+            ['rDifficulty', 'rGenre'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+            ['rTopic', 'rArticle'].forEach(k => {
+                document.getElementById(`hidden-${k}`).value = '';
+                document.getElementById(`preview-${k}`).innerHTML = '';
             });
+            document.getElementById('file-rArticle').value = '';
 
-            // sTopic (母題標題) 改為 Common Editor
-            const hTopic = document.getElementById('hidden-sTopic');
-            const pTopic = document.getElementById('preview-sTopic');
-            if (hTopic) hTopic.value = '';
-            if (pTopic) pTopic.innerHTML = '';
-
-            const hMain = document.getElementById('hidden-s-article');
-            const pMain = document.getElementById('preview-s-article');
-            if (hMain) hMain.value = '';
-            if (pMain) pMain.innerHTML = '';
-
-            const fMain = document.getElementById('file-s-article');
-            if (fMain) fMain.value = '';
-
-            document.getElementById('s-sub-questions-container').innerHTML = '';
-
-            // ★ 重置狀態
+            document.getElementById('reading-sub-container').innerHTML = '';
             displaySequence = 0;
+
+            // 重置活動子題狀態
+            activeSubUid = null;
+
+            // 重置並鎖定 Sidebar
+            const sidebarSelect = document.getElementById('rSidebarAnswer');
+            const sidebarLabel = document.getElementById('rSidebarSubLabel');
+
+            if (sidebarSelect) {
+                sidebarSelect.value = '';
+                sidebarSelect.disabled = true; // 確保清空後鎖定
+            }
+            if (sidebarLabel) {
+                sidebarLabel.style.display = 'none';
+            }
+
+            const defaultRadio = document.getElementById('rDiff2'); if (defaultRadio) defaultRadio.checked = true;
             this.checkEmptyState();
-            this.toggleEditable(true);
         },
 
         fill: function (data, isViewMode) {
             const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
-            setVal('sLevel', data.level);
-            setVal('sDifficulty', data.difficulty);
-            setVal('sGenre', data.genre);
+            setVal('rGenre', data.genre);
 
-            // sTopic (母題標題)
-            const hTopic = document.getElementById('hidden-sTopic');
-            const pTopic = document.getElementById('preview-sTopic');
+            const diff = data.difficulty || '中';
+            const radio = document.querySelector(`input[name="rDifficultyRadio"][value="${diff}"]`);
+            if (radio) radio.checked = true;
+            const diffSelect = document.getElementById('rDifficulty');
+            if (diffSelect) diffSelect.value = diff;
+
+            // 回填母題
+            const hTopic = document.getElementById('hidden-rTopic');
+            const pTopic = document.getElementById('preview-rTopic');
             if (hTopic && pTopic) {
                 hTopic.value = data.topic || '';
                 pTopic.innerHTML = data.topic ? decodeURIComponent(data.topic) : '';
             }
 
-            const hMain = document.getElementById('hidden-s-article');
-            const pMain = document.getElementById('preview-s-article');
+            const hMain = document.getElementById('hidden-rArticle');
+            const pMain = document.getElementById('preview-rArticle');
             if (hMain && pMain) {
                 hMain.value = data.article || '';
                 pMain.innerHTML = data.article ? decodeURIComponent(data.article) : '';
             }
 
-            const container = document.getElementById('s-sub-questions-container');
+            // 回填子題
+            const container = document.getElementById('reading-sub-container');
             container.innerHTML = '';
-
-            // ★ 重置並回填
             displaySequence = 0;
 
-            if (data.questions && Array.isArray(data.questions)) {
-                data.questions.forEach(q => this.addSubQuestion(q, false)); // 預設收合
+            if (data.subQuestions && Array.isArray(data.subQuestions)) {
+                // 回填時也預設收起
+                data.subQuestions.forEach(q => this.addSubQuestion(q, false));
             }
 
             this.checkEmptyState();
@@ -1639,27 +1619,28 @@ const ShortArticleHandler = (function () {
         },
 
         collect: function () {
-            const getVal = (id) => {
-                const el = document.getElementById(id);
-                return el ? el.value : '';
-            };
+            const getVal = (id) => { const el = document.getElementById(id); return el ? el.value : ''; };
+            const diffRadio = document.querySelector('input[name="rDifficultyRadio"]:checked');
 
             const result = {
                 mainCat: '文義判讀',
-                subCat: '篇章辨析',
-                level: document.getElementById('sLevel').value,
-                difficulty: document.getElementById('sDifficulty').value,
-                genre: document.getElementById('sGenre').value,
-                topic: getVal('hidden-sTopic'), // 改為從 hidden input 取值
-                article: getVal('hidden-s-article'),
-                summary: getVal('hidden-sTopic') || '未命名短文題組',
-                questions: []
+                subCat: '閱讀題組',
+                level: document.getElementById('commonLevel').value,
+                difficulty: diffRadio ? diffRadio.value : '中',
+                genre: document.getElementById('rGenre').value,
+                topic: getVal('hidden-rTopic'),
+                article: getVal('hidden-rArticle'),
+                summary: (function () {
+                    const el = document.getElementById('preview-rTopic');
+                    const text = el ? el.innerText.trim() : '';
+                    return text ? (text.substring(0, 20) + (text.length > 20 ? '...' : '')) : '未命名閱讀題組';
+                })(),
+                subQuestions: []
             };
 
-            document.querySelectorAll('#s-sub-questions-container .sub-question-card').forEach(card => {
+            document.querySelectorAll('#reading-sub-container .sub-question-card').forEach(card => {
                 const id = card.id.replace('card-', '');
-
-                result.questions.push({
+                result.subQuestions.push({
                     content: getVal(`hidden-${id}_content`),
                     optA: getVal(`hidden-${id}_optA`),
                     optB: getVal(`hidden-${id}_optB`),
@@ -1674,20 +1655,301 @@ const ShortArticleHandler = (function () {
         },
 
         toggleEditable: function (editable) {
+            const addBtn = document.getElementById('btn-add-reading-sub');
+            if (addBtn) addBtn.hidden = !editable;
+
+            document.querySelectorAll('#reading-sub-container .sub-remove-btn').forEach(btn => btn.hidden = !editable);
+            document.querySelectorAll('input[name="rDifficultyRadio"]').forEach(r => r.disabled = !editable);
+
+            const inputs = document.querySelectorAll('#form-reading input:not(.readonly-field):not([type=radio]), #form-reading select');
+            inputs.forEach(el => el.disabled = !editable);
+
+            const previews = document.querySelectorAll('#form-reading .editor-preview-box');
+            previews.forEach(el => {
+                if (!editable) {
+                    el.style.pointerEvents = 'none';
+                    el.style.backgroundColor = '#f3f4f6';
+                    el.style.borderColor = '#e5e7eb';
+                } else {
+                    el.style.pointerEvents = 'auto';
+                    el.style.backgroundColor = '#fff';
+                    el.style.borderColor = '#dee2e6';
+                }
+            });
+            // 額外鎖定 Sidebar
+            const sidebarAns = document.getElementById('rSidebarAnswer');
+            if (sidebarAns && !editable) sidebarAns.disabled = true;
+            else if (sidebarAns && editable && activeSubUid) sidebarAns.disabled = false; // 只有在編輯模式且有選中子題時才開啟
+        }
+    };
+})();
+
+/* --- ShortArticleHandler (短文題組) --- */
+const ShortArticleHandler = (function () {
+    const generateId = () => 'ssub_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+    // ★ 定義顯示用的題號計數器 (只增不減)
+    let displaySequence = 0;
+
+    // ★ 檢查子題完成狀態 (僅檢查題目內容)
+    function checkSubCompletion(id) {
+        // 1. 檢查題目是否有內容
+        const contentEl = document.getElementById(`hidden-${id}_content`);
+        const hasContent = contentEl && contentEl.value.trim().length > 0;
+
+        // 2. 顯示綠色勾勾
+        const checkIcon = document.getElementById(`check-icon-${id}`);
+        if (checkIcon) {
+            if (hasContent) {
+                checkIcon.classList.remove('d-none');
+            } else {
+                checkIcon.classList.add('d-none');
+            }
+        }
+    }
+
+    // 產生子題 HTML
+    const createSubQuestionHTML = (id, seqNum, data = {}, isOpen = false) => {
+        // 預設 isOpen = false (收起)
+
+        const contentVal = data.content ? decodeURIComponent(data.content) : '';
+        const contentHidden = data.content || '';
+
+        const explanationVal = data.explanation ? decodeURIComponent(data.explanation) : '';
+        const explanationHidden = data.explanation || '';
+
+        return `
+            <div class="card mb-3 sub-question-card border-0 shadow-sm" id="card-${id}">
+                <div class="card-header sub-accordion-btn bg-white border d-flex justify-content-between align-items-center ${isOpen ? '' : 'collapsed'}"
+                     data-bs-toggle="collapse" data-bs-target="#collapse-${id}" aria-expanded="${isOpen}" style="cursor:pointer">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-chevron-down accordion-arrow"></i>
+                        <span class="fw-bold text-primary sub-index-label">子題代碼：${seqNum}</span>
+                        <i class="bi bi-check-circle-fill text-success ms-2 d-none" id="check-icon-${id}" title="內容已填寫"></i>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-danger border-0 sub-remove-btn" onclick="event.stopPropagation(); ShortArticle_RemoveSub('${id}')">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+
+                <div id="collapse-${id}" class="collapse ${isOpen ? 'show' : ''} border border-top-0 rounded-bottom" data-bs-parent="#s-sub-questions-container">
+                    <div class="card-body bg-light p-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-secondary border-start border-4 border-primary ps-2 mb-2">題目內容</label>
+                            <div class="editor-preview-box border rounded-top-3 p-3 bg-white" 
+                                    id="preview-${id}_content" 
+                                    data-field="${id}_content" 
+                                    data-placeholder="點擊輸入子題題目..."
+                                    onclick="openCommonEditor(this)">${contentVal}</div>
+                            <input type="hidden" id="hidden-${id}_content" value="${contentHidden}">
+                            
+                            <div class="attachment-wrapper p-2 border rounded bg-light d-flex align-items-center gap-2">
+                                <label class="small fw-bold text-muted text-nowrap">附檔 (圖片)</label>
+                                <input class="form-control form-control-sm" type="file" id="file-${id}_content">
+                            </div>
+                        </div>
+
+                        <hr class="border-secondary opacity-10 my-3">
+
+                        <div class="mb-2">
+                             <label class="form-label fw-bold small text-secondary border-start border-4 border-secondary ps-2 mb-2">試題解析 (批說)</label>
+                            <div class="editor-preview-box border rounded-3 p-3 bg-white" 
+                                    id="preview-${id}_explanation" 
+                                    data-field="${id}_explanation" 
+                                    data-placeholder="輸入解析(批說)..."
+                                    onclick="openCommonEditor(this)">${explanationVal}</div>
+                            <input type="hidden" id="hidden-${id}_explanation" value="${explanationHidden}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    };
+
+    return {
+        init: function () {
+            window.syncDifficultyS = function (val) {
+                const select = document.getElementById('sDifficulty');
+                if (select) select.value = val;
+            };
+
+            const addBtn = document.getElementById('btn-add-s-sub');
+            if (addBtn) {
+                const newBtn = addBtn.cloneNode(true);
+                addBtn.replaceWith(newBtn);
+                newBtn.addEventListener('click', () => {
+                    this.addSubQuestion(null, false); // ★ 新增時設定為 false (收起)
+                });
+            }
+            window.ShortArticle_RemoveSub = (id) => this.removeSub(id);
+        },
+
+        addSubQuestion: function (data = null, isOpen = false) {
+            const container = document.getElementById('s-sub-questions-container');
+            const id = generateId();
+
+            displaySequence++;
+            // 傳入 isOpen 參數控制展開狀態
+            container.insertAdjacentHTML('beforeend', createSubQuestionHTML(id, displaySequence, data || {}, isOpen));
+
+            // 監聽 Preview Box 變化
+            ['content', 'explanation'].forEach(key => {
+                const box = document.getElementById(`preview-${id}_${key}`);
+                if (box) {
+                    const observer = new MutationObserver(() => checkSubCompletion(id));
+                    observer.observe(box, { childList: true, subtree: true, characterData: true });
+                }
+            });
+
+            this.checkEmptyState();
+            checkSubCompletion(id);
+        },
+
+        removeSub: function (id) {
+            Swal.fire({
+                title: '確定刪除此子題？',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: '刪除',
+                cancelButtonText: '取消'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const el = document.getElementById(`card-${id}`);
+                    if (el) el.remove();
+                    this.checkEmptyState();
+                }
+            });
+        },
+
+        checkEmptyState: function () {
+            const container = document.getElementById('s-sub-questions-container');
+            const emptyMsg = document.getElementById('short-sub-empty');
+            if (container && emptyMsg) {
+                emptyMsg.style.display = container.children.length === 0 ? 'block' : 'none';
+            }
+        },
+
+        clear: function () {
+            // 清除左側
+            ['sDifficulty', 'sGenre'].forEach(id => {
+                const el = document.getElementById(id); if (el) el.value = '';
+            });
+
+            // 清空母題
+            const hTopic = document.getElementById('hidden-sTopic');
+            const pTopic = document.getElementById('preview-sTopic');
+            if (hTopic) hTopic.value = '';
+            if (pTopic) pTopic.innerHTML = '';
+
+            const hMain = document.getElementById('hidden-s-article');
+            const pMain = document.getElementById('preview-s-article');
+            if (hMain) hMain.value = '';
+            if (pMain) pMain.innerHTML = '';
+
+            const fMain = document.getElementById('file-s-article');
+            if (fMain) fMain.value = '';
+
+            // 清空子題
+            document.getElementById('s-sub-questions-container').innerHTML = '';
+
+            // 重置 Radio (預設中)
+            const defaultRadio = document.getElementById('sDiff2');
+            if (defaultRadio) defaultRadio.checked = true;
+
+            displaySequence = 0;
+            this.checkEmptyState();
+        },
+
+        fill: function (data, isViewMode) {
+            const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+            setVal('sGenre', data.genre);
+
+            const diff = data.difficulty || '中';
+            const radio = document.querySelector(`input[name="sDifficultyRadio"][value="${diff}"]`);
+            if (radio) radio.checked = true;
+            const diffSelect = document.getElementById('sDifficulty');
+            if (diffSelect) diffSelect.value = diff;
+
+            // 回填母題
+            const hTopic = document.getElementById('hidden-sTopic');
+            const pTopic = document.getElementById('preview-sTopic');
+            if (hTopic && pTopic) {
+                hTopic.value = data.topic || '';
+                pTopic.innerHTML = data.topic ? decodeURIComponent(data.topic) : '';
+            }
+
+            const hMain = document.getElementById('hidden-s-article');
+            const pMain = document.getElementById('preview-s-article');
+            if (hMain && pMain) {
+                hMain.value = data.article || '';
+                pMain.innerHTML = data.article ? decodeURIComponent(data.article) : '';
+            }
+
+            // 回填子題
+            const container = document.getElementById('s-sub-questions-container');
+            container.innerHTML = '';
+            displaySequence = 0;
+
+            if (data.questions && Array.isArray(data.questions)) {
+                // 回填時也預設收起 (false)
+                data.questions.forEach(q => this.addSubQuestion(q, false));
+            }
+
+            this.checkEmptyState();
+            this.toggleEditable(!isViewMode);
+        },
+
+        collect: function () {
+            const getVal = (id) => {
+                const el = document.getElementById(id);
+                return el ? el.value : '';
+            };
+            const diffRadio = document.querySelector('input[name="sDifficultyRadio"]:checked');
+
+            const result = {
+                mainCat: '文義判讀',
+                subCat: '篇章辨析',
+                level: document.getElementById('commonLevel').value, // 從頂部共用區取值
+                difficulty: diffRadio ? diffRadio.value : '中',
+                genre: document.getElementById('sGenre').value,
+                topic: getVal('hidden-sTopic'),
+                article: getVal('hidden-s-article'),
+                summary: (function () {
+                    const el = document.getElementById('preview-sTopic');
+                    const text = el ? el.innerText.trim() : '';
+                    return text ? (text.substring(0, 20) + (text.length > 20 ? '...' : '')) : '未命名短文題組';
+                })(),
+                questions: []
+            };
+
+            document.querySelectorAll('#s-sub-questions-container .sub-question-card').forEach(card => {
+                const id = card.id.replace('card-', '');
+                result.questions.push({
+                    content: getVal(`hidden-${id}_content`),
+                    explanation: getVal(`hidden-${id}_explanation`)
+                    // ★ 移除 optA, ans 等不必要欄位
+                });
+            });
+
+            return result;
+        },
+
+        toggleEditable: function (editable) {
             const addBtn = document.getElementById('btn-add-s-sub');
             if (addBtn) addBtn.hidden = !editable;
 
             document.querySelectorAll('#s-sub-questions-container .sub-remove-btn').forEach(btn => btn.hidden = !editable);
+            document.querySelectorAll('input[name="sDifficultyRadio"]').forEach(r => r.disabled = !editable);
 
-            const inputs = document.querySelectorAll('#form-shortarticle input:not(.readonly-field), #form-shortarticle select');
+            const inputs = document.querySelectorAll('#form-shortarticle input:not(.readonly-field):not([type=radio]), #form-shortarticle select');
             inputs.forEach(el => el.disabled = !editable);
 
             const previews = document.querySelectorAll('#form-shortarticle .editor-preview-box');
             previews.forEach(el => {
                 if (!editable) {
                     el.style.pointerEvents = 'none';
-                    el.style.backgroundColor = '#f8f9fa';
-                    el.style.borderColor = '#e9ecef';
+                    el.style.backgroundColor = '#f3f4f6';
+                    el.style.borderColor = '#e5e7eb';
                 } else {
                     el.style.pointerEvents = 'auto';
                     el.style.backgroundColor = '#fff';
@@ -1752,10 +2014,21 @@ window.openPropModal = function (btn, mode) {
     if (mode === 'create') {
         document.getElementById('editRowFrom').value = '';
         typeSelect.value = '一般題目';
+        updateCommonLevelOptions('一般題目');
         typeSelect.disabled = false;
         statusBadge.innerText = '未儲存';
         statusBadge.className = 'badge-outline badge-unsaved';
+
+        // 1. 先全域解鎖所有欄位
         toggleGlobalEditable(true);
+
+        // ★★★ FIX: 強制鎖定 Sidebar 正確答案選單 (等待子題綁定) ★★★
+        const rSidebar = document.getElementById('rSidebarAnswer');
+        const lgSidebar = document.getElementById('lgSidebarAnswer');
+        if (rSidebar) rSidebar.disabled = true;
+        if (lgSidebar) lgSidebar.disabled = true;
+        // ★★★ FIX END ★★★
+
         typeSelect.dispatchEvent(new Event('change'));
     } else {
         const row = btn.closest('tr');
@@ -1765,6 +2038,10 @@ window.openPropModal = function (btn, mode) {
         const jsonData = JSON.parse(row.getAttribute('data-json') || '{}');
 
         typeSelect.value = type;
+
+        // 初始化等級選單 (依據該筆資料的題型)
+        updateCommonLevelOptions(type);
+
         statusBadge.innerText = status;
         statusBadge.className = `badge-outline badge-${getStatusClass(status)}`;
 
@@ -1998,12 +2275,28 @@ function resetSelection() {
     document.querySelectorAll('tbody input[type="checkbox"]').forEach(c => c.checked = false);
 }
 
-// --- [補回] Type Switcher ---
+// --- Type Switcher ---
 function initTypeSwitcher() {
     const s = document.getElementById('mType');
     if (!s) return;
     s.addEventListener('change', function () {
         const v = this.value;
+
+        // 切換題型時，同步更新等級下拉選單
+        updateCommonLevelOptions(v);
+
+        // 聽力題型時，將「適用等級」改為「難度」
+        const lblLevel = document.getElementById('lblCommonLevel');
+        if (lblLevel) {
+            lblLevel.innerText = v.includes('聽力') ? '難度' : '適用等級';
+        }
+
+        // 若切換為聽力題目，觸發一次難度連動
+        if (v === '聽力題目' && ListenHandler.updateCoreIndicator) {
+            // 延遲執行，確保 updateCommonLevelOptions 已經完成回填
+            setTimeout(() => ListenHandler.updateCoreIndicator(), 50);
+        }
+
         document.querySelectorAll('.question-form-group').forEach(el => el.classList.add('d-none'));
         let tid = 'form-general';
         if (v === '長文題目') tid = 'form-longarticle';
