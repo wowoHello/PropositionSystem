@@ -521,15 +521,15 @@ const LongArticleHandler = (function () {
         },
         clear: function () {
             // 1. 清空一般欄位
-            ['lType', 'lDifficulty', 'lTopic'].forEach(id => {
+            ['lType', 'lDifficulty'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.value = '';
             });
 
-            // 2. 清空隱藏欄位與預覽區 (內容、解析)
-            ['content', 'explanation'].forEach(key => {
-                const hidden = document.getElementById(`hidden-l-${key}`);
-                const preview = document.getElementById(`preview-l-${key}`);
+            // 2. 清空隱藏欄位與預覽區 (內容、解析、標題)
+            ['content', 'explanation', 'Topic'].forEach(key => {
+                const hidden = document.getElementById(key === 'Topic' ? 'hidden-lTopic' : `hidden-l-${key}`);
+                const preview = document.getElementById(`preview-l${key}`);
                 if (hidden) hidden.value = '';
                 if (preview) preview.innerHTML = '';
             });
@@ -553,7 +553,14 @@ const LongArticleHandler = (function () {
                 if (el) el.value = val || '';
             };
             setVal('lType', data.subType); // JSON 中儲存為 subType
-            setVal('lTopic', data.topic);
+
+            // lTopic 改為 editor box
+            const hTopic = document.getElementById('hidden-lTopic');
+            const pTopic = document.getElementById('preview-lTopic');
+            if (hTopic && pTopic) {
+                hTopic.value = data.topic || '';
+                pTopic.innerHTML = data.topic ? decodeURIComponent(data.topic) : '';
+            }
 
             // 3. 同步難度 Radio
             const diff = data.difficulty || '中';
@@ -599,9 +606,9 @@ const LongArticleHandler = (function () {
             document.querySelectorAll('input[name="lDifficultyRadio"]').forEach(r => {
                 r.disabled = isViewMode;
             });
-            // 鎖定一般 Input (lTopic) 會由 toggleGlobalEditable 處理，但明確寫出也無妨
-            const lTopic = document.getElementById('lTopic');
-            if (lTopic) lTopic.disabled = isViewMode;
+            // 鎖定一般 Input (lTopic 已改為 editor box，由上方 previews 迴圈處理)
+            // const lTopic = document.getElementById('lTopic');
+            // if (lTopic) lTopic.disabled = isViewMode;
         },
         collect: function () {
             // 從 Radio 取得難度
@@ -615,13 +622,16 @@ const LongArticleHandler = (function () {
 
                 subType: document.getElementById('lType').value,
                 difficulty: diffRadio ? diffRadio.value : '中',
-                topic: document.getElementById('lTopic').value,
+                topic: document.getElementById('hidden-lTopic').value,
 
                 content: document.getElementById('hidden-l-content').value,
                 explanation: document.getElementById('hidden-l-explanation').value,
 
-                // 摘要使用標題
-                summary: document.getElementById('lTopic').value || '未命名長文題目'
+                // 摘要使用標題 (去除 HTML 標籤)
+                summary: (function () {
+                    const t = document.getElementById('preview-lTopic').innerText.trim();
+                    return t ? (t.substring(0, 20) + (t.length > 20 ? '...' : '')) : '未命名長文題目';
+                })()
             };
         }
     };
@@ -675,10 +685,19 @@ const ListenHandler = (function () {
                         // 直接帶入對應的第一個值
                         c.value = levelData[val].cores[0];
                         i.value = levelData[val].indicators[0];
+                        // 更新顯示欄位
+                        const display = document.getElementById('liCoreIndicatorDisplay');
+                        if (display) {
+                            const text = levelData[val].cores[0] + ' / ' + levelData[val].indicators[0];
+                            display.value = text;
+                            display.title = text; // Add tooltip for long text
+                        }
                     } else {
                         // 若無選擇或無對應資料，顯示預設提示
-                        c.value = '請先選擇難度';
-                        i.value = '請先選擇難度';
+                        c.value = '';
+                        i.value = '';
+                        const display = document.getElementById('liCoreIndicatorDisplay');
+                        if (display) display.value = '請先選擇難度';
                     }
                 };
 
@@ -711,12 +730,14 @@ const ListenHandler = (function () {
             // 重置唯讀欄位
             const c = document.getElementById('liCore');
             const i = document.getElementById('liIndicator');
-            if (c) c.value = '請先選擇難度';
-            if (i) i.value = '請先選擇難度';
+            const d = document.getElementById('liCoreIndicatorDisplay');
+            if (c) c.value = '';
+            if (i) i.value = '';
+            if (d) d.value = '請先選擇難度';
 
             // 清空 Main Inputs
-            const topic = document.getElementById('liTopic');
-            if (topic) topic.value = '';
+            // const topic = document.getElementById('liTopic');
+            // if (topic) topic.value = '';
 
             const attach = document.getElementById('liAttachment');
             if (attach) attach.value = '';
@@ -728,6 +749,11 @@ const ListenHandler = (function () {
                 if (h) h.value = '';
                 if (p) p.innerHTML = '';
             });
+            // 清空 liTopic
+            const hTopic = document.getElementById('hidden-liTopic');
+            const pTopic = document.getElementById('preview-liTopic');
+            if (hTopic) hTopic.value = '';
+            if (pTopic) pTopic.innerHTML = '';
 
             // 清空選項附檔
             ['A', 'B', 'C', 'D'].forEach(opt => {
@@ -736,10 +762,10 @@ const ListenHandler = (function () {
             });
 
             // 重置連動狀態
-            const core = document.getElementById('liCore');
-            const ind = document.getElementById('liIndicator');
-            if (core) { core.innerHTML = '<option value="">請先選擇難度</option>'; core.disabled = true; }
-            if (ind) { ind.innerHTML = '<option value="">請先選擇難度</option>'; ind.disabled = true; }
+            // const core = document.getElementById('liCore');
+            // const ind = document.getElementById('liIndicator');
+            // if (core) { core.innerHTML = '<option value="">請先選擇難度</option>'; core.disabled = true; }
+            // if (ind) { ind.innerHTML = '<option value="">請先選擇難度</option>'; ind.disabled = true; }
 
             updateCorrectAnswerDisplay('');
         },
@@ -757,15 +783,40 @@ const ListenHandler = (function () {
                 const i = document.getElementById('liIndicator');
                 if (c) c.value = levelData[data.level].cores[0];
                 if (i) i.value = levelData[data.level].indicators[0];
+                if (c) c.value = levelData[data.level].cores[0];
+                if (i) i.value = levelData[data.level].indicators[0];
+                const display = document.getElementById('liCoreIndicatorDisplay');
+                if (display && c && i) {
+                    const text = c.value + ' / ' + i.value;
+                    display.value = text;
+                    display.title = text;
+                }
             } else {
                 // 如果沒有資料，試著從 saved data 回填 (以此為優先)
                 const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
                 setVal('liCore', data.core);
                 setVal('liIndicator', data.indicator);
+
+                // 手動組合顯示
+                const display = document.getElementById('liCoreIndicatorDisplay');
+                if (display) {
+                    if (data.core || data.indicator) {
+                        const text = (data.core || '') + ' / ' + (data.indicator || '');
+                        display.value = text;
+                        display.title = text;
+                    } else {
+                        display.value = '請先選擇難度';
+                        display.title = '';
+                    }
+                }
             }
 
             const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
-            setVal('liTopic', data.topic);
+            setVal('hidden-liTopic', data.topic); // 保留，但 liTopic 已經變 hidden，所以這行其實是設值給 hidden input，是正確的
+
+            // 設定 preview
+            const pTopic = document.getElementById('preview-liTopic');
+            if (pTopic) pTopic.innerHTML = data.topic ? decodeURIComponent(data.topic) : '';
             setVal('liVoiceType', data.voiceType);
             setVal('liMaterial', data.material);
             setVal('liCorrectAnswer', data.ans);
@@ -807,7 +858,7 @@ const ListenHandler = (function () {
             const inputs = document.querySelectorAll('#form-listen input, #form-listen select');
             inputs.forEach(el => {
                 // Core/Indicator 的鎖定狀態由 Level 決定，先不強制覆蓋
-                if (el.id !== 'liCore' && el.id !== 'liIndicator') {
+                if (el.id !== 'liCore' && el.id !== 'liIndicator' && el.id !== 'liCoreIndicatorDisplay') {
                     el.disabled = isViewMode;
                 }
             });
@@ -826,7 +877,8 @@ const ListenHandler = (function () {
                 indicator: getVal('liIndicator'),
                 voiceType: getVal('liVoiceType'),
                 material: getVal('liMaterial'),
-                topic: getVal('liTopic'),
+                topic: getVal('hidden-liTopic'), // liTopic 現在是 hidden input，取值正確
+
 
                 content: getVal('hidden-listen-content'),
                 optA: getVal('hidden-listen-optA'),
@@ -837,7 +889,8 @@ const ListenHandler = (function () {
                 explanation: getVal('hidden-listen-explanation'),
 
                 summary: (function () {
-                    const t = getVal('liTopic');
+                    const p = document.getElementById('preview-liTopic');
+                    const t = p ? p.innerText.trim() : '';
                     return t ? (t.substring(0, 20) + (t.length > 20 ? '...' : '')) : '未命名聽力題目';
                 })()
             };
@@ -860,7 +913,7 @@ const ListenHandler = (function () {
             document.querySelectorAll('#form-listen input, #form-listen select').forEach(el => {
                 // 關鍵：只有不是 liCore 和 liIndicator 的欄位才根據 editable 開關
                 // 且不包含 .readonly-field (雙重保險)
-                if (el.id !== 'liCore' && el.id !== 'liIndicator' && !el.classList.contains('readonly-field')) {
+                if (el.id !== 'liCore' && el.id !== 'liIndicator' && el.id !== 'liCoreIndicatorDisplay' && !el.classList.contains('readonly-field')) {
                     el.disabled = !editable;
                 }
             });
@@ -868,7 +921,7 @@ const ListenHandler = (function () {
     };
 })();
 
-
+/* --- ListenGroupHandler (聽力題組) --- */
 const ListenGroupHandler = (function () {
     // 定義目前活動中的子題 ID
     let activeSubUid = null;
@@ -924,7 +977,7 @@ const ListenGroupHandler = (function () {
                 <div class="editor-preview-box p-3 border-0 h-100" 
                         id="preview-${uid}-opt${opt}" 
                         data-field="${uid}-opt${opt}" 
-                        data-placeholder="輸入選項 ${opt}..."
+                        data-placeholder="點擊輸入選項 ${opt}..."
                         onclick="openCommonEditor(this)"></div>
                 <input type="hidden" id="hidden-${uid}-opt${opt}">
                 <div class="card-footer p-1 bg-white border-top">
@@ -980,11 +1033,11 @@ const ListenGroupHandler = (function () {
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label fw-bold small text-secondary border-start border-4 border-primary ps-2 mb-2">子題內容 (語音腳本)</label>
-                                <div class="editor-preview-box border rounded-3 p-3 bg-white mb-2" 
+                                <label class="form-label fw-bold small text-secondary border-start border-4 border-primary ps-2 mb-2 required-star">子題題目</label>
+                                <div class="editor-preview-box border rounded-3 p-3 mb-2" 
                                      id="preview-${uid}-content" 
                                      data-field="${uid}-content" 
-                                     data-placeholder="點擊輸入子題語音腳本..." 
+                                     data-placeholder="點擊輸入子題題目..." 
                                      onclick="openCommonEditor(this)"></div>
                                 <input type="hidden" id="hidden-${uid}-content">
                             </div>
@@ -992,7 +1045,7 @@ const ListenGroupHandler = (function () {
                             <hr class="border-secondary opacity-10 my-3">
 
                             <div class="mb-4">
-                                <label class="form-label fw-bold small text-secondary border-start border-4 border-primary ps-2 mb-3">選項與正確答案</label>
+                                <label class="form-label fw-bold small text-secondary border-start border-4 border-primary ps-2 mb-3 required-star">選項與正確答案</label>
                                 <div class="alert-hint">
                                     <i class="bi bi-exclamation-circle-fill"></i>
                                     請避免選項長短、語氣明顯差異，以免影響鑑別度
@@ -1451,7 +1504,7 @@ const ReadingHandler = (function () {
                 const valDecoded = data[fieldKey] ? decodeURIComponent(data[fieldKey]) : '';
                 return `
                     <div class="mb-3">
-                        ${label ? `<label class="form-label fw-bold small text-secondary border-start border-4 border-primary ps-2 mb-2">${label}</label>` : ''}                    
+                        ${label ? `<label class="form-label fw-bold small text-secondary border-start border-4 border-primary ps-2 mb-2 required-star">${label}</label>` : ''}                    
                         <div class="editor-preview-box border rounded-top-3 p-3 bg-white" 
                                 id="preview-${uniqueFieldId}" data-field="${uniqueFieldId}" data-placeholder="${placeholder}" onclick="openCommonEditor(this)">${valDecoded}</div>
                         <input type="hidden" id="hidden-${uniqueFieldId}" value="${data[fieldKey] || ''}">                    
@@ -1469,7 +1522,7 @@ const ReadingHandler = (function () {
                             <div class="card-header py-1 px-2 bg-light border-bottom text-muted small fw-bold d-flex justify-content-between">
                                 <span>選項 ${optLabel}</span><i class="bi bi-check-circle-fill text-success correct-mark d-none"></i>
                             </div>
-                            <div class="editor-preview-box p-3 border-0 h-100" id="preview-${uniqueFieldId}" data-field="${uniqueFieldId}" data-placeholder="輸入選項 ${optLabel}..." onclick="openCommonEditor(this)">${valDecoded}</div>
+                            <div class="editor-preview-box p-3 border-0 h-100" id="preview-${uniqueFieldId}" data-field="${uniqueFieldId}" data-placeholder="點擊輸入選項 ${optLabel}..." onclick="openCommonEditor(this)">${valDecoded}</div>
                             <input type="hidden" id="hidden-${uniqueFieldId}" value="${data[fieldKey] || ''}">
                             <div class="card-footer p-1 bg-white border-top"><input class="form-control form-control-sm border-0" type="file" id="file-${uniqueFieldId}"></div>
                         </div>
@@ -1493,7 +1546,7 @@ const ReadingHandler = (function () {
                             ${buildStandardField('content', '點擊輸入子題題目...', '題目內容', true)}
                             <hr class="border-secondary opacity-10 my-3">
                             <div class="mb-4">
-                                <label class="form-label fw-bold small text-secondary border-start border-4 border-primary ps-2 mb-3">選項與正確答案</label>
+                                <label class="form-label fw-bold small text-secondary border-start border-4 border-primary ps-2 mb-3 required-star">選項與正確答案</label>
                                 <div class="alert-hint">
                                     <i class="bi bi-exclamation-circle-fill"></i>
                                     請避免選項長短、語氣明顯差異，以免影響鑑別度
@@ -1512,8 +1565,8 @@ const ReadingHandler = (function () {
                             </div>
                             <hr class="border-secondary opacity-10 my-3">
                             <div class="mb-2">
-                                <label class="form-label fw-bold small text-secondary border-start border-4 border-secondary ps-2 mb-2">試題解析</label>
-                                <div class="editor-preview-box border rounded-3 p-3 bg-white" id="preview-${id}_explanation" data-field="${id}_explanation" data-placeholder="輸入解析..." onclick="openCommonEditor(this)">${data.explanation ? decodeURIComponent(data.explanation) : ''}</div>
+                                <label class="form-label fw-bold small text-secondary border-start border-4 border-secondary ps-2 mb-2">試題解析 (紀錄答案理由)</label>
+                                <div class="editor-preview-box border rounded-3 p-3 bg-white" id="preview-${id}_explanation" data-field="${id}_explanation" data-placeholder="請簡要說明正確答案的判斷依據，並簡述其他選項錯誤原因..." onclick="openCommonEditor(this)">${data.explanation ? decodeURIComponent(data.explanation) : ''}</div>
                                 <input type="hidden" id="hidden-${id}_explanation" value="${data.explanation || ''}">
                             </div>
                         </div>
@@ -1690,6 +1743,30 @@ const ShortArticleHandler = (function () {
     // ★ 定義顯示用的題號計數器 (只增不減)
     let displaySequence = 0;
 
+    // ★ Short Article Dimension Data
+    const dimensionData = {
+        "條列敘述": [
+            "1-1 條列敘述人、事、物特徵與特質",
+            "1-2 條列敘述人、事、物起始原因、發生情況、結論等時空先後順序",
+            "1-3 條列敘述人、事、物的差異"
+        ],
+        "歸納統整": [
+            "2-1 歸納作者主張",
+            "2-2 歸納文章主旨",
+            "2-3 歸納共同特點"
+        ],
+        "分析推理": [
+            "3-1 分析線索",
+            "3-2 推論緣由",
+            "3-3 判斷結果",
+            "3-4 判斷詞性、主語",
+            "3-5 判斷字句的解釋、文意說明是否正確",
+            "3-6 推測行為的原因或用意、說明如何達成行為",
+            "3-7 推測寫作手法的目的",
+            "3-8 判斷文體、格律、風格"
+        ]
+    };
+
     // ★ 檢查子題完成狀態 (僅檢查題目內容)
     function checkSubCompletion(id) {
         // 1. 檢查題目是否有內容
@@ -1717,6 +1794,22 @@ const ShortArticleHandler = (function () {
         const explanationVal = data.explanation ? decodeURIComponent(data.explanation) : '';
         const explanationHidden = data.explanation || '';
 
+        // Generate options for Main Dimension
+        const dimOptions = ['<option value="">請選擇...</option>'];
+        for (const dim in dimensionData) {
+            const selected = (data.dimension === dim) ? 'selected' : '';
+            dimOptions.push(`<option value="${dim}" ${selected}>${dim}</option>`);
+        }
+
+        // Generate options for Capability Indicator (if dimension exists)
+        const indOptions = ['<option value="">請先選擇主向度</option>'];
+        if (data.dimension && dimensionData[data.dimension]) {
+            dimensionData[data.dimension].forEach(ind => {
+                const selected = (data.indicator === ind) ? 'selected' : '';
+                indOptions.push(`<option value="${ind}" ${selected}>${ind}</option>`);
+            });
+        }
+
         return `
             <div class="card mb-3 sub-question-card border-0 shadow-sm" id="card-${id}">
                 <div class="card-header sub-accordion-btn bg-white border d-flex justify-content-between align-items-center ${isOpen ? '' : 'collapsed'}"
@@ -1733,9 +1826,26 @@ const ShortArticleHandler = (function () {
 
                 <div id="collapse-${id}" class="collapse ${isOpen ? 'show' : ''} border border-top-0 rounded-bottom" data-bs-parent="#s-sub-questions-container">
                     <div class="card-body bg-light p-4">
+                        
+                        <!-- New Dimension and Indicator Fields -->
+                        <div class="row g-2 mb-3 p-3 bg-white border rounded">
+                             <div class="col-md-6">
+                                <label class="form-label small fw-bold text-secondary required-star">主向度</label>
+                                <select class="form-select form-select-sm" id="s-sub-dimension-${id}" onchange="ShortArticleHandler.onDimensionChange('${id}', this.value)">
+                                    ${dimOptions.join('')}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-secondary required-star">能力指標</label>
+                                <select class="form-select form-select-sm" id="s-sub-indicator-${id}" ${data.dimension ? '' : 'disabled'}>
+                                    ${indOptions.join('')}
+                                </select>
+                            </div>
+                        </div>
+
                         <div class="mb-3">
-                            <label class="form-label fw-bold small text-secondary border-start border-4 border-primary ps-2 mb-2">題目內容</label>
-                            <div class="editor-preview-box border rounded-top-3 p-3 bg-white" 
+                            <label class="form-label fw-bold small text-secondary border-start border-4 border-primary ps-2 mb-2 required-star">題目內容</label>
+                            <div class="editor-preview-box border rounded-top-3 p-3" 
                                     id="preview-${id}_content" 
                                     data-field="${id}_content" 
                                     data-placeholder="點擊輸入子題題目..."
@@ -1755,7 +1865,7 @@ const ShortArticleHandler = (function () {
                             <div class="editor-preview-box border rounded-3 p-3 bg-white" 
                                     id="preview-${id}_explanation" 
                                     data-field="${id}_explanation" 
-                                    data-placeholder="輸入解析(批說)..."
+                                    data-placeholder="請簡要說明短文子題解析..."
                                     onclick="openCommonEditor(this)">${explanationVal}</div>
                             <input type="hidden" id="hidden-${id}_explanation" value="${explanationHidden}">
                         </div>
@@ -1922,16 +2032,44 @@ const ShortArticleHandler = (function () {
                 questions: []
             };
 
-            document.querySelectorAll('#s-sub-questions-container .sub-question-card').forEach(card => {
+            document.querySelectorAll('#s-sub-questions-container .sub-question-card').forEach((card, index) => {
                 const id = card.id.replace('card-', '');
+                // Add new dimension and indicator to result
+                const dim = document.getElementById(`s-sub-dimension-${id}`);
+                const ind = document.getElementById(`s-sub-indicator-${id}`);
+
                 result.questions.push({
+                    id: id,
+                    seqNum: index + 1,
                     content: getVal(`hidden-${id}_content`),
-                    explanation: getVal(`hidden-${id}_explanation`)
+                    explanation: getVal(`hidden-${id}_explanation`),
+                    dimension: dim ? dim.value : '',
+                    indicator: ind ? ind.value : ''
                     // ★ 移除 optA, ans 等不必要欄位
                 });
             });
 
             return result;
+        },
+
+        // Helper for dimension change
+        onDimensionChange: function (id, val) {
+            const indSelect = document.getElementById(`s-sub-indicator-${id}`);
+            if (!indSelect) return;
+
+            indSelect.innerHTML = '<option value="">請選擇...</option>';
+            if (val && dimensionData[val]) {
+                indSelect.disabled = false;
+                dimensionData[val].forEach(ind => {
+                    const opt = document.createElement('option');
+                    opt.value = ind;
+                    opt.text = ind;
+                    indSelect.appendChild(opt);
+                });
+            } else {
+                indSelect.disabled = true;
+                indSelect.innerHTML = '<option value="">請先選擇主向度</option>';
+            }
         },
 
         toggleEditable: function (editable) {
@@ -2075,14 +2213,15 @@ window.deleteRow = function (btn) {
     });
 };
 
-window.batchAction = function (action) {
-    if (action !== '刪除') return;
-    const checks = document.querySelectorAll('tbody .data-row input:checked:not(:disabled)');
-    if (checks.length === 0) return Swal.fire({ icon: 'warning', text: '請先勾選' });
-    Swal.fire({ title: `刪除 ${checks.length} 筆?`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33' }).then((r) => {
-        if (r.isConfirmed) { checks.forEach(c => c.closest('tr').remove()); resetSelection(); checkEmptyState(); showToast('已批次刪除'); }
-    });
-};
+// 批次刪除按鈕 ※先註解取消
+// window.batchAction = function (action) {
+//     if (action !== '刪除') return;
+//     const checks = document.querySelectorAll('tbody .data-row input:checked:not(:disabled)');
+//     if (checks.length === 0) return Swal.fire({ icon: 'warning', text: '請先勾選' });
+//     Swal.fire({ title: `刪除 ${checks.length} 筆?`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33' }).then((r) => {
+//         if (r.isConfirmed) { checks.forEach(c => c.closest('tr').remove()); resetSelection(); checkEmptyState(); showToast('已批次刪除'); }
+//     });
+// };
 
 window.batchUpdateStatus = function (status) {
     const checks = document.querySelectorAll('tbody .data-row input:checked:not(:disabled)');

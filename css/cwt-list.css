@@ -865,18 +865,23 @@ body {
 #propModal .form-control.readonly-field,
 #propModal .form-control:disabled,
 #propModal .form-select:disabled {
-    background-color: #f1f5f9 !important; /* 淺灰背景 */
-    color: #94a3b8 !important;            /* 灰色文字 */
-    cursor: not-allowed !important;       /* ★ 關鍵：顯示禁止符號 */
+    background-color: #f1f5f9 !important;
+    /* 淺灰背景 */
+    color: #94a3b8 !important;
+    /* 灰色文字 */
+    cursor: not-allowed !important;
+    /* ★ 關鍵：顯示禁止符號 */
     border-color: #e2e8f0 !important;
-    opacity: 1 !important;                /* 避免部分瀏覽器透明度過低 */
+    opacity: 1 !important;
+    /* 避免部分瀏覽器透明度過低 */
 }
 
 /* 針對 Sidebar 內被鎖定的正確答案選單特別強化樣式 */
 .sidebar-item .form-select:disabled {
     background-color: #f1f5f9 !important;
     border-color: #cbd5e1 !important;
-    color: #cbd5e1 !important; /* 讓文字看起來更淡，表示未啟用 */
+    color: #cbd5e1 !important;
+    /* 讓文字看起來更淡，表示未啟用 */
 }
 
 /* 選項卡片進階美化 */
@@ -1516,7 +1521,7 @@ body {
    (有時候 Quill 的預設樣式會干擾)
 */
 .editor-preview-box[style*="pointer-events: none"] {
-    background-color: #f3f4f6 !important;
+    background-color: #f3f4f6;
     /* 強制灰底 */
     color: #6b7280 !important;
     /* 文字變深灰，增加 disabled 質感 */
@@ -1622,9 +1627,8 @@ body {
 
 /* 當 JS 標記為正確答案時的樣式 */
 .option-card.is-correct-answer {
-    border: 3px solid #10b981 !important;
     background-color: #f0fdf4 !important;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2) !important;
+    /* box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2) !important; */
 }
 
 /* 顯示勾勾圖示 */
