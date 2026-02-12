@@ -1,0 +1,542 @@
+/* --- 1. 動態切換器樣式 (Sliding Segmented Control) --- */
+.nav-segment-container {
+  position: relative;
+  display: flex;
+  background-color: #f1f5f9;
+  padding: 4px;
+  border-radius: 50rem;
+  border: 1px solid #e2e8f0;
+  width: fit-content;
+}
+
+.nav-segment-indicator {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc(50% - 4px);
+  background-color: white;
+  border-radius: 50rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1;
+}
+
+.nav-segment-item {
+  flex: 1;
+  position: relative;
+  z-index: 2;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #64748b;
+  text-align: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.3s ease;
+  border-radius: 50rem;
+  white-space: nowrap;
+}
+
+.nav-segment-item.active {
+  color: #2563eb;
+}
+
+/* --- 2. 權限設定卡片 --- */
+.permission-item-card {
+  background-color: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  /* 垂直置中 */
+  gap: 1rem;
+  /* 元件間距 */
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.permission-item-card:hover {
+  border-color: #94a3b8;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+}
+
+/* 選中(開啟)狀態 */
+.permission-item-card.active {
+  background-color: #f0f9ff;
+  /* 淺藍背景 */
+  border-color: #3b82f6;
+  /* 藍色邊框 */
+  box-shadow: 0 0 0 1px #3b82f6 inset;
+  /* 內陰影加強邊框感 */
+}
+
+.permission-item-card.checked {
+  border-color: #3b82f6;
+  background-color: #eff6ff;
+  box-shadow: 0 0 0 1px #3b82f6 inset;
+}
+
+/* 左側圖示區塊樣式 */
+.perm-icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+/* 文字區塊 */
+.perm-text {
+  flex-grow: 1;
+}
+
+.perm-title {
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: 2px;
+  font-size: 1rem;
+}
+
+.perm-desc {
+  font-size: 0.85rem;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+/* 開關樣式微調 */
+.custom-switch-lg {
+  width: 3rem !important;
+  height: 1.5rem !important;
+  cursor: pointer;
+  margin-left: auto;
+  /* 強制靠右 */
+}
+
+.custom-switch-lg {
+  width: 3.2rem !important;
+  height: 1.6rem !important;
+  cursor: pointer;
+  margin-left: 1rem;
+}
+
+/* --- 3. 角色卡片 (v1) --- */
+.role-card-v1 {
+  position: relative;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 1.75rem;
+  height: 100%;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.role-card-v1::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--card-color), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.role-card-v1:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+  border-color: var(--card-color);
+}
+
+.role-card-v1:hover::before {
+  opacity: 1;
+}
+
+.role-card-v1 .icon-wrapper {
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  margin-bottom: 1.25rem;
+  background: var(--card-bg);
+  color: var(--card-color);
+  transition: transform 0.3s ease;
+}
+
+.role-card-v1:hover .icon-wrapper {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.role-card-v1 .role-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+}
+
+.role-card-v1 .role-description {
+  font-size: 0.875rem;
+  color: #64748b;
+  line-height: 1.6;
+  margin-bottom: 1.25rem;
+  min-height: 3rem;
+}
+
+.role-card-v1 .stats-row {
+  display: flex;
+  gap: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+.role-card-v1 .stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.role-card-v1 .stat-label {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.role-card-v1 .stat-value {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--card-color);
+}
+
+.role-card-v1 .action-button {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  opacity: 0;
+}
+
+.role-card-v1:hover .action-button {
+  opacity: 1;
+}
+
+.role-card-v1 .action-button:hover {
+  background: var(--card-bg);
+  color: var(--card-color);
+  border-color: var(--card-color);
+}
+
+/* --- 4. 新增角色卡片 --- */
+.add-role-card {
+  border: 2px dashed #cbd5e1;
+  border-radius: 16px;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  height: 100%;
+  min-height: 300px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.add-role-card:hover {
+  border-color: #3b82f6;
+  background: #eff6ff;
+  transform: translateY(-4px);
+}
+
+.add-role-card .icon-plus {
+  width: 64px;
+  height: 64px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  color: #94a3b8;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.add-role-card:hover .icon-plus {
+  color: #3b82f6;
+  transform: rotate(90deg);
+}
+
+.add-role-card .add-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #475569;
+  margin-bottom: 0.5rem;
+}
+
+.add-role-card .add-description {
+  font-size: 0.875rem;
+  color: #94a3b8;
+  text-align: center;
+}
+
+/* --- 5. 顏色主題 --- */
+.theme-admin {
+  --card-color: #d97706;
+  --card-bg: #fef3c7;
+}
+
+.theme-teacher {
+  --card-color: #059669;
+  --card-bg: #d1fae5;
+}
+
+.theme-reviewer {
+  --card-color: #2563eb;
+  --card-bg: #dbeafe;
+}
+
+.theme-staff {
+  --card-color: #7c3aed;
+  --card-bg: #ede9fe;
+}
+
+.theme-custom1 {
+  --card-color: #7c3aed;
+  --card-bg: #ede9fe;
+}
+
+.theme-custom2 {
+  --card-color: #e11d48;
+  --card-bg: #fee2e2;
+}
+
+/* --- 6. Icon 選擇器 --- */
+.icon-picker-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+  gap: 0.5rem;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.icon-option {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 1.5rem;
+}
+
+.icon-option:hover {
+  border-color: #3b82f6;
+  background: #eff6ff;
+  transform: scale(1.1);
+}
+
+.icon-option.selected {
+  border-color: #3b82f6;
+  background: #eff6ff;
+  box-shadow: 0 0 0 2px #3b82f6 inset;
+}
+
+.icon-preview {
+  width: 80px;
+  height: 80px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  margin: 0 auto 1rem;
+  background-color: var(--card-bg, #f3f4f6);
+  color: var(--card-color, #6b7280);
+}
+
+.multi-role-badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* 專案管理頁籤專用樣式 */
+
+/* 自訂捲軸 (讓左側列表更美觀) */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* --- 修正列表過短時的視覺問題 --- */
+
+/* --- 列表樣式優化 (Wrapper 版本) --- */
+
+/* --- 列表樣式優化 (Wrapper 版本) --- */
+
+/* 1. 列表本體背景設為白色 */
+#projectListContainer {
+  background-color: #fff;
+}
+
+/* 2. 確保列表最後一個項目有底線 */
+/* 這條線是用來區隔「白色列表」與「下方灰色空白區」的重要界線 */
+#projectListContainer .list-group-item:last-child {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.125) !important;
+}
+
+/* 3. 列表項目互動效果 */
+#projectListContainer .list-group-item {
+  border-left: 4px solid transparent;
+  /* 預留左側邊框位置 */
+  transition: all 0.2s ease;
+}
+
+#projectListContainer .list-group-item:hover {
+  background-color: #f8f9fa;
+  /* Hover 淺灰 */
+}
+
+/* Active 狀態樣式 (保持原本設計) */
+#projectListContainer .list-group-item.active {
+  background-color: #2563eb !important;
+  border-color: #2563eb !important;
+  /* 左側邊框 */
+  color: white !important;
+  z-index: 2;
+  /* 確保浮在最上層 */
+}
+
+/* 確保 Active 狀態下的文字顏色正確 */
+#projectListContainer .list-group-item.active h6 {
+  color: white !important;
+}
+
+#projectListContainer .list-group-item.active small,
+#projectListContainer .list-group-item.active i {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+#projectListContainer .list-group-item.active .badge.bg-primary {
+  background-color: white !important;
+  color: #2563eb !important;
+}
+
+/* --- 8 Permission Tags Styling --- */
+.badge-tag-base {
+  font-weight: 500;
+  border: 1px solid;
+  padding: 0.35em 0.65em;
+  border-radius: 6px;
+  /* Slightly more rounded */
+  font-size: 0.75rem;
+  /* Or 0.8rem */
+  display: inline-flex;
+  align-items: center;
+  margin-right: 4px;
+  /* Space between tags */
+  margin-bottom: 4px;
+  white-space: nowrap;
+}
+
+/* 1. 今日提醒 (Reminder) - Alert/Red */
+.tag-reminder {
+  background-color: #fef2f2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+/* 2. 命題儀表板 (Dashboard) - Blue/Primary */
+.tag-dashboard {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+}
+
+/* 3. 我的命題任務 (My Tasks) - Green */
+.tag-mytask {
+  background-color: #f0fdf4;
+  color: #15803d;
+  border-color: #bbf7d0;
+}
+
+/* 4. 審題清單 (Review List) - Cyan/Info */
+.tag-review {
+  background-color: #ecfeff;
+  color: #0e7490;
+  border-color: #a5f3fc;
+}
+
+/* 5. 系統公告/使用說明 (Announcement) - Yellow/Warning */
+.tag-notice {
+  background-color: #fffbeb;
+  color: #b45309;
+  border-color: #fde68a;
+}
+
+/* 6. 教師管理系統 (people) - Teal */
+.tag-teacher {
+  background-color: #f0fdfa;
+  color: #0f766e;
+  border-color: #99f6e4;
+}
+
+/* 7. 命題專案管理 (Project) - Indigo */
+.tag-project {
+  background-color: #eef2ff;
+  color: #4338ca;
+  border-color: #c7d2fe;
+}
+
+/* 8. 角色與權限管理 (Role) - Purple/Gray */
+.tag-role {
+  background-color: #faf5ff;
+  color: #7e22ce;
+  border-color: #e9d5ff;
+}
+  

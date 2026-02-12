@@ -1,0 +1,255 @@
+:root {
+  --primary-blue: #2563eb;
+  --bg-color: #f3f4f6;
+  --text-dark: #1f2937;
+  --text-gray: #6b7280;
+  --border-color: #e5e7eb;
+}
+
+body {
+  font-family: "Noto Sans TC", sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-dark);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+/* =========================================
+     儀錶板內容樣式
+     ========================================= */
+.main-content {
+  padding: 1.5rem 0;
+  flex-grow: 1;
+}
+
+.dashboard-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 1rem;
+}
+
+.info-strip {
+  background: white;
+  border-radius: 10px;
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-color);
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.info-items {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.info-label {
+  color: #6b7280;
+  margin-right: 0.25rem;
+}
+
+.status-tag-large {
+  background-color: #2563eb;
+  color: white;
+  padding: 0.4rem 1.25rem;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.dash-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.25rem;
+  height: 100%;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  display: flex;
+  flex-direction: column;
+}
+
+.dash-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  color: #374151;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.dash-card-header svg {
+  color: #2563eb;
+}
+
+.card-alert-warning {
+  background-color: #fff7ed;
+  border: 1px solid #fdba74;
+}
+
+.card-alert-warning .dash-card-header svg {
+  color: #c2410c;
+}
+
+.warning-text {
+  color: #ea580c;
+  font-weight: 700;
+  font-size: 1.5rem;
+}
+
+/* 圓餅圖容器樣式 - 適配 Chart.js */
+.progress-donut-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+/* Chart.js 專用 wrapper，用來控制大小 */
+.chart-wrapper {
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+
+/* 絕對定位中間的文字 */
+.chart-center-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-weight: 700;
+  color: #111827;
+  font-size: 1.1rem;
+  pointer-events: none;
+  /* 讓滑鼠事件穿透文字，才能顯示圖表的 tooltip */
+}
+
+.progress-text-side {
+  text-align: left;
+}
+
+.progress-big-num {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1;
+}
+
+.progress-sub-text {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.stat-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+}
+
+.stat-list li {
+  width: 45%;
+  font-size: 0.9rem;
+  color: #4b5563;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.stat-list.single-col li {
+  width: 100%;
+  margin-bottom: 0.5rem;
+}
+
+.risk-text {
+  color: #dc2626;
+  font-weight: 500;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.section-header {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #111827;
+  margin-bottom: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.custom-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.custom-table th {
+  background-color: #f3f4f6;
+  color: #4b5563;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.custom-table td {
+  padding: 0.75rem 1rem;
+  vertical-align: middle;
+  border-bottom: 1px solid #f3f4f6;
+  color: #374151;
+  font-size: 0.95rem;
+}
+
+.icon-check {
+  color: #10b981;
+}
+
+.icon-cross {
+  color: #ef4444;
+}
+
+.text-gap-negative {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.link-blue {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.badge-event {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.badge-event-blue {
+  background: #eff6ff;
+  color: #1e40af;
+}
+
+.badge-event-purple {
+  background: #f3e8ff;
+  color: #6b21a8;
+}
+
+.badge-event-gray {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+  

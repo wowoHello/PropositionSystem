@@ -1,0 +1,446 @@
+:root {
+  --primary-blue: #2563eb;
+  --bg-color: #f3f4f6;
+  --text-dark: #1f2937;
+  --text-gray: #6b7280;
+  --border-color: #e5e7eb;
+}
+
+body {
+  font-family: "Noto Sans TC", sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-dark);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  /* overflow-x: hidden; */
+}
+
+/* =========================================
+     教師管理頁面內容樣式
+     ========================================= */
+.main-content {
+  padding: 1.5rem 0;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-heading {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 0.75rem;
+}
+
+.content-card-teacher {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  height: 100%;
+  /* Force height to match parent */
+  min-height: 0;
+  /* Enable shrinking */
+}
+
+.content-card-teacher .table-responsive {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* 查詢區 */
+.search-container {
+  background: white;
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--border-color);
+  position: relative;
+}
+
+.btn-add-teacher {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+}
+
+.form-label-sm {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.4rem;
+}
+
+.form-select-sm-custom {
+  font-size: 0.9rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  border-color: #d1d5db;
+  background-color: #f9fafb;
+  transition: all 0.2s;
+}
+
+.form-select-sm-custom:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* 表格 */
+.custom-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.custom-table th {
+  background-color: #f9fafb;
+  color: #4b5563;
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 2px solid #e5e7eb;
+  text-align: left;
+}
+
+.custom-table td {
+  padding: 0.75rem 1rem;
+  vertical-align: middle;
+  border-bottom: 1px solid #f3f4f6;
+  color: #374151;
+  font-size: 0.9rem;
+  /* white-space: nowrap; */
+}
+
+/* 狀態標籤 */
+.status-badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.status-enabled {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.status-disabled {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+.action-link {
+  font-size: 0.85rem;
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 500;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.action-link:hover {
+  text-decoration: underline;
+}
+
+.table-active-row td {
+  background-color: #eff6ff !important;
+}
+
+/* =========================================
+     Tag Input Style (Simple)
+     ========================================= */
+.tag-input-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  border: 1px solid #dee2e6;
+  border-radius: 0.375rem;
+  background-color: #fff;
+  min-height: 48px;
+  cursor: text;
+}
+
+.tag-input-container:focus-within {
+  border-color: #86b7fe;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.tag-item {
+  background-color: #e9ecef;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tag-item .btn-close {
+  font-size: 0.65rem;
+  width: auto;
+  height: auto;
+}
+
+.tag-input {
+  border: none;
+  outline: none;
+  flex-grow: 1;
+  min-width: 100px;
+  padding: 0;
+  font-size: 1rem;
+}
+
+/* Sliding container */
+.sliding-container {
+  display: flex;
+  flex-grow: 1;
+  /* Fill remaining space */
+  min-height: 0;
+  /* Prevent overflow */
+  /* gap: 0; Remove gap explicitly */
+  /* height: 100%; REMOVE to avoid overflow */
+  overflow: hidden;
+}
+
+.list-pane {
+  flex: 1;
+  min-width: 0;
+  transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-pane {
+  width: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+  background: #f9fafb;
+  border-left: 0 solid var(--border-color);
+  /* No border when closed */
+}
+
+.profile-pane.active {
+  width: 40%;
+  /* Active State */
+  min-width: 450px;
+  opacity: 1;
+  /* border-left-width: 1px;  <-- REMOVED: Inner card already has border */
+}
+
+.profile-inner-wrapper {
+  min-width: 450px;
+  height: 100%;
+}
+
+/* Profile 樣式 */
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #f3f4f6;
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.btn-close-profile {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: #f3f4f6;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-close-profile:hover {
+  background: #e5e7eb;
+  color: #1f2937;
+}
+
+.btn-close-profile svg {
+  pointer-events: none;
+}
+
+.profile-avatar-large {
+  width: 64px;
+  height: 64px;
+  background-color: #e5e7eb;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: #6b7280;
+}
+
+.profile-name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.2;
+}
+
+.profile-name-en {
+  font-size: 0.9rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.info-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 0.75rem;
+}
+
+.info-row {
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  color: #4b5563;
+  display: flex;
+}
+
+.info-label {
+  width: 100px;
+  font-weight: 600;
+  color: #374151;
+  flex-shrink: 0;
+}
+
+.info-row> :not(.info-label) {
+  flex: 1;
+  min-width: 0;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.tag-pill {
+  display: inline-block;
+  background: #f3f4f6;
+  color: #4b5563;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  margin-right: 4px;
+}
+
+.history-table th,
+.history-table td {
+  font-size: 0.85rem;
+  padding: 0.5rem;
+}
+
+.badge-history-active {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.badge-history-done {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+@media (max-width: 991px) {
+  .profile-pane {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100% !important;
+    height: 100vh;
+    z-index: 2000;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: flex-end;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    border-left: none;
+  }
+
+  .profile-pane.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .profile-inner-wrapper {
+    width: 85%;
+    max-width: 700px;
+    height: 100%;
+    background: white;
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.15);
+    padding: 1.25rem;
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .profile-pane.active .profile-inner-wrapper {
+    transform: translateX(0);
+    /* Slide in */
+  }
+
+  /* Larger text for stacked mobile view */
+  .info-row {
+    font-size: 1.05rem;
+    /* Increase from default */
+    margin-bottom: 0.8rem;
+  }
+
+  .info-label {
+    font-size: 1rem;
+    color: #4b5563;
+  }
+}
+
+/* History Table Scroll */
+/* History Table Scroll (Tbody only) */
+.history-scroll-wrapper {
+  /* max-height removed from wrapper */
+  /* overflow-y removed from wrapper */
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  /* clean corners */
+}
+
+.history-table thead,
+.history-table tbody tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+  /* Important for alignment */
+}
+
+.history-table tbody {
+  display: block;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.history-table th {
+  background-color: #f9fafb;
+  box-shadow: 0 1px 0 #e5e7eb;
+  /* Bottom border replacement */
+}
+  

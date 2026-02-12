@@ -1,0 +1,89 @@
+html,
+body {
+    height: 100%;
+    overflow-x: hidden;
+}
+
+.sidebar {
+    width: 280px;
+    background-color: white;
+    border-left: 1px solid #dee2e6;
+    display: flex;
+    flex-direction: column;
+}
+
+.main-content {
+    flex: 1;
+    padding: 2rem;
+    overflow-y: auto;
+}
+
+/* Modal Dual Panel Responsive Fix */
+@media (min-width: 768px) {
+    .modal-dual-pane {
+        height: 600px;
+        max-height: calc(90vh - 140px);
+        overflow: hidden;
+    }
+
+    .modal-dual-pane .pane-left {
+        height: 100%;
+        border-right: 1px solid #dee2e6;
+    }
+
+    .modal-dual-pane .pane-right {
+        height: 100%;
+        background-color: #f8f9fa;
+    }
+
+    .modal-dual-pane .pane-scroll {
+        overflow-y: auto;
+        /* height: 100%; Removed to allow proper scrolling in flex container */
+    }
+}
+
+@media (max-width: 767.98px) {
+    .modal-dual-pane {
+        height: auto;
+        max-height: none;
+        overflow: visible;
+    }
+
+    .modal-dual-pane .pane-left {
+        height: 400px;
+        /* Fixed height for teacher list on mobile */
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .modal-dual-pane .pane-right {
+        height: auto;
+        min-height: 200px;
+        background-color: #f8f9fa;
+    }
+
+    .modal-dual-pane .pane-scroll {
+        overflow-y: auto;
+        /* Allow internal scrolling if needed */
+    }
+}
+
+body {
+    font-family: "Noto Sans TC", sans-serif;
+    background-color: #f3f4f6;
+    display: flex;
+    flex-direction: column;
+}
+
+.main-content {
+    flex-grow: 1;
+    padding: 2rem 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.content-container {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+    

@@ -1,0 +1,290 @@
+:root {
+    /* 稍微調整主色調，讓藍色更穩重一點 */
+    --primary-blue: #3b82f6;
+    --primary-blue-dark: #1d4ed8;
+}
+
+body {
+    font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+    /* 柔和的淺藍灰漸層背景 */
+    background: linear-gradient(135deg, #f0f7ff 0%, #eef2f6 100%);
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+}
+
+body::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    /* 極淡的品牌色暈染動畫 */
+    background:
+        radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.04) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(99, 102, 241, 0.04) 0%, transparent 50%);
+    animation: float 25s ease-in-out infinite;
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translate(0, 0) rotate(0deg);
+    }
+
+    33% {
+        transform: translate(30px, -30px) rotate(10deg);
+    }
+
+    66% {
+        transform: translate(-20px, 20px) rotate(-5deg);
+    }
+}
+
+.login-container {
+    position: relative;
+    z-index: 1;
+    animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.login-card {
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: 24px;
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(20px);
+}
+
+.logo-title {
+    color: #1e293b;
+    letter-spacing: 0.5px;
+}
+
+.shield-icon {
+    width: 20px;
+    height: 20px;
+    color: var(--primary-blue);
+}
+
+.form-group {
+    animation: fadeIn 0.5s ease-out backwards;
+}
+
+.form-group:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.form-group:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.form-group:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.input-icon {
+    position: absolute;
+    left: 1rem;
+    width: 20px;
+    height: 20px;
+    color: #94a3b8;
+    pointer-events: none;
+    transition: color 0.2s;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.form-control {
+    padding-left: 3rem;
+    padding-right: 2.5rem;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    background-color: #fff;
+    transition: all 0.2s ease;
+}
+
+.form-control:focus {
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+.form-control:focus~.input-icon {
+    color: var(--primary-blue);
+}
+
+.form-control.is-invalid {
+    border-color: #dc2626;
+    background-color: #fef2f2;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #94a3b8;
+    transition: color 0.2s;
+    padding: 0.2rem;
+    z-index: 10;
+}
+
+.password-toggle:hover {
+    color: var(--primary-blue);
+}
+
+.captcha-display {
+    height: 52px;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+}
+
+#captchaCanvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.refresh-btn {
+    height: 52px;
+    width: 52px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    color: #64748b;
+}
+
+.refresh-btn:hover {
+    background: #f8fafc;
+    border-color: var(--primary-blue);
+    color: var(--primary-blue);
+    transform: rotate(180deg);
+}
+
+.refresh-btn:active {
+    transform: rotate(180deg) scale(0.95);
+}
+
+/* --- 按鈕樣式 (已修正文字顏色問題) --- */
+.btn-login {
+    background-color: var(--primary-blue);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    /* 預設文字白色 */
+    font-weight: 600;
+    padding: 1rem;
+    font-size: 1rem;
+    letter-spacing: 0.5px;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2),
+        0 2px 4px -1px rgba(59, 130, 246, 0.1);
+}
+
+.btn-login::before {
+    display: none;
+}
+
+.btn-login:hover {
+    background-color: var(--primary-blue-dark);
+    /* --- 修改處：強制文字保持白色，避免變黑 --- */
+    color: white !important;
+    /* -------------------------------------- */
+    transform: translateY(-3px);
+    box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3),
+        0 4px 6px -4px rgba(59, 130, 246, 0.2);
+}
+
+.btn-login:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px -1px rgba(59, 130, 246, 0.2),
+        0 1px 2px -1px rgba(59, 130, 246, 0.1);
+    color: white !important;
+    /* 點擊時也保持白色 */
+}
+
+/* -------------------------------- */
+
+.footer-link {
+    color: #64748b;
+    text-decoration: none;
+    position: relative;
+    transition: color 0.2s;
+    font-size: 0.9rem;
+}
+
+.footer-link::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: var(--primary-blue);
+    transition: width 0.3s ease;
+}
+
+.footer-link:hover {
+    color: var(--primary-blue);
+}
+
+.footer-link:hover::after {
+    width: 100%;
+}
+
+.remember-me,
+.submit-btn,
+.footer-links,
+.security-notice {
+    animation: fadeIn 0.5s ease-out backwards;
+}
+
+.remember-me {
+    animation-delay: 0.4s;
+}
+
+.submit-btn {
+    animation-delay: 0.5s;
+}
+
+.footer-links {
+    animation-delay: 0.6s;
+}
+
+.security-notice {
+    animation-delay: 0.7s;
+}
+    
