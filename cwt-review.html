@@ -62,16 +62,6 @@
             margin-bottom: 1.5rem;
         }
 
-        /* 通用卡片樣式 */
-        .card-box {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-            border: 1px solid #e5e7eb;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-
         /* 搜尋區 */
         .search-area .form-label {
             font-size: 0.85rem;
@@ -203,17 +193,6 @@
 
         .badge-rejected::before {
             background-color: #6b7280;
-        }
-
-        /* 審題決策 - 採用 */
-        .badge-approved {
-            background-color: rgba(16, 185, 129, 0.1);
-            color: #10b981;
-            border-color: rgba(16, 185, 129, 0.2);
-        }
-
-        .badge-approved::before {
-            background-color: #10b981;
         }
 
         /* 操作連結 */
@@ -1053,9 +1032,24 @@
             <p class="page-desc">
                 檢視並審核指派給您的試題，包括互審、專審與總審階段的題目。
             </p>
+            <!-- 標籤切換 -->
+            <ul class="nav nav-tabs custom-tabs" id="reviewTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active fw-bold" id="tab-working" data-bs-toggle="tab"
+                        data-tab-type="working" type="button">
+                        <i class="bi bi-pencil-square me-2"></i>審題作業區
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link fw-bold" id="tab-history" data-bs-toggle="tab" data-tab-type="history"
+                        type="button">
+                        <i class="bi bi-clipboard-check me-2"></i>審核結果與歷史
+                    </button>
+                </li>
+            </ul>
 
             <!-- 搜尋篩選區 -->
-            <div class="card-box search-area">
+            <div class="card-box-header search-area">
                 <div class="row g-3 align-items-end">
 
                     <div class="col-md-2">
@@ -1117,7 +1111,8 @@
             </div>
 
             <!-- 操作提示 -->
-            <div class="alert alert-info alert-dismissible fade show d-flex align-items-center mb-4 shadow-sm"
+            <div id="workingHint"
+                class="alert alert-info alert-dismissible fade show d-flex align-items-center mb-4 shadow-sm"
                 role="alert" style="border-left: 5px solid #0dcaf0;">
                 <svg xmlns="http://www.w3.org/2000/svg" class="bi flex-shrink-0 me-3" width="24" height="24"
                     fill="currentColor" viewBox="0 0 16 16">
@@ -1137,90 +1132,97 @@
             </div>
 
             <!-- 統計卡片 -->
-            <div class="row g-4 mb-4">
+            <div id="stats-working" class="row g-4 mb-4">
                 <div class="col-md-3">
-                    <div class="stat-card clickable interactive-card" onclick="filterByStatus('all')" title="顯示全部待審題目"
-                        style="cursor: pointer;">
-                        <div class="stat-icon icon-gray">
-                            <i class="bi bi-clipboard-check-fill fs-4"></i>
+                    <div class="stat-card clickable interactive-card" onclick="filterByStatus('working_all')"
+                        title="顯示全部待審題目">
+                        <div class="stat-icon" style="background-color: #e0f2fe;">
+                            <i class="bi bi-folder2-open text-primary" style="font-size: 1.5rem;"></i>
                         </div>
                         <div class="stat-info">
                             <span>待審總計</span>
-                            <h4 id="stat-total">4</h4>
+                            <h4 id="stat-total-working">0</h4>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="stat-card clickable interactive-card" onclick="filterByStatus('互審中')" title="篩選互審中題目"
-                        style="cursor: pointer;">
+                    <div class="stat-card clickable interactive-card" onclick="filterByStatus('互審中')">
                         <div class="stat-icon icon-purple">
                             <i class="bi bi-people-fill fs-4"></i>
                         </div>
                         <div class="stat-info">
                             <span>互審中</span>
-                            <h4 id="stat-mutual">3</h4>
+                            <h4 id="stat-mutual">0</h4>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="stat-card clickable interactive-card" onclick="filterByStatus('專審中')" title="篩選專審中題目"
-                        style="cursor: pointer;">
+                    <div class="stat-card clickable interactive-card" onclick="filterByStatus('專審中')">
                         <div class="stat-icon icon-orange">
                             <i class="bi bi-person-badge-fill fs-4"></i>
                         </div>
                         <div class="stat-info">
                             <span>專審中</span>
-                            <h4 id="stat-expert">1</h4>
+                            <h4 id="stat-expert">0</h4>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="stat-card clickable interactive-card" onclick="filterByStatus('總審中')" title="篩選總審中題目"
-                        style="cursor: pointer;">
+                    <div class="stat-card clickable interactive-card" onclick="filterByStatus('總審中')">
                         <div class="stat-icon icon-red">
                             <i class="bi bi-shield-fill-check fs-4"></i>
                         </div>
                         <div class="stat-info">
                             <span>總審中</span>
-                            <h4 id="stat-final">1</h4>
+                            <h4 id="stat-final">0</h4>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 第二列統計卡片：新增的三種狀態 -->
-            <div class="row g-4 mb-4">
-                <div class="col-md-4">
-                    <div class="stat-card clickable interactive-card" onclick="filterByStatus('採用')" title="篩選採用題目">
-                        <div class="stat-icon" style="background-color: #eff6ff;">
-                            <i class="bi bi-check-circle-fill text-primary" style="font-size: 1.5em;"></i>
+            <div id="stats-history" class="row g-4 mb-4 d-none">
+                <div class="col-md-3">
+                    <div class="stat-card clickable interactive-card" onclick="filterByStatus('history_all')">
+                        <div class="stat-icon" style="background-color: #f3f4f6;">
+                            <i class="bi bi-archive-fill text-secondary" style="font-size: 1.5rem;"></i>
                         </div>
                         <div class="stat-info">
-                            <span>採用</span>
-                            <h4 id="stat-adopted">1</h4>
+                            <span>審核紀錄總計</span>
+                            <h4 id="stat-total-history">0</h4>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="stat-card clickable interactive-card" onclick="filterByStatus('改後再審')" title="篩選改後再審題目">
-                        <div class="stat-icon" style="background-color: #fff7ed;">
+                <div class="col-md-3">
+                    <div class="stat-card clickable interactive-card" onclick="filterByStatus('採用')">
+                        <div class="stat-icon" style="background-color: #eff6ff;">
+                            <i class="bi bi-check-circle-fill text-primary" style="font-size: 1.5rem;"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span>採用</span>
+                            <h4 id="stat-adopt">0</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card clickable interactive-card" onclick="filterByStatus('改後再審')">
+                        <div class="stat-icon" style="background-color: #ffedd5;">
                             <i class="bi bi-arrow-counterclockwise text-warning"
                                 style="font-size: 1.5em; font-weight: bold;"></i>
                         </div>
                         <div class="stat-info">
                             <span>改後再審</span>
-                            <h4 id="stat-revise">1</h4>
+                            <h4 id="stat-modify">0</h4>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="stat-card clickable interactive-card" onclick="filterByStatus('不採用')" title="篩選不採用題目">
+                <div class="col-md-3">
+                    <div class="stat-card clickable interactive-card" onclick="filterByStatus('不採用')">
                         <div class="stat-icon" style="background-color: #f3f4f6;">
-                            <i class="bi bi-x-circle-fill text-secondary" style="font-size: 1.5em;"></i>
+                            <i class="bi bi-x-circle-fill text-secondary" style="font-size: 1.5rem;"></i>
                         </div>
                         <div class="stat-info">
                             <span>不採用</span>
-                            <h4 id="stat-rejected">1</h4>
+                            <h4 id="stat-reject">0</h4>
                         </div>
                     </div>
                 </div>
@@ -1232,7 +1234,7 @@
                     <div class="d-flex align-items-center gap-3">
                         <span class="text-secondary small">
                             <i class="bi bi-info-circle me-1"></i>
-                            共 <strong id="visibleCount">4</strong> 筆待審題目
+                            共 <strong id="visibleCount">0</strong> <span id="countLabel">筆待審題目</span>
                         </span>
                     </div>
                 </div>
@@ -1345,8 +1347,8 @@
                                 <td>2026-01-26 14:30</td>
                                 <td class="action-links">
                                     <button class="btn btn-link p-0 text-decoration-none fw-bold text-secondary"
-                                        disabled>
-                                        <i class="bi bi-check2-circle me-1"></i>已決策
+                                        onclick="openReviewModal(this, 'history')">
+                                        <i class="bi bi-eye-fill me-1"></i>檢視
                                     </button>
                                 </td>
                             </tr>
@@ -1365,8 +1367,8 @@
                                 <td>2026-01-25 11:00</td>
                                 <td class="action-links">
                                     <button class="btn btn-link p-0 text-decoration-none fw-bold text-secondary"
-                                        disabled>
-                                        <i class="bi bi-check2-circle me-1"></i>已決策
+                                        onclick="openReviewModal(this, 'history')">
+                                        <i class="bi bi-eye-fill me-1"></i>檢視
                                     </button>
                                 </td>
                             </tr>
@@ -1385,8 +1387,8 @@
                                 <td>2026-01-24 08:15</td>
                                 <td class="action-links">
                                     <button class="btn btn-link p-0 text-decoration-none fw-bold text-secondary"
-                                        disabled>
-                                        <i class="bi bi-check2-circle me-1"></i>已決策
+                                        onclick="openReviewModal(this, 'history')">
+                                        <i class="bi bi-eye-fill me-1"></i>檢視
                                     </button>
                                 </td>
                             </tr>

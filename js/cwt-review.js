@@ -74,21 +74,27 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // F. 初始化專案切換選單 (UI 互動)
     initProjectSwitcher();
-    
+
     // G. 初始化字體顯示
     updateFontSizeDisplay();
+
+    // 初始化 Tab 功能
+    initReviewTabs();
+
+    // 預設載入時，先執行一次篩選 (預設為 working_all)
+    filterByStatus('working_all');
 });
 
 // ==========================================
 //  3. 標點符號與 Quill 編輯器邏輯
 // ==========================================
 
-// ★ 新增：動態渲染標點符號工具列
+// 動態渲染標點符號工具列
 function renderPunctuationToolbars() {
     // 定義需要插入工具列的容器 ID (HTML 中的父層 ID)
     const targetContainers = [
-        'mutualOpinionEdit', 
-        'expertOpinionEdit', 
+        'mutualOpinionEdit',
+        'expertOpinionEdit',
         'finalOpinionEdit'
     ];
 
@@ -159,7 +165,7 @@ function bindPunctuationButtons(editorContainer, quillInstance) {
             e.preventDefault();
             const char = this.getAttribute('data-char');
             const back = parseInt(this.getAttribute('data-back') || 0);
-            
+
             // 插入文字邏輯
             const range = quillInstance.getSelection(true);
             if (range) {
@@ -176,11 +182,11 @@ function bindPunctuationButtons(editorContainer, quillInstance) {
 }
 
 // 快速插入罐頭訊息 (HTML onclick 呼叫用)
-window.insertQuickTextQuill = function(editorKeyRef, text) {
+window.insertQuickTextQuill = function (editorKeyRef, text) {
     // editorKeyRef 傳入的是 'mutualOpinion'，需轉為 'mutual'
-    const key = editorKeyRef.replace('Opinion', ''); 
+    const key = editorKeyRef.replace('Opinion', '');
     const quill = editors[key];
-    
+
     if (quill) {
         const length = quill.getLength();
         // 判斷是否需要換行 (如果不是開頭)
@@ -195,7 +201,7 @@ window.insertQuickTextQuill = function(editorKeyRef, text) {
 // ==========================================
 
 // 開啟審題彈窗 (HTML onclick 呼叫用)
-window.openReviewModal = function(btn, stage) {
+window.openReviewModal = function (btn, stage) {
     currentStage = stage;
     currentRow = btn.closest('tr'); // 記錄當前操作的行
 
@@ -206,10 +212,10 @@ window.openReviewModal = function(btn, stage) {
     // 2. 設定 Modal Header 樣式
     const header = document.getElementById('reviewModalHeader');
     const title = document.getElementById('reviewModalTitle');
-    
+
     // 重置 class
-    header.className = 'modal-header'; 
-    
+    header.className = 'modal-header';
+
     if (stage === 'mutual') {
         header.classList.add('review-mutual');
         title.innerHTML = '<i class="bi bi-people"></i> 審題 - 互審階段';
@@ -228,7 +234,7 @@ window.openReviewModal = function(btn, stage) {
     document.getElementById('reviewQuestionContent').innerHTML = rowData.stem || '（無題幹內容）';
     document.getElementById('reviewQuestionType').innerText = rowData.type || '-';
     document.getElementById('reviewQuestionLevel').innerText = rowData.grade || '-';
-    
+
     // 填充選項 (DOM 產生)
     const optionsContainer = document.getElementById('reviewOptionsContainer');
     optionsContainer.innerHTML = '';
@@ -236,8 +242,8 @@ window.openReviewModal = function(btn, stage) {
         rowData.options.forEach((opt, idx) => {
             const label = String.fromCharCode(65 + idx); // A, B, C...
             // 簡單判斷是否為正確答案 (假設 JSON 內有標記 analysis)
-            const isCorrect = rowData.analysis && rowData.analysis.includes(label); 
-            
+            const isCorrect = rowData.analysis && rowData.analysis.includes(label);
+
             const div = document.createElement('div');
             div.className = `option-display ${isCorrect ? 'correct-answer' : ''}`;
             div.innerHTML = `
@@ -274,11 +280,11 @@ function showSection(activeKey) {
 
     // 顯示當前 section
     document.getElementById(activeKey + 'OpinionSection').classList.remove('d-none');
-    
+
     // 控制編輯/唯讀狀態
     const editDiv = document.getElementById(activeKey + 'OpinionEdit');
     if (editDiv) editDiv.classList.remove('d-none');
-    
+
     const readonlyDiv = document.getElementById(activeKey + 'OpinionReadonly');
     if (readonlyDiv) readonlyDiv.classList.add('d-none');
 }
@@ -297,9 +303,9 @@ function renderHistory(historyArray) {
     emptyMsg.classList.add('d-none');
     historyArray.forEach(item => {
         const stageClass = item.stage || 'mutual'; // mutual, expert
-        const decisionClass = item.decision === '採用' ? 'decision-adopt' : 
-                              item.decision === '不採用' ? 'decision-reject' : 'decision-adopt-modify';
-        
+        const decisionClass = item.decision === '採用' ? 'decision-adopt' :
+            item.decision === '不採用' ? 'decision-reject' : 'decision-adopt-modify';
+
         const html = `
             <div class="history-item">
                 <div class="history-stage ${stageClass}">${item.stageLabel || '審題'}</div>
@@ -333,14 +339,14 @@ function simulateSimilarityCheck() {
     // 模擬延遲 API 回傳
     setTimeout(() => {
         loading.classList.add('d-none');
-        
+
         // 隨機決定是否有相似題 (DEMO 效果)
         const hasSimilarity = Math.random() > 0.5;
 
         if (hasSimilarity) {
             warning.classList.remove('d-none');
             warning.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-1"></i> 系統偵測到 <strong>1</strong> 筆高度相似題目，請確認。';
-            
+
             list.innerHTML = `
                 <li class="list-group-item d-flex justify-content-between align-items-start">
                     <div class="ms-2 me-auto">
@@ -358,11 +364,11 @@ function simulateSimilarityCheck() {
 }
 
 // 提交審題 (HTML onclick 呼叫用)
-window.submitReview = function(action) {
+window.submitReview = function (action) {
     // 檢查是否有填寫意見
     const quill = editors[currentStage];
     const content = quill ? quill.getText().trim() : '';
-    
+
     if (content.length === 0) {
         Swal.fire({
             icon: 'warning',
@@ -375,7 +381,7 @@ window.submitReview = function(action) {
 
     let actionText = '';
     let statusText = '';
-    
+
     if (action === 'adopt') { actionText = '採用'; statusText = '採用'; }
     else if (action === 'adopt-modify') { actionText = '改後再審'; statusText = '改後再審'; }
     else if (action === 'reject') { actionText = '不採用'; statusText = '不採用'; }
@@ -397,11 +403,11 @@ window.submitReview = function(action) {
                 if (statusText === '改後再審') badgeClass = 'badge-returned';
                 if (statusText === '不採用') badgeClass = 'badge-rejected';
                 if (statusText === '採用') badgeClass = 'badge-approved';
-                
+
                 // 更新第 4 欄 (狀態)
                 currentRow.cells[3].innerHTML = `<span class="badge-outline ${badgeClass}">${statusText}</span>`;
                 currentRow.setAttribute('data-status', statusText);
-                
+
                 // 更新操作按鈕 (鎖定)
                 currentRow.querySelector('.action-links').innerHTML = `
                     <button class="btn btn-link p-0 text-decoration-none fw-bold text-secondary" disabled>
@@ -412,7 +418,7 @@ window.submitReview = function(action) {
 
             // 2. 顯示成功訊息
             showToast(`已提交決策：${actionText}`, 'success');
-            
+
             // 3. 關閉 Modal
             reviewModal.hide();
 
@@ -425,6 +431,41 @@ window.submitReview = function(action) {
 // ==========================================
 //  5. 篩選與統計邏輯 (Filters & Stats)
 // ==========================================
+// ★ 新增：Tab 切換邏輯
+function initReviewTabs() {
+    window.currentTab = 'working'; // 預設 Tab
+
+    const tabs = document.querySelectorAll('button[data-bs-toggle="tab"]');
+    tabs.forEach(tab => {
+        tab.addEventListener('shown.bs.tab', function (event) {
+            const targetType = event.target.getAttribute('data-tab-type');
+            window.currentTab = targetType;
+
+            const workingStats = document.getElementById('stats-working');
+            const historyStats = document.getElementById('stats-history');
+            const searchArea = document.querySelector('.search-area');
+            const workingHint = document.getElementById('workingHint');
+            // 1. 切換統計卡片顯示
+            if (targetType === 'working') {
+                if (workingStats) workingStats.classList.remove('d-none');
+                if (historyStats) historyStats.classList.add('d-none');
+                if (workingHint) workingHint.classList.remove('d-none');
+                // 2. 切換時自動重置篩選為該區塊的「全部」
+                filterByStatus('working_all');
+
+                // (選用) 視覺微調：讓 Search Area 圓角變化
+                if (searchArea) searchArea.style.borderTopLeftRadius = '0';
+            } else {
+                if (workingStats) workingStats.classList.add('d-none');
+                if (historyStats) historyStats.classList.remove('d-none');
+                if (workingHint) workingHint.classList.add('d-none');
+                filterByStatus('history_all');
+
+                if (searchArea) searchArea.style.borderTopLeftRadius = '12px'; // 恢復圓角(視Tab位置而定)
+            }
+        });
+    });
+}
 
 function initFilters() {
     const inputs = ['filterType', 'filterLevel', 'filterReviewStatus', 'searchInput'];
@@ -437,11 +478,67 @@ function initFilters() {
 }
 
 // 點擊統計卡片快速篩選
-window.filterByStatus = function(status) {
-    const select = document.getElementById('filterReviewStatus');
-    if (select) {
-        select.value = status;
-        filterTable();
+window.filterByStatus = function (status) {
+    const rows = document.querySelectorAll('tbody tr.data-row');
+    let visibleCount = 0;
+
+    // 更新下拉選單 UI (如果是從卡片點擊觸發)
+    const statusSelect = document.getElementById('filterReviewStatus');
+    if (statusSelect) {
+        if (status === 'working_all' || status === 'history_all') {
+            statusSelect.value = 'all';
+        } else if (status !== 'all') { // 避免 'all' 覆蓋掉具體狀態
+            statusSelect.value = status;
+        }
+    }
+
+    rows.forEach(row => {
+        const rowStatus = row.getAttribute('data-status');
+        let show = false;
+
+        if (status === 'working_all') {
+            // 顯示所有作業區狀態
+            if (['互審中', '專審中', '總審中'].includes(rowStatus)) show = true;
+        } else if (status === 'history_all') {
+            // 顯示所有歷史區狀態
+            if (['採用', '改後再審', '不採用'].includes(rowStatus)) show = true;
+        } else if (status === 'all') {
+            // 視當前 Tab 決定顯示哪些
+            if (window.currentTab === 'working') {
+                if (['互審中', '專審中', '總審中'].includes(rowStatus)) show = true;
+            } else {
+                if (['採用', '改後再審', '不採用'].includes(rowStatus)) show = true;
+            }
+        } else {
+            // 單一狀態
+            if (rowStatus === status) show = true;
+        }
+
+        // 這裡可以加上原本的文字搜尋與下拉篩選的綜合判斷...
+        // 為了簡化，這裡假設卡片點擊擁有最高優先權
+
+        row.style.display = show ? '' : 'none';
+        if (show) visibleCount++;
+    });
+
+    // 更新數字
+    const countEl = document.getElementById('visibleCount');
+    if (countEl) countEl.innerText = visibleCount;
+
+    // 更新後方文字
+    const labelEl = document.getElementById('countLabel');
+    if (labelEl) {
+        // 判斷目前是在哪個 Tab (變數來自 initReviewTabs)
+        if (window.currentTab === 'history') {
+            labelEl.innerText = '筆審核歷史';
+        } else {
+            labelEl.innerText = '筆待審題目';
+        }
+    }
+
+    const noDataRow = document.getElementById('noDataRow');
+    if (noDataRow) {
+        noDataRow.style.display = visibleCount === 0 ? 'table-row' : 'none';
     }
 };
 
@@ -471,49 +568,45 @@ function filterTable() {
     });
 
     document.getElementById('visibleCount').innerText = count;
-    
+
     // 處理查無資料
     const noData = document.getElementById('noDataRow');
     if (noData) noData.style.display = count === 0 ? 'table-row' : 'none';
 }
 
 function updateStats() {
-    const rows = document.querySelectorAll('.data-row');
-    const stats = {
-        total: rows.length,
-        mutual: 0,
-        expert: 0,
-        final: 0,
-        adopted: 0,
-        revise: 0,
-        rejected: 0
+    let counts = {
+        mutual: 0, expert: 0, final: 0, // Working
+        adopt: 0, modify: 0, reject: 0  // History
     };
-
+    const rows = document.querySelectorAll('tbody tr.data-row'); // 只抓有資料的列
     rows.forEach(row => {
-        const s = row.getAttribute('data-status');
-        if (s === '互審中') stats.mutual++;
-        else if (s === '專審中') stats.expert++;
-        else if (s === '總審中') stats.final++;
-        else if (s === '採用') stats.adopted++;
-        else if (s === '改後再審') stats.revise++;
-        else if (s === '不採用') stats.rejected++;
+        const status = row.getAttribute('data-status');
+        if (status === '互審中') counts.mutual++;
+        else if (status === '專審中') counts.expert++;
+        else if (status === '總審中') counts.final++;
+        else if (status === '採用') counts.adopt++;
+        else if (status === '改後再審') counts.modify++;
+        else if (status === '不採用') counts.reject++;
     });
 
-    // 待審總計 (互審+專審+總審)
-    const todoTotal = stats.mutual + stats.expert + stats.final;
+    const totalWorking = counts.mutual + counts.expert + counts.final;
+    const totalHistory = counts.adopt + counts.modify + counts.reject;
 
-    safeSetText('stat-total', todoTotal);
-    safeSetText('stat-mutual', stats.mutual);
-    safeSetText('stat-expert', stats.expert);
-    safeSetText('stat-final', stats.final);
-    safeSetText('stat-adopted', stats.adopted);
-    safeSetText('stat-revise', stats.revise);
-    safeSetText('stat-rejected', stats.rejected);
-}
+    // Helper
+    const setTxt = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
 
-function safeSetText(id, val) {
-    const el = document.getElementById(id);
-    if (el) el.innerText = val;
+    // Group A
+    setTxt('stat-total-working', totalWorking);
+    setTxt('stat-mutual', counts.mutual);
+    setTxt('stat-expert', counts.expert);
+    setTxt('stat-final', counts.final);
+
+    // Group B
+    setTxt('stat-total-history', totalHistory);
+    setTxt('stat-adopt', counts.adopt);
+    setTxt('stat-modify', counts.modify);
+    setTxt('stat-reject', counts.reject);
 }
 
 // ==========================================
@@ -521,13 +614,13 @@ function safeSetText(id, val) {
 // ==========================================
 
 // 字體大小控制
-window.changeFontSize = function(dir) {
+window.changeFontSize = function (dir) {
     if (dir === 1 && currentZoom < 150) currentZoom += 10;
     if (dir === -1 && currentZoom > 80) currentZoom -= 10;
     updateFontSizeDisplay();
 };
 
-window.resetFontSize = function() {
+window.resetFontSize = function () {
     currentZoom = 100;
     updateFontSizeDisplay();
 };
@@ -537,8 +630,8 @@ function updateFontSizeDisplay() {
     const display = document.getElementById('fontSizeDisplay');
     if (display) {
         display.innerText = `${currentZoom}%`;
-        display.className = currentZoom === 100 ? 
-            'small fw-bold text-secondary mx-2 user-select-none' : 
+        display.className = currentZoom === 100 ?
+            'small fw-bold text-secondary mx-2 user-select-none' :
             'small fw-bold text-primary mx-2 user-select-none';
     }
 }
@@ -580,7 +673,7 @@ function initProjectSwitcher() {
 
     // 點擊項目
     items.forEach(item => {
-        item.addEventListener('click', function() {
+        item.addEventListener('click', function () {
             // 移除舊 active
             items.forEach(i => i.classList.remove('active'));
             this.classList.add('active');
@@ -589,15 +682,15 @@ function initProjectSwitcher() {
             const name = this.getAttribute('data-name');
             const year = this.getAttribute('data-year');
             const role = this.getAttribute('data-role'); // admin, reviewer, teacher
-            
+
             document.getElementById('currentProjectName').innerText = name;
             document.getElementById('currentProjectYear').innerText = year + '年度';
-            
+
             // 更新角色 Badge
             const roleEl = document.getElementById('currentUserRole');
             const roleMap = { 'admin': '系統管理員', 'reviewer': '審題委員', 'teacher': '命題教師' };
             const classMap = { 'admin': 'role-admin', 'reviewer': 'role-reviewer', 'teacher': 'role-teacher' };
-            
+
             if (roleEl) {
                 roleEl.innerText = roleMap[role];
                 roleEl.className = `role-badge ${classMap[role]}`;

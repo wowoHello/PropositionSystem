@@ -300,6 +300,16 @@ const GeneralHandler = (function () {
                 sub.innerHTML = '<option value="">請先選擇主類</option>';
                 sub.disabled = true;
             }
+
+            // ★ FIX: 重置 View Mode 鎖定狀態 (preview box inline style + Radio)
+            document.querySelectorAll('#form-general .editor-preview-box').forEach(el => {
+                el.style.pointerEvents = 'auto';
+                el.style.backgroundColor = '#fff';
+                el.style.borderColor = '#dee2e6';
+            });
+            document.querySelectorAll('input[name="gDifficultyRadio"]').forEach(r => r.disabled = false);
+            const lvl = document.getElementById('commonLevel');
+            if (lvl) lvl.disabled = false;
         },
 
         // 回填資料 (編輯模式)
@@ -541,6 +551,14 @@ const LongArticleHandler = (function () {
             // 4. 重置 Radio (預設中)
             const defaultRadio = document.getElementById('lDiff2');
             if (defaultRadio) defaultRadio.checked = true;
+
+            // ★ FIX: 重置 View Mode 鎖定狀態 (preview box inline style + Radio)
+            document.querySelectorAll('#form-longarticle .editor-preview-box').forEach(el => {
+                el.style.pointerEvents = 'auto';
+                el.style.backgroundColor = '#fff';
+                el.style.borderColor = '#dee2e6';
+            });
+            document.querySelectorAll('input[name="lDifficultyRadio"]').forEach(r => r.disabled = false);
         },
         fill: function (data, isViewMode) {
             // 1. 回填共用欄位 (Level)
@@ -768,6 +786,9 @@ const ListenHandler = (function () {
             // if (ind) { ind.innerHTML = '<option value="">請先選擇難度</option>'; ind.disabled = true; }
 
             updateCorrectAnswerDisplay('');
+
+            // ★ FIX: 重置 View Mode 鎖定狀態 (preview box + inputs)
+            this.toggleEditable(true);
         },
         fill: function (data, isViewMode) {
             // 回填 Level (使用 commonLevel) 並手動觸發連動
@@ -1630,6 +1651,15 @@ const ReadingHandler = (function () {
 
             const defaultRadio = document.getElementById('rDiff2'); if (defaultRadio) defaultRadio.checked = true;
             this.checkEmptyState();
+
+            // ★ FIX: 重置 View Mode 鎖定狀態 (preview box + inputs + radio)
+            document.querySelectorAll('#form-reading .editor-preview-box').forEach(el => {
+                el.style.pointerEvents = 'auto';
+                el.style.backgroundColor = '#fff';
+                el.style.borderColor = '#dee2e6';
+            });
+            document.querySelectorAll('input[name="rDifficultyRadio"]').forEach(r => r.disabled = false);
+            document.querySelectorAll('#form-reading input:not(.readonly-field), #form-reading select').forEach(el => el.disabled = false);
         },
 
         fill: function (data, isViewMode) {
@@ -1968,6 +1998,15 @@ const ShortArticleHandler = (function () {
 
             displaySequence = 0;
             this.checkEmptyState();
+
+            // ★ FIX: 重置 View Mode 鎖定狀態 (preview box + inputs + radio)
+            document.querySelectorAll('#form-shortarticle .editor-preview-box').forEach(el => {
+                el.style.pointerEvents = 'auto';
+                el.style.backgroundColor = '#fff';
+                el.style.borderColor = '#dee2e6';
+            });
+            document.querySelectorAll('input[name="sDifficultyRadio"]').forEach(r => r.disabled = false);
+            document.querySelectorAll('#form-shortarticle input:not(.readonly-field), #form-shortarticle select').forEach(el => el.disabled = false);
         },
 
         fill: function (data, isViewMode) {
