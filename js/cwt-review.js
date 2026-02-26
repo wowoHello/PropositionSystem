@@ -7,10 +7,9 @@
 // ==========================================
 //  1. 全域變數與設定
 // ==========================================
-var reviewModal = null;
-var toastInstance = null;
-var currentStage = 'mutual'; // 當前開啟的審題階段 (mutual/expert/final)
-var currentRow = null;       // 當前編輯的 Table Row
+let reviewModal = null;
+let currentStage = 'mutual'; // 當前開啟的審題階段 (mutual/expert/final)
+let currentRow = null;       // 當前編輯的 Table Row
 
 // Quill 編輯器實體
 var editors = {
@@ -41,10 +40,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const modalEl = document.getElementById('reviewModal');
     if (modalEl) reviewModal = new bootstrap.Modal(modalEl);
 
-    const toastEl = document.getElementById('liveToast');
-    if (toastEl) toastInstance = new bootstrap.Toast(toastEl);
-
-    // ★ B. 先渲染標點符號工具列 (必須在 Init Quill 之前)
+    // B. 先渲染標點符號工具列 (必須在 Init Quill 之前)
     renderPunctuationToolbars();
 
     // C. 初始化 Quill 編輯器

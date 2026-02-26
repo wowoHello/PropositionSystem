@@ -214,7 +214,7 @@ body {
 .list-pane {
   flex: 1;
   min-width: 0;
-  transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: flex 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
   display: flex;
   flex-direction: column;
 }
@@ -223,18 +223,17 @@ body {
   width: 0;
   opacity: 0;
   overflow: hidden;
-  transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
   background: #f9fafb;
   border-left: 0 solid var(--border-color);
   /* No border when closed */
 }
 
 .profile-pane.active {
-  width: 40%;
+  width: clamp(450px, 40%, 600px);
   /* Active State */
-  min-width: 450px;
   opacity: 1;
-  /* border-left-width: 1px;  <-- REMOVED: Inner card already has border */
+  /* min-width removed to prevent animation snapping/jumps */
 }
 
 .profile-inner-wrapper {

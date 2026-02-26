@@ -58,20 +58,7 @@ window.syncDifficulty = function (val) {
 // (已移至 app.js)
 
 // --- Quill 工具列設定 ---
-// 設定 A：全功能 (用於：共用編輯器)
-window.mainToolbar = [
-    [{ 'size': ['small', false, 'large', 'huge'] }],
-    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-    [{ 'font': ['kaiu', 'times-new-roman'] }],
-    [{ 'color': [] }, { 'background': [] }], // 補回背景色
-    [{ 'align': [] }],
-    ['bold', 'underline', 'strike'],
-    ['link'], // 移除 image，因改用附檔上傳
-    [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'list': 'check' }],
-    [{ 'script': 'sub' }, { 'script': 'super' }],
-    [{ 'indent': '-1' }, { 'indent': '+1' }],
-    ['clean']
-];
+// (已移至 app.js)
 
 // 角色對照表與全域變數 (已移至 app.js)
 
@@ -524,7 +511,7 @@ const LongArticleHandler = (function () {
             // 2. 清空隱藏欄位與預覽區 (內容、解析、標題)
             ['content', 'explanation', 'Topic'].forEach(key => {
                 const hidden = document.getElementById(key === 'Topic' ? 'hidden-lTopic' : `hidden-l-${key}`);
-                const preview = document.getElementById(`preview-l${key}`);
+                const preview = document.getElementById(key === 'Topic' ? 'preview-lTopic' : `preview-l-${key}`);
                 if (hidden) hidden.value = '';
                 if (preview) preview.innerHTML = '';
             });
@@ -2640,23 +2627,10 @@ function isLockedStatus(status) {
 //  ★ 主要初始化入口 (DOMContentLoaded)
 // ==========================================
 document.addEventListener("DOMContentLoaded", function () {
-    // 1. 初始化 Bootstrap 元件
-    const modalEl = document.getElementById('propModal');
-    if (modalEl) propModal = new bootstrap.Modal(modalEl);
-
-    const toastEl = document.getElementById('liveToast');
-    if (toastEl) toastInstance = new bootstrap.Toast(toastEl);
-
-    // 2. 初始化 Common Editor
-    if (typeof CommonEditorManager !== 'undefined' && CommonEditorManager.init) {
-        CommonEditorManager.init();
-    }
-
-    // 3. 初始化 Handlers
+    // 1. 初始化 Handlers (部分功能由各別頁面初始化，故保留並調整)
     Object.values(TypeHandlers).forEach(h => { if (h && h.init) h.init(); });
 
-    // 4. 啟動各功能模組
-    if (typeof initProjectHeader === 'function') initProjectHeader();
+    // 2. 啟動各功能模組 (只保留只屬於 cwt-list 的邏輯)
     if (typeof initCheckboxLogic === 'function') initCheckboxLogic();
 
     initFilter();           // 表格篩選 (含 Tab)

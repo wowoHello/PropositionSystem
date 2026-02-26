@@ -93,10 +93,10 @@ window.mainToolbar = [
     [{ 'size': ['small', false, 'large', 'huge'] }],  // 文字大小
     [{ 'header': [1, 2, 3, 4, 5, 6, false] }],        // 標題
     [{ 'font': ['kaiu', 'times-new-roman'] }], // 字體
-    [{ 'color': [] }],          // 顏色
+    [{ 'color': [] }, { 'background': [] }],          // 顏色與背景色
     [{ 'align': [] }],                                // 對齊
     ['bold', 'underline', 'strike'],        // 樣式
-    ['link'],                       // 媒體 (選項通常不需要 video，但在主旨需要)
+    ['link'],                       // 媒體
     [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'list': 'check' }],
     [{ 'script': 'sub' }, { 'script': 'super' }],
     [{ 'indent': '-1' }, { 'indent': '+1' }],
@@ -185,7 +185,10 @@ document.addEventListener("DOMContentLoaded", function () {
         CommonEditorManager.init();
     }
 
-    // C. 啟動各功能模組
+    // C. 建立並注入全域懸浮字體縮放管理器
+    initFloatingFontSizeWidget();
+
+    // D. 啟動各功能模組
     initProjectHeader();    // 原 app.js 的專案切換功能
 });
 
@@ -338,18 +341,141 @@ function resetFontSize() {
 function applyFontSize() {
     document.documentElement.style.fontSize = `${currentZoom}%`;
 
-    // 更新介面數字 (對應設計 1)
-    const display = document.getElementById('fontSizeDisplay');
+    // 更新懸浮 UI 文字
+    const display = document.getElementById('floatingFontSizeDisplay');
     if (display) {
         display.innerText = `${currentZoom}%`;
         if (currentZoom === 100) {
-            display.classList.remove('text-primary');
+            display.classList.remove('text-primary', 'fw-bold');
             display.classList.add('text-secondary');
         } else {
             display.classList.remove('text-secondary');
-            display.classList.add('text-primary');
+            display.classList.add('text-primary', 'fw-bold');
         }
     }
+}
+
+// 建立全域懸浮字體管理器 (Floating Accessibility Widget)
+function initFloatingFontSizeWidget() {
+    // 登入頁不需要
+    if (window.location.pathname.endsWith('index.html') || window.location.pathname === '/') return;
+
+    const widgetHTML = `
+        <style>
+            .floating-font-widget {
+                position: fixed;
+                bottom: 24px;
+                right: 24px;
+                z-index: 1050;
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
+                height: 48px;
+            }
+            .font-widget-toggle {
+                width: 48px;
+                height: 48px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+                border: 1px solid #e5e7eb;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+                color: #4b5563;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+                position: relative;
+                z-index: 2;
+            }
+            .font-widget-toggle:hover {
+                transform: translateY(-2px) scale(1.05);
+                box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.8) inset;
+                color: #1e3a8a; /* primary-blue-dark approx */
+            }
+            .font-widget-toggle:active {
+                transform: translateY(0) scale(0.95);
+            }
+            .floating-font-widget.expanded .font-widget-toggle {
+                background: #1e3a8a;
+                color: white;
+                box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+                border-color: #1e3a8a;
+                transform: rotate(90deg);
+            }
+            .font-widget-panel {
+                position: absolute;
+                right: 24px;
+                height: 48px;
+                background: rgba(255, 255, 255, 0.95) !important;
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+                border: 1px solid rgba(229, 231, 235, 0.8) !important;
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
+                padding-right: 32px !important;
+                padding-left: 12px !important;
+                opacity: 0;
+                visibility: hidden;
+                transform: translateX(20px) scale(0.9);
+                transform-origin: right center;
+                transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+                pointer-events: none;
+            }
+            .floating-font-widget.expanded .font-widget-panel {
+                opacity: 1;
+                visibility: visible;
+                transform: translateX(0) scale(1);
+                pointer-events: auto;
+            }
+            .font-widget-panel .btn img {
+                opacity: 0.7;
+                transition: opacity 0.2s;
+            }
+            .font-widget-panel .btn:hover img {
+                opacity: 1;
+            }
+            @media (max-width: 768px) {
+                .floating-font-widget {
+                    bottom: 16px;
+                    right: 16px;
+                }
+            }
+        </style>
+        <div class="floating-font-widget" id="floatingFontWidget">
+            <button class="font-widget-toggle" title="閱讀設定" id="fontWidgetToggle">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="m2.244 13.081.943-2.803H6.66l.944 2.803H8.86L5.54 3.75H4.322L1 13.081zm2.7-7.923L6.34 9.314H3.51l1.4-4.156zm9.146 7.027h.035v.896h1.128V8.125c0-1.51-1.114-2.345-2.646-2.345-1.736 0-2.59.916-2.666 2.174h1.108c.068-.718.595-1.19 1.517-1.19.971 0 1.518.52 1.518 1.464v.731H12.19c-1.647.007-2.522.8-2.522 2.058 0 1.319.957 2.18 2.345 2.18 1.06 0 1.716-.43 2.078-1.011zm-1.763.035c-.752 0-1.456-.397-1.456-1.244 0-.65.424-1.115 1.408-1.115h1.805v.834c0 .896-.752 1.525-1.757 1.525"/>
+                </svg>
+            </button>
+            <div class="font-widget-panel bg-white shadow-lg border rounded-pill d-flex align-items-center px-2 py-1">
+                <button class="btn btn-sm hover-effect rounded-circle px-0" style="width: 32px; height: 32px;" onclick="changeFontSize(-1)" title="縮小文字">
+                    <img src="ICON/minus.png" alt="縮小" style="width: 22px;">
+                </button>
+                <span class="user-select-none text-secondary mx-2 text-center" style="cursor: pointer; min-width: 48px; font-size: 0.95rem; transition: color 0.3s;" onclick="resetFontSize()" id="floatingFontSizeDisplay" title="還原大小">100%</span>
+                <button class="btn btn-sm hover-effect rounded-circle px-0" style="width: 32px; height: 32px;" onclick="changeFontSize(1)" title="放大文字">
+                    <img src="ICON/add.png" alt="放大" style="width: 22px;">
+                </button>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', widgetHTML);
+
+    const toggleBtn = document.getElementById('fontWidgetToggle');
+    const widget = document.getElementById('floatingFontWidget');
+
+    // 支援點擊展開/收合 (Mobil/Desktop 通用)
+    toggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        widget.classList.toggle('expanded');
+    });
+
+    // 點擊空白處收起
+    document.addEventListener('click', (e) => {
+        if (!widget.contains(e.target)) {
+            widget.classList.remove('expanded');
+        }
+    });
 }
 
 
