@@ -238,20 +238,20 @@
 
                 <button
                     class="btn btn-sm bg-transparent border-0 p-0 rounded-circle d-flex align-items-center justify-content-center hover-effect"
-                    style="width: 32px; height: 32px; transition: transform 0.1s;" onclick="changeFontSize(-1)"
+                    style="width: 32px; height: 32px; transition: transform 0.1s;" onclick="window.changeFontSize(-1)"
                     title="縮小">
                     <img src="ICON/minus.png" alt="縮小" style="width: 26px; height: auto;">
                 </button>
 
                 <span class="small fw-bold text-secondary mx-2 user-select-none"
                     style="cursor: pointer; min-width: 45px; text-align: center; transition: color 0.3s;"
-                    onclick="resetFontSize()" id="fontSizeDisplay" title="點擊還原預設值">
+                    onclick="window.resetFontSize()" id="fontSizeDisplay" title="點擊還原預設值">
                     100%
                 </span>
 
                 <button
                     class="btn btn-sm bg-transparent border-0 p-0 rounded-circle d-flex align-items-center justify-content-center hover-effect"
-                    style="width: 32px; height: 32px; transition: transform 0.1s;" onclick="changeFontSize(1)"
+                    style="width: 32px; height: 32px; transition: transform 0.1s;" onclick="window.changeFontSize(1)"
                     title="放大">
                     <img src="ICON/add.png" alt="放大" style="width: 28px; height: auto;">
                 </button>
@@ -421,6 +421,8 @@
         // Note: mockAnnouncements is now available globally from js/app.js
 
         function loadAnnouncements() {
+            // [Blazor Migration Note] In Blazor, this data will likely be fetched from a server (e.g., via HttpClient)
+            // or a state management service rather than localStorage.
             const stored = localStorage.getItem("cwt_announcements");
             // Use mockAnnouncements as default if no localStorage data
             let data = stored ? JSON.parse(stored) : (typeof mockAnnouncements !== 'undefined' ? mockAnnouncements : []);
@@ -660,7 +662,13 @@
         document.addEventListener("DOMContentLoaded", () => {
             renderTable();
             document.getElementById("filterCategory").addEventListener("change", renderTable);
-            document.getElementById("searchInput").addEventListener("input", renderTable);
+
+            // Add debounce for search input
+            let searchTimeout;
+            document.getElementById("searchInput").addEventListener("input", () => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(renderTable, 300);
+            });
 
             // Init Quill
             if (typeof Quill !== 'undefined') {

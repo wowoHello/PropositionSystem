@@ -9,7 +9,6 @@
 // ==========================================
 var reviewModal = null;
 var toastInstance = null;
-var currentZoom = 100;
 var currentStage = 'mutual'; // 當前開啟的審題階段 (mutual/expert/final)
 var currentRow = null;       // 當前編輯的 Table Row
 
@@ -20,22 +19,7 @@ var editors = {
     final: null
 };
 
-// ★ 新增：標點符號工具列 HTML 模板 (與 cwt-list.js 保持一致)
-const PUNCTUATION_BAR_HTML = `
-<div class="punctuation-toolbar d-flex flex-wrap gap-2 p-2 border-bottom bg-light rounded-top-3">
-    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="，">，</button>
-    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="。">。</button>
-    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="、">、</button>
-    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="？">？</button>
-    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="！">！</button>
-    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="：">：</button>
-    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="；">；</button>
-    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="「」" data-back="1">「」</button>
-    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="『』" data-back="1">『』</button>
-    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="（）" data-back="1">（）</button>
-    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="【】" data-back="1">【】</button>
-    <button type="button" class="btn btn-sm btn-outline-secondary punc-btn" data-char="……">……</button>
-</div>`;
+// 標點符號工具列 HTML 模板 (已移至 app.js)
 
 // Quill 工具列設定
 const reviewToolbarOptions = [
@@ -71,12 +55,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // E. 初始化統計數據
     updateStats();
-
-    // F. 初始化專案切換選單 (UI 互動)
-    initProjectSwitcher();
-
-    // G. 初始化字體顯示
-    updateFontSizeDisplay();
 
     // 初始化 Tab 功能
     initReviewTabs();
@@ -396,6 +374,8 @@ window.submitReview = function (action) {
         confirmButtonText: '確定提交'
     }).then((result) => {
         if (result.isConfirmed) {
+            // [Blazor Migration Note] The following DOM updates for the table row (updating status badges and buttons)
+            // simulate state changes. In Blazor, this will be handled automatically by data binding to the model.
             // 1. 更新前端 Table 狀態 (DEMO 用)
             if (currentRow) {
                 // 更新狀態 Badge
@@ -469,14 +449,24 @@ function initReviewTabs() {
 
 function initFilters() {
     const inputs = ['filterType', 'filterLevel', 'filterReviewStatus', 'searchInput'];
+    let searchTimeout;
     inputs.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
-            el.addEventListener(id === 'searchInput' ? 'input' : 'change', filterTable);
+            el.addEventListener(id === 'searchInput' ? 'input' : 'change', (e) => {
+                if (e.target.id === 'searchInput') {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(filterTable, 300);
+                } else {
+                    filterTable();
+                }
+            });
         }
     });
 }
 
+// [Blazor Migration Note] The filtering functions here hide/show HTML elements via CSS. 
+// In Blazor, this should be handled by filtering the data collection and letting the UI re-render.
 // 點擊統計卡片快速篩選
 window.filterByStatus = function (status) {
     const rows = document.querySelectorAll('tbody tr.data-row');
@@ -610,31 +600,8 @@ function updateStats() {
 }
 
 // ==========================================
-//  6. UI 工具 (字體、Toast、專案切換)
+//  6. UI 工具 (已移至 app.js)
 // ==========================================
-
-// 字體大小控制
-window.changeFontSize = function (dir) {
-    if (dir === 1 && currentZoom < 150) currentZoom += 10;
-    if (dir === -1 && currentZoom > 80) currentZoom -= 10;
-    updateFontSizeDisplay();
-};
-
-window.resetFontSize = function () {
-    currentZoom = 100;
-    updateFontSizeDisplay();
-};
-
-function updateFontSizeDisplay() {
-    document.documentElement.style.fontSize = `${currentZoom}%`;
-    const display = document.getElementById('fontSizeDisplay');
-    if (display) {
-        display.innerText = `${currentZoom}%`;
-        display.className = currentZoom === 100 ?
-            'small fw-bold text-secondary mx-2 user-select-none' :
-            'small fw-bold text-primary mx-2 user-select-none';
-    }
-}
 
 // Toast 顯示 helper
 function showToast(msg, type = 'primary') {
@@ -644,69 +611,4 @@ function showToast(msg, type = 'primary') {
         toastEl.querySelector('.toast-body').innerText = msg;
         if (toastInstance) toastInstance.show();
     }
-}
-
-// 專案切換器 (純 UI 互動，不涉及後端)
-function initProjectSwitcher() {
-    const toggle = document.getElementById('projectToggle');
-    const dropdown = document.getElementById('projectDropdown');
-    const closeBtn = document.getElementById('closeDropdown');
-    const items = document.querySelectorAll('.project-item');
-
-    if (!toggle || !dropdown) return;
-
-    // 開關選單
-    toggle.addEventListener('click', (e) => {
-        e.stopPropagation();
-        dropdown.classList.toggle('show');
-        toggle.classList.toggle('active');
-    });
-
-    // 關閉按鈕
-    if (closeBtn) {
-        closeBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            dropdown.classList.remove('show');
-            toggle.classList.remove('active');
-        });
-    }
-
-    // 點擊項目
-    items.forEach(item => {
-        item.addEventListener('click', function () {
-            // 移除舊 active
-            items.forEach(i => i.classList.remove('active'));
-            this.classList.add('active');
-
-            // 更新顯示文字
-            const name = this.getAttribute('data-name');
-            const year = this.getAttribute('data-year');
-            const role = this.getAttribute('data-role'); // admin, reviewer, teacher
-
-            document.getElementById('currentProjectName').innerText = name;
-            document.getElementById('currentProjectYear').innerText = year + '年度';
-
-            // 更新角色 Badge
-            const roleEl = document.getElementById('currentUserRole');
-            const roleMap = { 'admin': '系統管理員', 'reviewer': '審題委員', 'teacher': '命題教師' };
-            const classMap = { 'admin': 'role-admin', 'reviewer': 'role-reviewer', 'teacher': 'role-teacher' };
-
-            if (roleEl) {
-                roleEl.innerText = roleMap[role];
-                roleEl.className = `role-badge ${classMap[role]}`;
-            }
-
-            // 關閉選單
-            dropdown.classList.remove('show');
-            toggle.classList.remove('active');
-        });
-    });
-
-    // 點擊外部關閉
-    document.addEventListener('click', (e) => {
-        if (!dropdown.contains(e.target) && !toggle.contains(e.target)) {
-            dropdown.classList.remove('show');
-            toggle.classList.remove('active');
-        }
-    });
 }

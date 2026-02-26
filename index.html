@@ -96,7 +96,7 @@
                         </label>
                     </div>
 
-                    <a href="firstpage.html" class="btn btn-login w-100 submit-btn">登入系統</a>
+                    <button type="submit" class="btn btn-login w-100 submit-btn">登入系統</button>
 
                     <div class="d-flex justify-content-center gap-4 mt-3 footer-links">
                         <a href="#" class="footer-link">忘記密碼</a>
@@ -210,28 +210,36 @@
         document.getElementById('loginForm').addEventListener('submit', function (e) {
             e.preventDefault();
             let isValid = true;
-            const username = document.getElementById('username');
-            const usernameError = document.getElementById('usernameError');
-            if (!username.value.trim()) {
-                username.classList.add('is-invalid'); usernameError.classList.remove('d-none'); isValid = false;
-            } else {
-                username.classList.remove('is-invalid'); usernameError.classList.add('d-none');
+
+            // 採用陣列結構簡化重複的驗證邏輯
+            const fields = [
+                { id: 'username', validate: (val) => val.trim() !== '' },
+                { id: 'password', validate: (val) => val !== '' },
+                { id: 'captcha', validate: (val) => val.toUpperCase() === currentCaptcha }
+            ];
+
+            fields.forEach(field => {
+                const input = document.getElementById(field.id);
+                const error = document.getElementById(field.id + 'Error');
+                const isFieldValid = field.validate(input.value);
+
+                // 優先使用 classList.toggle 簡化 if...else，符合效能與簡潔原則
+                input.classList.toggle('is-invalid', !isFieldValid);
+                error.classList.toggle('d-none', isFieldValid);
+
+                if (!isFieldValid) isValid = false;
+            });
+
+            if (isValid) {
+                Swal.fire({
+                    title: '登入成功！(示範用)',
+                    icon: 'success',
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    window.location.href = 'firstpage.html';
+                });
             }
-            const password = document.getElementById('password');
-            const passwordError = document.getElementById('passwordError');
-            if (!password.value) {
-                password.classList.add('is-invalid'); passwordError.classList.remove('d-none'); isValid = false;
-            } else {
-                password.classList.remove('is-invalid'); passwordError.classList.add('d-none');
-            }
-            const captcha = document.getElementById('captcha');
-            const captchaError = document.getElementById('captchaError');
-            if (captcha.value.toUpperCase() !== currentCaptcha) {
-                captcha.classList.add('is-invalid'); captchaError.classList.remove('d-none'); isValid = false;
-            } else {
-                captcha.classList.remove('is-invalid'); captchaError.classList.add('d-none');
-            }
-            if (isValid) { Swal.fire('登入成功！(示範用)'); }
         });
 
         ['username', 'password', 'captcha'].forEach(id => {
@@ -240,7 +248,16 @@
                 document.getElementById(id + 'Error').classList.add('d-none');
             });
         });
-        window.addEventListener('resize', function () { drawCaptcha(currentCaptcha); });
+
+        // 效能優化：使用 debounce 減少 resize 時 Canvas 重繪頻率
+        // [Blazor Migration Note] 若遷移至 Blazor，此處重繪邏輯可移至 .NET 或保留 JSInterop 配合 Debounce 呼叫
+        let resizeTimeout;
+        window.addEventListener('resize', function () {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                drawCaptcha(currentCaptcha);
+            }, 200);
+        });
     </script>
 </body>
 

@@ -790,9 +790,11 @@
             // D. 設定顯示或隱藏
             if (show) {
               row.style.display = ""; // 清除 display:none
+              row.classList.add('filtered-visible'); // For counting
               visibleCount++;
             } else {
               row.style.display = "none";
+              row.classList.remove('filtered-visible');
             }
           });
 
@@ -897,10 +899,18 @@
         });
 
         // =========================================
-        // 5. 綁定其他篩選器事件
+        // 5. 綁定其他篩選器事件 (加入 Debounce)
         // =========================================
+        let filterTimeout;
+        const triggerFilter = () => {
+          clearTimeout(filterTimeout);
+          filterTimeout = setTimeout(performFilter, 300);
+        };
+
+        // [Blazor Migration Note] In Blazor, this filtering should be done by filtering 
+        // the underlying data collection rather than manipulating DOM styles.
         [filterType, filterYear, filterExam].forEach((select) => {
-          select.addEventListener("change", performFilter);
+          select.addEventListener("change", triggerFilter);
         });
 
         // =========================================

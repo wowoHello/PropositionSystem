@@ -539,6 +539,8 @@
     <script src="js/app.js"></script>
 
     <script>
+        // [Blazor Migration Note] The following mock data arrays simulate backend database state. 
+        // In Blazor, replace these with Entity Framework Core DbSets or API calls.
         // 假資料：模擬後端資料庫
         const mockUsers = [
             {
@@ -694,30 +696,10 @@
 
         // 0. 初始化側邊欄篩選器
         function initSidebarFilters() {
-            const yearSelect = document.getElementById("yearFilter");
-            const schoolSelect = document.getElementById("schoolFilter");
-
-            // 提取所有不重複的年度與學校
-            const years = [...new Set(projectsData.map(p => p.year))].sort((a, b) => b - a);
-            const schools = [...new Set(projectsData.map(p => p.school).filter(s => s))].sort();
-
-            // 填充年度選項
-            years.forEach(y => {
-                const opt = document.createElement("option");
-                opt.value = y;
-                opt.textContent = `${y} 年度`;
-                yearSelect.appendChild(opt);
-            });
-
-            // 填充學校選項
-            schools.forEach(s => {
-                const opt = document.createElement("option");
-                opt.value = s;
-                opt.textContent = s;
-                schoolSelect.appendChild(opt);
-            });
+            rebuildSidebarFilters();
         }
 
+        // [Blazor Migration Note] The render functions (renderProjectList, renderProjectDetail, etc.) manually construct HTML strings and update the DOM. In Blazor, this will be handled automatically by data binding and Razor syntax.
         // 1. 渲染左側專案列表
         function renderProjectList() {
             const container = document.getElementById("projectListContainer");
@@ -1183,8 +1165,12 @@
         }
 
         // Filter and render teacher list
+        let teacherSearchTimeout;
         function filterTeacherList() {
-            renderTeacherList();
+            clearTimeout(teacherSearchTimeout);
+            teacherSearchTimeout = setTimeout(() => {
+                renderTeacherList();
+            }, 300);
         }
 
         function renderTeacherList() {
@@ -1192,6 +1178,10 @@
             const searchTerm = document.getElementById("teacherSearchInput").value.toLowerCase();
             const expertiseFilter = document.getElementById("expertiseFilter").value;
             const participationFilter = document.getElementById("participationFilter").value;
+
+            // [Blazor Migration Note] Performance optimization: Calculate current members once before loop
+            const currentProject = projectsData.find(p => p.id === currentProjectId);
+            const currentMemberIds = currentProject ? new Set(currentProject.members.map(m => m.userId)) : new Set();
 
             // Filter teachers
             const filtered = mockTeacherPool.filter(teacher => {
@@ -1218,8 +1208,7 @@
                 }
 
                 // Don't show if already in current project
-                const project = projectsData.find(p => p.id === currentProjectId);
-                if (project && project.members.find(m => m.userId === teacher.id)) {
+                if (currentMemberIds.has(teacher.id)) {
                     return false;
                 }
 

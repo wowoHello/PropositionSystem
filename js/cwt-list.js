@@ -55,15 +55,7 @@ window.syncDifficulty = function (val) {
 };
 
 // --- 註冊 Quill 自訂字體 ---
-if (typeof Quill !== 'undefined') {
-    try {
-        const Font = Quill.import('attributors/class/font') || Quill.import('formats/font');
-        Font.whitelist = ['microsoft-jhenghei', 'kaiu', 'times-new-roman', 'arial', 'comic-sans-ms'];
-        Quill.register(Font, true);
-    } catch (e) {
-        console.warn("Quill 字體註冊失敗，將使用預設字體", e);
-    }
-}
+// (已移至 app.js)
 
 // --- Quill 工具列設定 ---
 // 設定 A：全功能 (用於：共用編輯器)
@@ -81,14 +73,7 @@ window.mainToolbar = [
     ['clean']
 ];
 
-// 角色對照表
-const RoleMapping = { admin: "系統管理員", reviewer: "審題委員", teacher: "命題教師" };
-const RoleClassMapping = { admin: "role-admin", reviewer: "role-reviewer", teacher: "role-teacher" };
-
-// 全域變數
-let propModal;
-let toastInstance;
-let currentZoom = 100;
+// 角色對照表與全域變數 (已移至 app.js)
 
 // ==========================================
 //  2. 題型 Handlers
@@ -2138,46 +2123,11 @@ const ShortArticleHandler = (function () {
 })();
 
 // 題型對照表 (Manager)
-const TypeHandlers = {
+Object.assign(TypeHandlers, {
     '一般題目': GeneralHandler, '精選題目': GeneralHandler, '閱讀題組': ReadingHandler,
     '長文題目': LongArticleHandler, '短文題組': ShortArticleHandler,
     '聽力題目': ListenHandler, '聽力題組': ListenGroupHandler
-};
-
-// 專案切換
-function initProjectHeader() {
-    const toggle = document.getElementById("projectToggle");
-    const dropdown = document.getElementById("projectDropdown");
-    const close = document.getElementById("closeDropdown");
-    const items = document.querySelectorAll(".project-item");
-    const currentRole = document.getElementById("currentUserRole");
-
-    if (toggle && dropdown) {
-        toggle.addEventListener("click", () => { dropdown.classList.toggle("show"); toggle.classList.toggle("active"); });
-        close.addEventListener("click", (e) => { e.stopPropagation(); dropdown.classList.remove("show"); toggle.classList.remove("active"); });
-        document.addEventListener("click", (e) => { if (!toggle.contains(e.target) && !dropdown.contains(e.target)) { dropdown.classList.remove("show"); toggle.classList.remove("active"); } });
-
-        items.forEach(item => {
-            item.addEventListener("click", function () {
-                items.forEach(i => i.classList.remove("active"));
-                this.classList.add("active");
-                const year = this.getAttribute("data-year");
-                const name = this.getAttribute("data-name");
-                const role = this.getAttribute("data-role");
-
-                document.getElementById("currentProjectYear").innerText = year + "年度";
-                document.getElementById("currentProjectName").innerText = name;
-                if (currentRole) {
-                    currentRole.className = "role-badge " + RoleClassMapping[role];
-                    currentRole.innerText = RoleMapping[role];
-                    currentRole.style.display = role === 'admin' ? 'inline-block' : 'none';
-                }
-                dropdown.classList.remove("show");
-                toggle.classList.remove("active");
-            });
-        });
-    }
-}
+});
 
 // Modal Router
 window.openPropModal = function (btn, mode) {
@@ -2251,16 +2201,6 @@ window.deleteRow = function (btn) {
         if (r.isConfirmed) { btn.closest('tr').remove(); checkEmptyState(); showToast('已刪除', 'error'); }
     });
 };
-
-// 批次刪除按鈕 ※先註解取消
-// window.batchAction = function (action) {
-//     if (action !== '刪除') return;
-//     const checks = document.querySelectorAll('tbody .data-row input:checked:not(:disabled)');
-//     if (checks.length === 0) return Swal.fire({ icon: 'warning', text: '請先勾選' });
-//     Swal.fire({ title: `刪除 ${checks.length} 筆?`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33' }).then((r) => {
-//         if (r.isConfirmed) { checks.forEach(c => c.closest('tr').remove()); resetSelection(); checkEmptyState(); showToast('已批次刪除'); }
-//     });
-// };
 
 window.batchUpdateStatus = function (status) {
     const checks = document.querySelectorAll('tbody .data-row input:checked:not(:disabled)');
@@ -2402,16 +2342,6 @@ function initCheckboxLogic() {
 // ==========================================
 //  ★ 修改：核心篩選邏輯 (修復等級篩選 & Tab 連動)
 // ==========================================
-
-
-window.changeFontSize = function (dir) {
-    if (dir === 1 && currentZoom < 150) currentZoom += 10;
-    else if (dir === -1 && currentZoom > 80) currentZoom -= 10;
-    document.documentElement.style.fontSize = `${currentZoom}%`;
-    document.getElementById('fontSizeDisplay').innerText = `${currentZoom}%`;
-};
-window.resetFontSize = function () { currentZoom = 100; changeFontSize(0); };
-
 
 
 // ==========================================
@@ -2610,9 +2540,19 @@ function initFilter() {
     });
 
     // 篩選器監聽
+    let searchTimeout;
     ['filterStatus', 'filterLevel', 'searchInput'].forEach(id => {
         const el = document.getElementById(id);
-        if (el) el.addEventListener(el.tagName === 'INPUT' ? 'input' : 'change', doFilter);
+        if (el) {
+            el.addEventListener(el.tagName === 'INPUT' ? 'input' : 'change', (e) => {
+                if (e.target.id === 'searchInput') {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(doFilter, 300);
+                } else {
+                    doFilter();
+                }
+            });
+        }
     });
 
     // 題型篩選
