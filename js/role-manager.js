@@ -192,7 +192,7 @@ function renderPermissions(role) {
 }
 
 function openPermissionModal(roleName) {
-  const modalObj = new bootstrap.Modal(
+  const modalObj = bootstrap.Modal.getOrCreateInstance(
     document.getElementById("permissionModal")
   );
 
@@ -286,7 +286,7 @@ function savePermissions() {
 let currentEditingRole = null;
 
 function openAddRoleModal() {
-  const modal = new bootstrap.Modal(document.getElementById("addRoleModal"));
+  const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById("addRoleModal"));
 
   // 重置表單
   document.getElementById("newRoleName").value = "";
@@ -310,7 +310,7 @@ function openAddRoleModal() {
 
 // 開啟新增使用者 Modal
 function openAddUserModal() {
-  const modal = new bootstrap.Modal(document.getElementById("addUserModal"));
+  const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById("addUserModal"));
 
   // ✅ 快取 DOM 引用，避免重複查詢
   const addUserName = document.getElementById("addUserName");
@@ -353,7 +353,7 @@ function openEditUserModal(index) {
     return;
   }
 
-  const modal = new bootstrap.Modal(document.getElementById("editUserModal"));
+  const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById("editUserModal"));
 
   // 填入 [基本帳號資料]
   populateRoleSelects();

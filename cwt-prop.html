@@ -930,7 +930,7 @@
         }
 
         // 4. 新增/編輯 專案邏輯
-        const projectModal = new bootstrap.Modal(
+        const projectModal = bootstrap.Modal.getOrCreateInstance(
             document.getElementById("projectFormModal")
         );
         let isEditMode = false;
@@ -1107,7 +1107,7 @@
         // ==========================================
         // Member Modal Logic (Redesigned)
         // ==========================================
-        const addMemberModal = new bootstrap.Modal(document.getElementById("addMemberModal"));
+        const addMemberModal = bootstrap.Modal.getOrCreateInstance(document.getElementById("addMemberModal"));
 
         // State management for selected teachers
         let selectedTeachers = {}; // { teacherId: { teacher: {...}, roles: [] } }

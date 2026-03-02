@@ -394,7 +394,7 @@
             // or a state management service rather than localStorage.
             const stored = localStorage.getItem("cwt_announcements");
             // Use mockAnnouncements as default if no localStorage data
-            let data = stored ? JSON.parse(stored) : (typeof mockAnnouncements !== 'undefined' ? mockAnnouncements : []);
+            let data = stored ? safeJsonParse(stored, []) : (typeof mockAnnouncements !== 'undefined' ? mockAnnouncements : []);
 
             // If we fall back to mock data, save it to localStorage so other pages can see it too (optional but helpful)
             if (!stored && data.length > 0) {
@@ -485,8 +485,8 @@
 
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
-                    <td class="ps-3 fw-medium text-dark">${pinIcon}${item.title}</td>
-                    <td><span class="badge ${badgeClass}">${item.category}</span></td>
+                    <td class="ps-3 fw-medium text-dark">${pinIcon}${escapeHtml(item.title)}</td>
+                    <td><span class="badge ${badgeClass}">${escapeHtml(item.category)}</span></td>
                     <td class="text-secondary small">
                         ${projectBadge}
                         <div class="mt-1">${periodText}</div>

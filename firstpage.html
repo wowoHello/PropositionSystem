@@ -504,7 +504,7 @@
             </div>
             <div class="flex-grow-1" style="min-width: 0;">
                 <div class="d-flex justify-content-between align-items-center">
-                    <div class="${titleClass}" style="${titleStyle}">${item.title}</div>
+                    <div class="${titleClass}" style="${titleStyle}">${escapeHtml(item.title)}</div>
                 </div>
                 <div class="reminder-meta">
                     ${pinBadge}
@@ -538,7 +538,7 @@
       const stored = localStorage.getItem("cwt_announcements");
 
       if (stored) {
-        storedAnnouncements = JSON.parse(stored);
+        storedAnnouncements = safeJsonParse(stored, []);
       } else {
         // If no localStorage, try to use mockAnnouncements from app.js
         storedAnnouncements = (typeof mockAnnouncements !== 'undefined') ? mockAnnouncements : [];
@@ -631,7 +631,7 @@
     function openAnnouncementModal(item, style) {
       document.getElementById('viewModalTitle').textContent = item.title;
       document.getElementById('viewModalDate').textContent = item.date;
-      document.getElementById('viewModalContent').innerHTML = item.content;
+      document.getElementById('viewModalContent').innerHTML = sanitizeHtml(item.content);
 
       const header = document.getElementById('modalHeaderBg');
       header.style.backgroundColor = style.color;
@@ -663,7 +663,7 @@
         // metaBox.style.backgroundColor = style.color + '0D'; // approx 5% alpha if hex
       }
 
-      new bootstrap.Modal(document.getElementById('viewAnnouncementModal')).show();
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('viewAnnouncementModal')).show();
     }
 
     document.addEventListener('DOMContentLoaded', () => renderReminders());
