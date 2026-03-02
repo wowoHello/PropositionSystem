@@ -312,10 +312,9 @@
                             placeholder="題幹關鍵字...">
                     </div>
                     <div class="col-xl-2 col-lg-6 col-md-12 d-flex gap-2">
-                        <button class="btn btn-primary-pill shadow-sm flex-grow-1" id="btnSearch">
-                            <i class="bi bi-search me-1"></i>搜尋
+                        <button class="btn btn-ghost-pill w-100 border bg-white shadow-sm" id="btnReset">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i>重置條件
                         </button>
-                        <button class="btn btn-ghost-pill" id="btnReset">重置</button>
                     </div>
                 </div>
             </div>
@@ -333,9 +332,8 @@
                                 <th>題目編號</th>
                                 <th>題型</th>
                                 <th id="tableThDifficulty">適用等級</th>
-                                <th>主類別</th>
+                                <th style="width: 25%">題目</th>
                                 <th class="d-none d-lg-table-cell">命題教師</th>
-                                <th class="d-none d-lg-table-cell">所屬梯次</th>
                                 <th>審查狀態</th>
                                 <th class="d-none d-lg-table-cell">建立日期</th>
                                 <th class="text-center">操作</th>
@@ -746,7 +744,7 @@
             if (data.length === 0) {
                 tbody.innerHTML = `
           <tr>
-            <td colspan="9">
+            <td colspan="8">
               <div class="empty-state">
                 <div class="empty-state-icon">
                   <i class="bi bi-search" style="font-size: 3rem;"></i>
@@ -771,14 +769,17 @@
                 const diff = configSet[item.difficulty] || { label: '--', cssClass: '' };
                 const stat = statusConfig[item.status] || { label: '--', cssClass: '' };
 
+                // 處理題目，去除 HTML 標籤後截斷
+                const stemText = item.stem ? item.stem.replace(/<[^>]*>?/gm, '') : '';
+                const shortenedStem = stemText.length > 25 ? stemText.substring(0, 25) + '...' : stemText;
+
                 return `
           <tr>
             <td class="fw-bold text-primary">${item.id}</td>
             <td><span class="badge-type">${item.type}</span></td>
             <td><span class="badge-difficulty ${diff.cssClass}">${diff.label}</span></td>
-            <td>${item.category}</td>
+            <td><div class="text-dark fw-medium" title="${stemText.replace(/"/g, '&quot;')}">${shortenedStem}</div></td>
             <td class="d-none d-lg-table-cell">${item.teacher}</td>
-            <td class="d-none d-lg-table-cell text-secondary small">${item.project}</td>
             <td><span class="badge-status ${stat.cssClass}">${stat.label}</span></td>
             <td class="d-none d-lg-table-cell text-secondary small">${item.date}</td>
             <td class="text-center">
@@ -798,6 +799,7 @@
             const fType = document.getElementById('filterType').value;
             const fDiff = document.getElementById('filterDifficulty').value;
             const fStatus = document.getElementById('filterStatus').value;
+            const fTeacher = document.getElementById('filterTeacher').value;
             const fKeyword = document.getElementById('filterKeyword').value.trim().toLowerCase();
 
             const filtered = mockBankData.filter(item => {
@@ -806,6 +808,7 @@
                 if (fType !== 'all' && item.type !== fType) return false;
                 if (fDiff !== 'all' && item.difficulty !== parseInt(fDiff, 10)) return false;
                 if (fStatus !== 'all' && item.status !== fStatus) return false;
+                if (fTeacher !== 'all' && item.teacher !== fTeacher) return false;
                 if (fKeyword && !item.stem.toLowerCase().includes(fKeyword) && !item.category.toLowerCase().includes(fKeyword)) return false;
                 return true;
             });
@@ -820,6 +823,7 @@
             document.getElementById('filterType').value = 'all';
             document.getElementById('filterDifficulty').value = 'all';
             document.getElementById('filterStatus').value = 'all';
+            document.getElementById('filterTeacher').value = 'all';
             document.getElementById('filterKeyword').value = '';
             performFilter();
         };
@@ -1025,17 +1029,14 @@
             // 同步梯次名稱至統計卡片副標題
             syncProjectStat();
 
-            // 篩選按鈕
-            document.getElementById('btnSearch').addEventListener('click', performFilter);
-            document.getElementById('btnReset').addEventListener('click', resetFilters);
-
-            // Enter 鍵觸發搜尋
-            document.getElementById('filterKeyword').addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    performFilter();
-                }
+            // 立即篩選事件綁定
+            const filterInputs = ['filterType', 'filterDifficulty', 'filterStatus', 'filterTeacher'];
+            filterInputs.forEach(id => {
+                document.getElementById(id).addEventListener('change', performFilter);
             });
+            document.getElementById('filterKeyword').addEventListener('input', performFilter);
+
+            document.getElementById('btnReset').addEventListener('click', resetFilters);
 
             // 監聽梯次切換事件
             document.addEventListener('projectChanged', (e) => {
