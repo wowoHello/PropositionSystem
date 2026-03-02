@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>命題總覽 - CWT 命題工作平臺</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/sweetalert2.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="css/cwt-bank.css">
+</head>
+
+<body>
+    <nav class="top-navbar">
+        <div class="container-fluid px-4">
+            <div class="row align-items-center">
+                <div class="col-3">
+                    <a href="firstpage.html" class="navbar-brand">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                        </svg>
+                        CWT 命題工作平臺
+                    </a>
+                </div>
+
+                <!-- 中間：專案切換器 -->
+                <div class="col-6 d-flex justify-content-center">
+                    <div class="project-switcher">
+                        <div class="project-display glass-enhanced" id="projectToggle">
+                            <div class="glass-icon">
+                                <img src="ICON/calendar.svg" alt="Calendar" style="width: 24px; height: 24px;">
+                            </div>
+
+                            <div class="project-info">
+                                <div class="project-year" id="currentProjectYear">
+                                    2024年度
+                                </div>
+                                <div class="project-name" id="currentProjectName">
+                                    進行中梯次範例一
+                                </div>
+                            </div>
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path
+                                    d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z" />
+                            </svg>
+                        </div>
+
+                        <div class="project-dropdown" id="projectDropdown">
+                            <div class="dropdown-header">
+                                <span>切換專案</span>
+                                <button class="close-btn" id="closeDropdown">
+                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                        <path
+                                            d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <div class="project-search">
+                                <input type="text" placeholder="搜尋專案名稱..." id="projectSearchInput" />
+                            </div>
+
+                            <div class="project-list" id="projectList">
+                                <div class="project-category">進行中 (3)</div>
+
+                                <div class="project-item active" data-project-id="1" data-year="2024"
+                                    data-name="進行中梯次範例一" data-role="admin">
+                                    <div class="project-item-info">
+                                        <div class="project-item-title">
+                                            <span class="status-indicator status-active"></span>
+                                            進行中梯次範例一
+                                        </div>
+                                        <div class="project-item-meta">
+                                            <span>2024年度</span>
+                                            <span>截止: 2024/12/31</span>
+                                        </div>
+                                    </div>
+                                    <span class="role-badge role-admin">系統管理員</span>
+                                </div>
+
+                                <div class="project-item" data-project-id="2" data-year="2024" data-name="進行中梯次範例二"
+                                    data-role="reviewer">
+                                    <div class="project-item-info">
+                                        <div class="project-item-title">
+                                            <span class="status-indicator status-active"></span>
+                                            進行中梯次範例二
+                                        </div>
+                                        <div class="project-item-meta">
+                                            <span>2024年度</span>
+                                            <span>截止: 2024/11/15</span>
+                                        </div>
+                                    </div>
+                                    <span class="role-badge role-reviewer">審題委員</span>
+                                </div>
+
+                                <div class="project-item" data-project-id="3" data-year="2024" data-name="進行中梯次範例三"
+                                    data-role="teacher">
+                                    <div class="project-item-info">
+                                        <div class="project-item-title">
+                                            <span class="status-indicator status-active"></span>
+                                            進行中梯次範例三
+                                        </div>
+                                        <div class="project-item-meta">
+                                            <span>2024年度</span>
+                                            <span>截止: 2025/01/20</span>
+                                        </div>
+                                    </div>
+                                    <span class="role-badge role-teacher">命題教師</span>
+                                </div>
+
+                                <div class="project-category">已結束 (5)</div>
+
+                                <div class="project-item" data-project-id="4" data-year="2023" data-name="已結束梯次範例一"
+                                    data-role="admin">
+                                    <div class="project-item-info">
+                                        <div class="project-item-title">
+                                            <span class="status-indicator status-finished"></span>
+                                            已結束梯次範例一
+                                        </div>
+                                        <div class="project-item-meta">
+                                            <span>2023年度</span>
+                                            <span>已結束</span>
+                                        </div>
+                                    </div>
+                                    <span class="role-badge role-admin">系統管理員</span>
+                                </div>
+
+                                <div class="project-item" data-project-id="5" data-year="2023" data-name="已結束梯次範例二"
+                                    data-role="teacher">
+                                    <div class="project-item-info">
+                                        <div class="project-item-title">
+                                            <span class="status-indicator status-finished"></span>
+                                            已結束梯次範例二
+                                        </div>
+                                        <div class="project-item-meta">
+                                            <span>2023年度</span>
+                                            <span>已結束</span>
+                                        </div>
+                                    </div>
+                                    <span class="role-badge role-teacher">命題教師</span>
+                                </div>
+
+                                <div class="project-item" data-project-id="6" data-year="2023" data-name="已結束梯次範例三"
+                                    data-role="reviewer">
+                                    <div class="project-item-info">
+                                        <div class="project-item-title">
+                                            <span class="status-indicator status-finished"></span>
+                                            已結束梯次範例三
+                                        </div>
+                                        <div class="project-item-meta">
+                                            <span>2023年度</span>
+                                            <span>已結束</span>
+                                        </div>
+                                    </div>
+                                    <span class="role-badge role-reviewer">審題委員</span>
+                                </div>
+
+                                <div class="project-item" data-project-id="7" data-year="2022" data-name="已結束梯次範例四"
+                                    data-role="teacher">
+                                    <div class="project-item-info">
+                                        <div class="project-item-title">
+                                            <span class="status-indicator status-finished"></span>
+                                            已結束梯次範例四
+                                        </div>
+                                        <div class="project-item-meta">
+                                            <span>2022年度</span>
+                                            <span>已結束</span>
+                                        </div>
+                                    </div>
+                                    <span class="role-badge role-teacher">命題教師</span>
+                                </div>
+
+                                <div class="project-item" data-project-id="8" data-year="2022" data-name="已結束梯次範例五"
+                                    data-role="teacher">
+                                    <div class="project-item-info">
+                                        <div class="project-item-title">
+                                            <span class="status-indicator status-finished"></span>
+                                            已結束梯次範例五
+                                        </div>
+                                        <div class="project-item-meta">
+                                            <span>2022年度</span>
+                                            <span>已結束</span>
+                                        </div>
+                                    </div>
+                                    <span class="role-badge role-teacher">命題教師</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右側：使用者資訊 -->
+                <div class="col-3">
+                    <div class="user-section">
+                        <div class="user-info">
+                            <div class="user-avatar">沈</div>
+                            <span class="user-name">沈雅茹</span>
+                        </div>
+                        <a href="index.html" class="btn btn-sm btn-light fw-bold text-primary px-3">登出</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="breadcrumb-bar">
+        <div class="container-fluid px-4 d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <a href="firstpage.html" class="breadcrumb-item-link">首頁</a>
+                <span class="breadcrumb-separator">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </span>
+                <span class="breadcrumb-current">命題總覽</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="container-fluid px-4">
+            <h1 class="page-title">命題總覽</h1>
+
+            <!-- ========== Hero Banner (統計橫幅) ========== -->
+            <div class="hero-stat-banner mb-4">
+                <div class="hero-stat-content">
+                    <div class="hero-stat-item">
+                        <div class="hero-stat-icon">
+                            <i class="bi bi-file-earmark-plus-fill"></i>
+                        </div>
+                        <div class="hero-stat-text">
+                            <div class="hero-stat-value" id="statNew">86</div>
+                            <div class="hero-stat-label">本梯次新增</div>
+                            <div class="hero-stat-sub" id="statNewSub">進行中梯次範例一</div>
+                        </div>
+                    </div>
+                    <div class="hero-stat-divider"></div>
+                    <div class="hero-stat-item">
+                        <div class="hero-stat-icon text-orange">
+                            <i class="bi bi-people-fill"></i>
+                        </div>
+                        <div class="hero-stat-text">
+                            <div class="hero-stat-value" id="statTeachers">23</div>
+                            <div class="hero-stat-label">命題教師數</div>
+                            <div class="hero-stat-sub">本梯次參與教師</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero-stat-bg-decor"></div>
+            </div>
+
+            <!-- ========== 篩選區 ========== -->
+            <div class="filter-container">
+                <div class="filter-title">
+                    <i class="bi bi-funnel-fill"></i>
+                    進階篩選
+                </div>
+                <div class="row g-3 align-items-end">
+                    <div class="col-xl-2 col-lg-3 col-md-4">
+                        <label class="form-label-sm">題型</label>
+                        <select class="form-select form-select-sm-custom" id="filterType">
+                            <option value="all" selected>全部題型</option>
+                            <option value="一般題目">一般題目</option>
+                            <option value="精選題目">精選題目</option>
+                            <option value="長文題目">長文題目</option>
+                            <option value="短文題組">短文題組</option>
+                            <option value="閱讀題組">閱讀題組</option>
+                            <option value="聽力題目">聽力題目</option>
+                            <option value="聽力題組">聽力題組</option>
+                        </select>
+                    </div>
+                    <div class="col-xl-2 col-lg-3 col-md-4">
+                        <label class="form-label-sm" id="labelDifficulty">適用等級</label>
+                        <select class="form-select form-select-sm-custom" id="filterDifficulty">
+                            <option value="all" selected>全部等級</option>
+                            <option value="1">初級</option>
+                            <option value="2">中級</option>
+                            <option value="3">中高級</option>
+                            <option value="4">高級</option>
+                            <option value="5">優級</option>
+                        </select>
+                    </div>
+                    <div class="col-xl-2 col-lg-3 col-md-4">
+                        <label class="form-label-sm">審查狀態</label>
+                        <select class="form-select form-select-sm-custom" id="filterStatus">
+                            <option value="all" selected>全部狀態</option>
+                            <option value="passed">已通過</option>
+                            <option value="reviewing">審查中</option>
+                            <option value="rejected">未通過</option>
+                        </select>
+                    </div>
+                    <div class="col-xl-2 col-lg-3 col-md-4">
+                        <label class="form-label-sm">命題教師</label>
+                        <select class="form-select form-select-sm-custom" id="filterTeacher">
+                            <option value="all" selected>全部教師</option>
+                            <option value="李文華">李文華</option>
+                            <option value="陳秀蘭">陳秀蘭</option>
+                            <option value="林志豪">林志豪</option>
+                            <option value="王偉">王偉</option>
+                            <option value="李大華">李大華</option>
+                        </select>
+                    </div>
+                    <div class="col-xl-2 col-lg-6 col-md-8">
+                        <label class="form-label-sm">關鍵字搜尋</label>
+                        <input type="text" class="form-control form-control-sm-custom" id="filterKeyword"
+                            placeholder="題幹關鍵字...">
+                    </div>
+                    <div class="col-xl-2 col-lg-6 col-md-12 d-flex gap-2">
+                        <button class="btn btn-primary-pill shadow-sm flex-grow-1" id="btnSearch">
+                            <i class="bi bi-search me-1"></i>搜尋
+                        </button>
+                        <button class="btn btn-ghost-pill" id="btnReset">重置</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== 題目表格 ========== -->
+            <div class="table-container">
+                <div class="table-header-bar">
+                    <h5><i class="bi bi-table me-2 text-primary"></i>題目列表</h5>
+                    <span class="badge bg-light text-secondary border" id="resultCount">共 12 筆</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="custom-table" id="bankTable">
+                        <thead>
+                            <tr>
+                                <th>題目編號</th>
+                                <th>題型</th>
+                                <th id="tableThDifficulty">適用等級</th>
+                                <th>主類別</th>
+                                <th class="d-none d-lg-table-cell">命題教師</th>
+                                <th class="d-none d-lg-table-cell">所屬梯次</th>
+                                <th>審查狀態</th>
+                                <th class="d-none d-lg-table-cell">建立日期</th>
+                                <th class="text-center">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bankTableBody">
+                            <!-- 由 JS 動態渲染 -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 分頁器 -->
+                <div class="pagination-bar">
+                    <div class="pagination-info">
+                        顯示第 <strong>1-10</strong> 筆，共 <strong id="totalItems">12</strong> 筆
+                    </div>
+                    <div class="pagination-btns">
+                        <button class="page-btn" disabled>&laquo;</button>
+                        <button class="page-btn active">1</button>
+                        <button class="page-btn">2</button>
+                        <button class="page-btn">&raquo;</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== 檢視題目 Modal ========== -->
+    <div class="modal fade" id="viewQuestionModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header text-white" style="background-color: #2563eb;">
+                    <h5 class="modal-title fw-bold" id="modalTitle">
+                        <i class="bi bi-file-earmark-text me-2"></i>題目詳情
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <!-- 基本資訊 -->
+                    <div class="detail-section">
+                        <div class="detail-section-title">
+                            <i class="bi bi-info-circle-fill"></i>基本資訊
+                        </div>
+                        <div class="detail-info-grid">
+                            <div class="detail-info-item">
+                                <span class="label">題目編號：</span>
+                                <span class="value" id="modalId">--</span>
+                            </div>
+                            <div class="detail-info-item">
+                                <span class="label">題型：</span>
+                                <span class="value" id="modalType">--</span>
+                            </div>
+                            <div class="detail-info-item">
+                                <span class="label" id="modalLabelDifficulty">適用等級：</span>
+                                <span class="value" id="modalDifficulty">--</span>
+                            </div>
+                            <div class="detail-info-item">
+                                <span class="label">主類別：</span>
+                                <span class="value" id="modalCategory">--</span>
+                            </div>
+                            <div class="detail-info-item">
+                                <span class="label">命題教師：</span>
+                                <span class="value" id="modalTeacher">--</span>
+                            </div>
+                            <div class="detail-info-item">
+                                <span class="label">所屬梯次：</span>
+                                <span class="value" id="modalProject">--</span>
+                            </div>
+                            <div class="detail-info-item">
+                                <span class="label">建立日期：</span>
+                                <span class="value" id="modalDate">--</span>
+                            </div>
+                            <div class="detail-info-item">
+                                <span class="label">審查狀態：</span>
+                                <span class="value" id="modalStatus">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 審題進度 -->
+                    <div class="detail-section" id="modalReviewProgress">
+                        <div class="detail-section-title">
+                            <i class="bi bi-signpost-split-fill"></i>審題進度
+                        </div>
+                        <div class="review-stepper" id="reviewStepper">
+                            <!-- 步驟 1：互審 -->
+                            <div class="review-step" id="step-peer">
+                                <div class="step-connector-before"></div>
+                                <div class="step-circle">
+                                    <i class="bi bi-check-lg step-check"></i>
+                                    <span class="step-number">1</span>
+                                </div>
+                                <div class="step-connector-after"></div>
+                                <div class="step-label">互審</div>
+                                <div class="step-sub" id="step-peer-sub">教師互審</div>
+                            </div>
+                            <!-- 步驟 2：專審 -->
+                            <div class="review-step" id="step-expert">
+                                <div class="step-connector-before"></div>
+                                <div class="step-circle">
+                                    <i class="bi bi-check-lg step-check"></i>
+                                    <span class="step-number">2</span>
+                                </div>
+                                <div class="step-connector-after"></div>
+                                <div class="step-label">專審</div>
+                                <div class="step-sub" id="step-expert-sub">專家審查</div>
+                            </div>
+                            <!-- 步驟 3：總審 -->
+                            <div class="review-step" id="step-final">
+                                <div class="step-connector-before"></div>
+                                <div class="step-circle">
+                                    <i class="bi bi-check-lg step-check"></i>
+                                    <span class="step-number">3</span>
+                                </div>
+                                <div class="step-connector-after"></div>
+                                <div class="step-label">總審</div>
+                                <div class="step-sub" id="step-final-sub">最終決議</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 審題評語 -->
+                    <div class="detail-section" id="modalReviewComments">
+                        <div class="detail-section-title">
+                            <i class="bi bi-chat-square-quote-fill"></i>審題評語
+                        </div>
+                        <div class="review-timeline" id="reviewTimeline">
+                            <!-- 由 JS 動態渲染 -->
+                        </div>
+                    </div>
+
+                    <!-- 聽力音檔 (僅聽力題顯示) -->
+                    <div class="detail-section" id="modalAudioSection" style="display: none;">
+                        <div class="detail-section-title">
+                            <i class="bi bi-volume-up-fill"></i>聽力音檔
+                        </div>
+                        <div class="mt-2">
+                            <audio id="modalAudio" controls class="w-100"
+                                style="height: 40px; border-radius: 8px;"></audio>
+                        </div>
+                    </div>
+
+                    <!-- 題幹內容 -->
+                    <div class="detail-section" id="modalStemSection">
+                        <div class="detail-section-title">
+                            <i class="bi bi-card-text"></i>題幹內容
+                        </div>
+                        <div class="detail-content-box" id="modalStem">
+                            --
+                        </div>
+                    </div>
+
+                    <!-- 選項 -->
+                    <div class="detail-section" id="modalOptionsSection">
+                        <div class="detail-section-title">
+                            <i class="bi bi-list-check"></i>選項
+                        </div>
+                        <ul class="option-list" id="modalOptions">
+                            <!-- 由 JS 動態渲染 -->
+                        </ul>
+                    </div>
+
+                    <!-- 解析 -->
+                    <div class="detail-section" id="modalExplanationSection">
+                        <div class="detail-section-title">
+                            <i class="bi bi-lightbulb-fill"></i>解析說明
+                        </div>
+                        <div class="detail-content-box" id="modalExplanation">
+                            --
+                        </div>
+                    </div>
+
+                    <!-- 子題區塊 (僅題組顯示) -->
+                    <div id="modalSubQuestionsSection" style="display: none;">
+                        <!-- 由 JS 動態渲染多個子題卡片 -->
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-0">
+                    <button type="button" class="btn btn-secondary w-100" data-bs-dismiss="modal">關閉</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/sweetalert2.min.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        // =========================================
+        // 當前梯次 ID（由導覽列切換器決定）
+        // =========================================
+        let currentProjectId = '1';
+
+        // =========================================
+        // Mock 題目資料（含審題進度與評語）
+        // =========================================
+        const mockBankData = [
+            {
+                id: 'Q-2024-0001', type: '一般題目', difficulty: 1, diffLabel: '難度一（易）',
+                category: '字形辨識', teacher: '李文華', project: '進行中梯次範例一', projectId: '1',
+                status: 'passed', date: '2024-09-15',
+                reviewStage: 4,
+                reviews: [
+                    { reviewer: '陳秀蘭', role: '互審教師', time: '2024-09-20 14:30', decision: 'adopt', comment: '題目設計良好，選項具有鑑別度，文字敘述清晰。建議採用。' },
+                    { reviewer: '張國維', role: '專審委員', time: '2024-09-25 10:15', decision: 'adopt', comment: '題幹語句流暢，考核目標明確，符合字形辨識的考核要求。通過。' }
+                ],
+                stem: '下列各組「 」內的字，何者字形完全正確？',
+                options: [
+                    { label: 'A', text: '名「副」其實／「幅」員遼闊', correct: false },
+                    { label: 'B', text: '好高「騖」遠／趨之若「鶩」', correct: true },
+                    { label: 'C', text: '「嘔」心瀝血／令人作「嘔」', correct: false },
+                    { label: 'D', text: '眾口「鑠」金／「爍」爍其華', correct: false }
+                ],
+                answer: 'B',
+                explanation: '(B) 好高「騖」遠：騖，追求。趨之若「鶩」：鶩，鴨子。兩字不同但均正確。(A) 名「副」→「符」。(C) 均正確但非最佳。(D)「爍」爍其華→「灼」灼其華。'
+            },
+            {
+                id: 'Q-2024-0002', type: '一般題目', difficulty: 2, diffLabel: '難度二（中）',
+                category: '詞義辨析', teacher: '陳秀蘭', project: '進行中梯次範例一', projectId: '1',
+                status: 'reviewing', date: '2024-09-18',
+                reviewStage: 2,
+                reviews: [
+                    { reviewer: '林志豪', role: '互審教師', time: '2024-09-22 09:45', decision: 'adopt', comment: '用語精準，選項設計具有誘答力。「獨樹一幟」的選項 A 容易混淆，鑑別度佳。建議採用。' }
+                ],
+                stem: '「他的作品風格獨樹一幟，在文壇上佔有重要的地位。」句中「獨樹一幟」的意思是：',
+                options: [
+                    { label: 'A', text: '獨自建立門戶', correct: false },
+                    { label: 'B', text: '自成一家，與眾不同', correct: true },
+                    { label: 'C', text: '只插一面旗幟', correct: false },
+                    { label: 'D', text: '特別怪異，不合常理', correct: false }
+                ],
+                answer: 'B',
+                explanation: '「獨樹一幟」意為自成一家，別創一格，與眾不同。此處形容作品風格獨特，在文壇上有特殊的地位。'
+            },
+            {
+                id: 'Q-2024-0003', type: '精選題目', difficulty: 3, diffLabel: '難度三（難）',
+                category: '閱讀理解', teacher: '林志豪', project: '進行中梯次範例一', projectId: '1',
+                status: 'passed', date: '2024-09-20',
+                reviewStage: 4,
+                reviews: [
+                    { reviewer: '王偉', role: '互審教師', time: '2024-09-25 11:00', decision: 'revise', comment: '選項 C「專注記住每一個細節」與文意有些接近，建議修改為更明顯的誘答選項，降低爭議。' },
+                    { reviewer: '張國維', role: '專審委員', time: '2024-10-01 15:20', decision: 'adopt', comment: '修改後的版本選項鑑別度已提升。題目設計符合閱讀理解考核要求，建議採用。' }
+                ],
+                stem: '根據下文，作者認為「真正的閱讀」應具備什麼條件？\n\n「閱讀不是被動地接收文字訊息，而是主動地與作者對話、思辨、質疑。唯有帶著問題去讀，才能真正理解作者的意圖。」',
+                options: [
+                    { label: 'A', text: '快速瀏覽，掌握大意即可', correct: false },
+                    { label: 'B', text: '帶著問題，主動思辨', correct: true },
+                    { label: 'C', text: '專注記住每一個細節', correct: false },
+                    { label: 'D', text: '反覆朗讀，加深記憶', correct: false }
+                ],
+                answer: 'B',
+                explanation: '文中明確指出閱讀應「主動地與作者對話、思辨、質疑」且「帶著問題去讀」，因此答案為(B)。'
+            },
+            {
+                id: 'Q-2024-0004', type: '長文題目', difficulty: 3, diffLabel: '難度三（難）',
+                category: '文學賞析', teacher: '李文華', project: '進行中梯次範例一', projectId: '1',
+                status: 'reviewing', date: '2024-10-01',
+                reviewStage: 1,
+                reviews: [],
+                stem: '閱讀以下文章後，回答問題：\n\n余光中曾說：「鄉愁是一枚小小的郵票」，試從修辭技巧與情感表達兩個面向，分析此句的文學特色。',
+                options: [],
+                answer: '（長文題，無選項）',
+                explanation: '此題為開放式長文寫作題，評分重點：1. 能辨識「譬喻」修辭手法；2. 能分析以小見大的情感表達技巧；3. 論述邏輯清晰，文字流暢。'
+            },
+            {
+                id: 'Q-2024-0005', type: '一般題目', difficulty: 1, diffLabel: '難度一（易）',
+                category: '字音辨識', teacher: '陳秀蘭', project: '進行中梯次範例一', projectId: '1',
+                status: 'passed', date: '2024-09-22',
+                reviewStage: 4,
+                reviews: [
+                    { reviewer: '李文華', role: '互審教師', time: '2024-09-26 16:30', decision: 'adopt', comment: '字音辨識方向正確，選項設計符合基礎程度考生的程度，通過。' },
+                    { reviewer: '張國維', role: '專審委員', time: '2024-09-30 09:40', decision: 'adopt', comment: '沒有問題，採用。' }
+                ],
+                stem: '下列各組「 」內的字，何者讀音完全相同？',
+                options: [
+                    { label: 'A', text: '「暴」殄天物／「曝」曬', correct: false },
+                    { label: 'B', text: '「供」不應求／「供」奉', correct: false },
+                    { label: 'C', text: '「累」積／「累」贅', correct: false },
+                    { label: 'D', text: '「度」量／「渡」河', correct: true }
+                ],
+                answer: 'D',
+                explanation: '(D) 「度」量（ㄉㄨˋ）與「渡」河（ㄉㄨˋ）讀音相同。其餘各組聲調或聲母不同。'
+            },
+            {
+                id: 'Q-2024-0006', type: '聽力題目', difficulty: 2, diffLabel: '難度二（中）',
+                category: '語句理解', teacher: '王偉', project: '進行中梯次範例一', projectId: '1',
+                status: 'passed', date: '2024-10-05',
+                reviewStage: 4,
+                reviews: [
+                    { reviewer: '陳秀蘭', role: '互審教師', time: '2024-10-08 10:00', decision: 'adopt', comment: '聽力素材清晰，選項設計合理。通過。' },
+                    { reviewer: '林美芳', role: '專審委員', time: '2024-10-12 14:30', decision: 'adopt', comment: '整體品質良好，採用。' }
+                ],
+                stem: '【音檔播放後】請根據所聽到的對話內容，選出最適當的回應。',
+                options: [
+                    { label: 'A', text: '好的，我馬上就去。', correct: false },
+                    { label: 'B', text: '謝謝你的提醒，我知道了。', correct: true },
+                    { label: 'C', text: '沒關係，改天再說吧。', correct: false },
+                    { label: 'D', text: '抱歉，我聽不清楚。', correct: false }
+                ],
+                answer: 'B',
+                explanation: '對話中提及提醒事項，最適當的回應為表達感謝與知悉。'
+            },
+            {
+                id: 'Q-2024-0007', type: '閱讀題組', difficulty: 4, diffLabel: '難度四（精熟）',
+                category: '文學鑑賞', teacher: '李文華', project: '進行中梯次範例一', projectId: '1',
+                status: 'reviewing', date: '2024-11-01',
+                reviewStage: 3,
+                reviews: [
+                    { reviewer: '陳秀蘭', role: '互審教師', time: '2024-11-05 14:20', decision: 'adopt', comment: '古文選材佳，子題設計由淺入深，具有梯度。建議採用。' },
+                    { reviewer: '張國維', role: '專審委員', time: '2024-11-10 10:45', decision: 'revise', comment: '第二子題的選項 C 與正確答案語意過於接近，建議修改選項用語以提高鑑別度。' }
+                ],
+                stem: '閱讀以下古文節選，回答第1～3題。\n\n「庖丁為文惠君解牛，手之所觸，肩之所倚...」（《莊子‧養生主》）',
+                options: [],
+                answer: '（題組，含子題）',
+                explanation: '此為閱讀題組，包含3道子題。考核學生對古典文學的理解、修辭分析與主旨歸納能力。'
+            },
+            {
+                id: 'Q-2024-0008', type: '聽力題組', difficulty: 3, diffLabel: '難度三（難）',
+                category: '語文表達', teacher: '王偉', project: '進行中梯次範例一', projectId: '1',
+                status: 'rejected', date: '2024-10-12',
+                reviewStage: 0,
+                reviews: [
+                    { reviewer: '林志豪', role: '互審教師', time: '2024-10-15 11:00', decision: 'reject', comment: '音檔錄製品質不佳，背景噪音過大影響聽音判斷。建議重新錄製後再提交。' },
+                    { reviewer: '林美芳', role: '專審委員', time: '2024-10-18 16:00', decision: 'reject', comment: '同意互審意見，音檔品質未達標準，不採用。' }
+                ],
+                stem: '【聽力題組】請先聽一段對話後，回答以下兩道子題。',
+                options: [],
+                answer: '（題組，含子題）',
+                explanation: '此為聽力題組，含固定兩道子題（難度三 + 難度四），需聆聽音檔後回答。題目因音檔品質問題未通過審查。'
+            },
+            {
+                id: 'Q-2024-0009', type: '短文題組', difficulty: 2, diffLabel: '難度二（中）',
+                category: '閱讀理解', teacher: '林志豪', project: '進行中梯次範例一', projectId: '1',
+                status: 'passed', date: '2024-10-20',
+                reviewStage: 4,
+                reviews: [
+                    { reviewer: '李文華', role: '互審教師', time: '2024-10-25 13:30', decision: 'adopt', comment: '短文選文具哲理性，子題設計能考核推論能力，通過。' },
+                    { reviewer: '張國維', role: '專審委員', time: '2024-10-30 11:15', decision: 'adopt', comment: '題目品質良好，建議採用。' }
+                ],
+                stem: '閱讀下面短文，回答第1～2題。\n\n「一個人的價值不在於他擁有什麼，而在於他貢獻了什麼。真正有意義的人生，是不斷為他人創造價值的過程。」',
+                options: [],
+                answer: '（題組，含子題）',
+                explanation: '此為短文題組，包含2道子題，需閱讀短文後分別作答。重點考核學生對文意的理解與推論能力。'
+            },
+            {
+                id: 'Q-2024-0010', type: '精選題目', difficulty: 2, diffLabel: '難度二（中）',
+                category: '修辭辨識', teacher: '李文華', project: '進行中梯次範例一', projectId: '1',
+                status: 'passed', date: '2024-10-25',
+                reviewStage: 4,
+                reviews: [
+                    { reviewer: '王偉', role: '互審教師', time: '2024-10-28 09:15', decision: 'adopt', comment: '修辭考核方向正確，「轉化」與「擬人」的區分清楚，建議採用。' },
+                    { reviewer: '林美芳', role: '專審委員', time: '2024-11-02 15:00', decision: 'adopt', comment: '選項鑑別度佳，通過。' }
+                ],
+                stem: '「春風又綠江南岸」使用了哪一種修辭手法？',
+                options: [
+                    { label: 'A', text: '譬喻', correct: false },
+                    { label: 'B', text: '擬人', correct: false },
+                    { label: 'C', text: '轉化', correct: true },
+                    { label: 'D', text: '誇飾', correct: false }
+                ],
+                answer: 'C',
+                explanation: '「綠」本為形容詞，此處轉化為動詞使用（使……變綠），屬「轉品」修辭，歸類於廣義的「轉化」手法。'
+            }
+        ];
+
+        // =========================================
+        // 難度與狀態的對應設定
+        // =========================================
+        const difficultyConfig = {
+            normal: {
+                1: { label: '初級', cssClass: 'diff-easy' },
+                2: { label: '中級', cssClass: 'diff-medium' },
+                3: { label: '中高級', cssClass: 'diff-hard' },
+                4: { label: '高級', cssClass: 'diff-expert' },
+                5: { label: '優級', cssClass: 'diff-expert' }
+            },
+            listening: {
+                1: { label: '難度一', cssClass: 'diff-easy' },
+                2: { label: '難度二', cssClass: 'diff-medium' },
+                3: { label: '難度三', cssClass: 'diff-hard' },
+                4: { label: '難度四', cssClass: 'diff-expert' },
+                5: { label: '難度五', cssClass: 'diff-expert' }
+            }
+        };
+
+        const statusConfig = {
+            passed: { label: '已通過', cssClass: 'badge-passed' },
+            reviewing: { label: '審查中', cssClass: 'badge-reviewing' },
+            rejected: { label: '未通過', cssClass: 'badge-rejected' }
+        };
+
+        // 審題決策對應
+        const decisionConfig = {
+            adopt: { label: '採用', icon: 'bi-check-circle-fill', cssClass: 'decision-adopt' },
+            revise: { label: '改後再審', icon: 'bi-arrow-repeat', cssClass: 'decision-revise' },
+            reject: { label: '不採用', icon: 'bi-x-circle-fill', cssClass: 'decision-reject' }
+        };
+
+        // =========================================
+        // 渲染表格
+        // =========================================
+        const renderTable = (data) => {
+            const tbody = document.getElementById('bankTableBody');
+            const countEl = document.getElementById('resultCount');
+            const totalEl = document.getElementById('totalItems');
+
+            if (data.length === 0) {
+                tbody.innerHTML = `
+          <tr>
+            <td colspan="9">
+              <div class="empty-state">
+                <div class="empty-state-icon">
+                  <i class="bi bi-search" style="font-size: 3rem;"></i>
+                </div>
+                <h6>查無符合條件的題目</h6>
+                <p>請嘗試調整篩選條件或搜尋關鍵字</p>
+              </div>
+            </td>
+          </tr>
+        `;
+                countEl.textContent = '共 0 筆';
+                totalEl.textContent = '0';
+                return;
+            }
+
+            countEl.textContent = `共 ${data.length} 筆`;
+            totalEl.textContent = data.length;
+
+            tbody.innerHTML = data.map(item => {
+                const isListening = item.type === '聽力題目' || item.type === '聽力題組';
+                const configSet = isListening ? difficultyConfig.listening : difficultyConfig.normal;
+                const diff = configSet[item.difficulty] || { label: '--', cssClass: '' };
+                const stat = statusConfig[item.status] || { label: '--', cssClass: '' };
+
+                return `
+          <tr>
+            <td class="fw-bold text-primary">${item.id}</td>
+            <td><span class="badge-type">${item.type}</span></td>
+            <td><span class="badge-difficulty ${diff.cssClass}">${diff.label}</span></td>
+            <td>${item.category}</td>
+            <td class="d-none d-lg-table-cell">${item.teacher}</td>
+            <td class="d-none d-lg-table-cell text-secondary small">${item.project}</td>
+            <td><span class="badge-status ${stat.cssClass}">${stat.label}</span></td>
+            <td class="d-none d-lg-table-cell text-secondary small">${item.date}</td>
+            <td class="text-center">
+              <button class="btn-view-detail" onclick="viewQuestion('${item.id}')">
+                <i class="bi bi-eye me-1"></i>檢視
+              </button>
+            </td>
+          </tr>
+        `;
+            }).join('');
+        };
+
+        // =========================================
+        // 篩選邏輯（自動依當前梯次過濾）
+        // =========================================
+        const performFilter = () => {
+            const fType = document.getElementById('filterType').value;
+            const fDiff = document.getElementById('filterDifficulty').value;
+            const fStatus = document.getElementById('filterStatus').value;
+            const fKeyword = document.getElementById('filterKeyword').value.trim().toLowerCase();
+
+            const filtered = mockBankData.filter(item => {
+                // 自動依導覽列當前梯次過濾
+                if (item.projectId !== currentProjectId) return false;
+                if (fType !== 'all' && item.type !== fType) return false;
+                if (fDiff !== 'all' && item.difficulty !== parseInt(fDiff, 10)) return false;
+                if (fStatus !== 'all' && item.status !== fStatus) return false;
+                if (fKeyword && !item.stem.toLowerCase().includes(fKeyword) && !item.category.toLowerCase().includes(fKeyword)) return false;
+                return true;
+            });
+
+            renderTable(filtered);
+        };
+
+        // =========================================
+        // 重置篩選
+        // =========================================
+        const resetFilters = () => {
+            document.getElementById('filterType').value = 'all';
+            document.getElementById('filterDifficulty').value = 'all';
+            document.getElementById('filterStatus').value = 'all';
+            document.getElementById('filterKeyword').value = '';
+            performFilter();
+        };
+
+        // =========================================
+        // 審題進度條渲染
+        // =========================================
+        const renderReviewStepper = (reviewStage) => {
+            const steps = [
+                { id: 'step-peer', label: '互審', subDefault: '教師互審' },
+                { id: 'step-expert', label: '專審', subDefault: '專家審查' },
+                { id: 'step-final', label: '總審', subDefault: '最終決議' }
+            ];
+
+            // reviewStage: 0=退回, 1=互審中, 2=專審中, 3=總審中, 4=已通過
+            steps.forEach((step, idx) => {
+                const el = document.getElementById(step.id);
+                const subEl = document.getElementById(`${step.id}-sub`);
+                const stageNum = idx + 1;
+
+                // 清除所有狀態 class
+                el.className = 'review-step';
+
+                if (reviewStage === 0) {
+                    // 退回狀態
+                    el.classList.add('rejected');
+                    subEl.textContent = '已退回';
+                } else if (reviewStage >= stageNum + 1) {
+                    // 此步驟已完成
+                    el.classList.add('completed');
+                    subEl.textContent = '已通過';
+                } else if (reviewStage === stageNum) {
+                    // 此步驟進行中
+                    el.classList.add('active');
+                    subEl.textContent = '進行中';
+                } else {
+                    // 尚未到達
+                    el.classList.add('pending');
+                    subEl.textContent = step.subDefault;
+                }
+            });
+        };
+
+        // =========================================
+        // 審題評語時間線渲染
+        // =========================================
+        const renderReviewTimeline = (reviews) => {
+            const container = document.getElementById('reviewTimeline');
+
+            if (!reviews || reviews.length === 0) {
+                container.innerHTML = `
+                    <div class="review-no-comments">
+                        <i class="bi bi-chat-square-dots"></i>
+                        尚無審題評語
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = reviews.map(r => {
+                const dec = decisionConfig[r.decision] || { label: '--', icon: 'bi-dash', cssClass: '' };
+                return `
+                    <div class="review-comment-card">
+                        <div class="review-comment-header">
+                            <span class="reviewer-name">${r.reviewer}</span>
+                            <span class="reviewer-role">${r.role}</span>
+                            <span class="review-time"><i class="bi bi-clock me-1"></i>${r.time}</span>
+                        </div>
+                        <div class="review-comment-decision ${dec.cssClass}">
+                            <i class="bi ${dec.icon}"></i> ${dec.label}
+                        </div>
+                        <div class="review-comment-body">${r.comment}</div>
+                    </div>
+                `;
+            }).join('');
+        };
+
+        // =========================================
+        // 檢視題目 Modal
+        // =========================================
+        const viewQuestion = (questionId) => {
+            const item = mockBankData.find(q => q.id === questionId);
+            if (!item) return;
+
+            const isListening = item.type === '聽力題目' || item.type === '聽力題組';
+            const configSet = isListening ? difficultyConfig.listening : difficultyConfig.normal;
+            const diff = configSet[item.difficulty] || {};
+            const stat = statusConfig[item.status] || {};
+
+            document.getElementById('modalId').textContent = item.id;
+            document.getElementById('modalType').textContent = item.type;
+            document.getElementById('modalLabelDifficulty').textContent = isListening ? '難度：' : '適用等級：';
+
+            const labelText = diff.label || item.diffLabel || '--';
+            document.getElementById('modalDifficulty').innerHTML = `<span class="badge-difficulty ${diff.cssClass}">${labelText}</span>`;
+
+            document.getElementById('modalCategory').textContent = item.category;
+            document.getElementById('modalTeacher').textContent = item.teacher;
+            document.getElementById('modalProject').textContent = item.project;
+            document.getElementById('modalDate').textContent = item.date;
+            document.getElementById('modalStatus').innerHTML = `<span class="badge-status ${stat.cssClass}">${stat.label}</span>`;
+
+            // 審題進度條
+            renderReviewStepper(item.reviewStage);
+
+            // 審題評語
+            renderReviewTimeline(item.reviews);
+
+            // 題幹：保留換行
+            document.getElementById('modalStem').innerHTML = item.stem.replace(/\n/g, '<br>');
+
+            // 選項區
+            const optionsSection = document.getElementById('modalOptionsSection');
+            const optionsList = document.getElementById('modalOptions');
+
+            if (item.options.length > 0) {
+                optionsSection.style.display = '';
+                optionsList.innerHTML = item.options.map(opt => {
+                    const isCorrect = opt.correct;
+                    return `
+            <li class="${isCorrect ? 'correct-answer' : ''}">
+              <strong>${opt.label}.</strong>
+              <span>${opt.text}</span>
+              ${isCorrect ? '<i class="bi bi-check-circle-fill ms-auto"></i>' : ''}
+            </li>
+          `;
+                }).join('');
+            } else {
+                optionsSection.style.display = 'none';
+            }
+
+            // 解析
+            document.getElementById('modalExplanation').innerHTML = item.explanation.replace(/\n/g, '<br>');
+
+            // 開啟 Modal
+            new bootstrap.Modal(document.getElementById('viewQuestionModal')).show();
+        };
+
+        // =========================================
+        // 連動邏輯：題型 -> 難度/適用等級選項
+        // =========================================
+        const setupTypeDifficultyLinkage = () => {
+            const typeSelect = document.getElementById('filterType');
+            const diffLabel = document.getElementById('labelDifficulty');
+            const diffSelect = document.getElementById('filterDifficulty');
+            const tableThDiff = document.getElementById('tableThDifficulty');
+
+            typeSelect.addEventListener('change', (e) => {
+                const selectedType = e.target.value;
+                const isListening = selectedType === '聽力題目' || selectedType === '聽力題組';
+
+                const currentVal = diffSelect.value;
+
+                if (isListening) {
+                    diffLabel.textContent = '難度';
+                    tableThDiff.textContent = '難度';
+                    diffSelect.innerHTML = `
+                        <option value="all">全部難度</option>
+                        <option value="1">難度一</option>
+                        <option value="2">難度二</option>
+                        <option value="3">難度三</option>
+                        <option value="4">難度四</option>
+                        <option value="5">難度五</option>
+                    `;
+                } else {
+                    diffLabel.textContent = '適用等級';
+                    tableThDiff.textContent = '適用等級';
+                    diffSelect.innerHTML = `
+                        <option value="all">全部等級</option>
+                        <option value="1">初級</option>
+                        <option value="2">中級</option>
+                        <option value="3">中高級</option>
+                        <option value="4">高級</option>
+                        <option value="5">優級</option>
+                    `;
+                }
+
+                diffSelect.value = (currentVal === 'all') ? 'all' : (currentVal <= 5 ? currentVal : 'all');
+                performFilter();
+            });
+        };
+
+        // =========================================
+        // 梯次切換連動（監聽 projectChanged 事件）
+        // =========================================
+        const syncProjectStat = () => {
+            const projectNameEl = document.getElementById('currentProjectName');
+            const statSubEl = document.getElementById('statNewSub');
+            if (projectNameEl && statSubEl) {
+                statSubEl.textContent = projectNameEl.textContent.trim();
+            }
+        };
+
+        // =========================================
+        // 事件綁定
+        // =========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            setupTypeDifficultyLinkage();
+
+            // 初始渲染（依當前梯次過濾）
+            performFilter();
+
+            // 同步梯次名稱至統計卡片副標題
+            syncProjectStat();
+
+            // 篩選按鈕
+            document.getElementById('btnSearch').addEventListener('click', performFilter);
+            document.getElementById('btnReset').addEventListener('click', resetFilters);
+
+            // Enter 鍵觸發搜尋
+            document.getElementById('filterKeyword').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    performFilter();
+                }
+            });
+
+            // 監聽梯次切換事件
+            document.addEventListener('projectChanged', (e) => {
+                if (e.detail && e.detail.projectId) {
+                    currentProjectId = e.detail.projectId;
+                }
+                syncProjectStat();
+                performFilter();
+            });
+        });
+    </script>
+</body>
+
+</html>

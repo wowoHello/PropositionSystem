@@ -1,0 +1,958 @@
+/* =========================================
+   題庫總覽頁面 (cwt-bank.css)
+   ========================================= */
+
+:root {
+    --primary-blue: #2563eb;
+    --bg-color: #f3f4f6;
+    --text-dark: #1f2937;
+    --text-gray: #6b7280;
+    --border-color: #e5e7eb;
+}
+
+body {
+    font-family: "Noto Sans TC", sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-dark);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+}
+
+/* ---- 主要內容區 ---- */
+.main-content {
+    padding: 1.5rem 0;
+    flex-grow: 1;
+}
+
+.page-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 1.25rem;
+}
+
+/* =========================================
+   Hero Banner (統計橫幅)
+   ========================================= */
+.hero-stat-banner {
+    position: relative;
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+    border-radius: 16px;
+    padding: 2rem 2.5rem;
+    overflow: hidden;
+    color: white;
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.15);
+    display: flex;
+    align-items: center;
+}
+
+.hero-stat-bg-decor {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 50%;
+    background: radial-gradient(circle at 80% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 60%);
+    pointer-events: none;
+}
+
+.hero-stat-bg-decor::before {
+    content: '';
+    position: absolute;
+    right: -20px;
+    top: -20px;
+    width: 150px;
+    height: 150px;
+    border: 3px solid rgba(255, 255, 255, 0.05);
+    border-radius: 50%;
+}
+
+.hero-stat-bg-decor::after {
+    content: '';
+    position: absolute;
+    right: 40px;
+    bottom: -30px;
+    width: 200px;
+    height: 200px;
+    border: 2px dashed rgba(255, 255, 255, 0.05);
+    border-radius: 50%;
+}
+
+.hero-stat-content {
+    display: flex;
+    width: 100%;
+    position: relative;
+    z-index: 2;
+    align-items: center;
+}
+
+.hero-stat-item {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex: 1;
+}
+
+.hero-stat-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    color: #a78bfa;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hero-stat-icon.text-orange {
+    color: #fb923c;
+}
+
+.hero-stat-banner:hover .hero-stat-icon {
+    transform: translateY(-3px);
+    box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.1), 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.hero-stat-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.hero-stat-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 0.2rem;
+    letter-spacing: -0.02em;
+    background: linear-gradient(to right, #ffffff, #cbd5e1);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-stat-label {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #f8fafc;
+    margin-bottom: 0.2rem;
+    letter-spacing: 0.05em;
+}
+
+.hero-stat-sub {
+    font-size: 0.85rem;
+    color: #94a3b8;
+}
+
+.hero-stat-divider {
+    width: 1px;
+    height: 70px;
+    background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.2), transparent);
+    margin: 0 3rem;
+}
+
+@media (max-width: 767.98px) {
+    .hero-stat-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1.5rem;
+    }
+
+    .hero-stat-divider {
+        width: 100%;
+        height: 1px;
+        background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.2), transparent);
+        margin: 0;
+    }
+}
+
+/* =========================================
+   按鈕樣式 (Pill & Ghost)
+   ========================================= */
+.btn-primary-pill {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 0.45rem 1.25rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+}
+
+.btn-primary-pill:hover {
+    background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 15px rgba(37, 99, 235, 0.3);
+}
+
+.btn-primary-pill:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 5px rgba(37, 99, 235, 0.2);
+}
+
+.btn-ghost-pill {
+    background: transparent;
+    color: #64748b;
+    border: 1px solid #cbd5e1;
+    border-radius: 50px;
+    padding: 0.45rem 1.25rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.btn-ghost-pill:hover {
+    background: #f1f5f9;
+    color: #334155;
+    border-color: #94a3b8;
+}
+
+/* =========================================
+   篩選區
+   ========================================= */
+.filter-container {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+}
+
+.filter-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #374151;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.filter-title i {
+    color: #2563eb;
+}
+
+.form-label-sm {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-gray);
+    margin-bottom: 0.3rem;
+}
+
+.form-select-sm-custom,
+.form-control-sm-custom {
+    font-size: 0.9rem;
+    padding: 0.45rem 0.75rem;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    transition: border-color 0.15s ease;
+}
+
+.form-select-sm-custom:focus,
+.form-control-sm-custom:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* =========================================
+   題目表格
+   ========================================= */
+.table-container {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    overflow: hidden;
+}
+
+.table-header-bar {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.table-header-bar h5 {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: #111827;
+    margin: 0;
+}
+
+.custom-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.custom-table th {
+    background-color: #f3f4f6;
+    color: #4b5563;
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 0.7rem 1rem;
+    border-bottom: 2px solid #e5e7eb;
+    white-space: nowrap;
+}
+
+.custom-table td {
+    padding: 0.7rem 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #f3f4f6;
+    color: #374151;
+    font-size: 0.9rem;
+}
+
+.custom-table tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+.custom-table tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+/* 狀態標籤 */
+.badge-status {
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.badge-passed {
+    background-color: #f0fdf4;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+}
+
+.badge-reviewing {
+    background-color: #fffbeb;
+    color: #b45309;
+    border: 1px solid #fde68a;
+}
+
+.badge-rejected {
+    background-color: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
+
+/* 難度標籤 */
+.badge-difficulty {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.diff-easy {
+    background-color: #ecfdf5;
+    color: #047857;
+}
+
+.diff-medium {
+    background-color: #eff6ff;
+    color: #1d4ed8;
+}
+
+.diff-hard {
+    background-color: #fef3c7;
+    color: #b45309;
+}
+
+.diff-expert {
+    background-color: #fef2f2;
+    color: #b91c1c;
+}
+
+/* 題型標籤 */
+.badge-type {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    background-color: #eff6ff;
+    color: #1e40af;
+    border: 1px solid #bfdbfe;
+}
+
+/* 操作按鈕 */
+.btn-view-detail {
+    background: none;
+    border: 1px solid #2563eb;
+    color: #2563eb;
+    padding: 3px 12px;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-view-detail:hover {
+    background-color: #2563eb;
+    color: white;
+}
+
+/* =========================================
+   分頁器
+   ========================================= */
+.pagination-bar {
+    padding: 0.75rem 1rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #fafafa;
+}
+
+.pagination-info {
+    font-size: 0.85rem;
+    color: var(--text-gray);
+}
+
+.pagination-btns {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.pagination-btns .page-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: white;
+    color: #374151;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.pagination-btns .page-btn:hover {
+    background-color: #eff6ff;
+    border-color: #2563eb;
+    color: #2563eb;
+}
+
+.pagination-btns .page-btn.active {
+    background-color: #2563eb;
+    border-color: #2563eb;
+    color: white;
+}
+
+.pagination-btns .page-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* =========================================
+   檢視 Modal
+   ========================================= */
+.detail-section {
+    margin-bottom: 1.25rem;
+}
+
+.detail-section-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #374151;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 2px solid #eff6ff;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.detail-section-title i {
+    color: #2563eb;
+}
+
+.detail-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem 1.5rem;
+}
+
+.detail-info-item {
+    display: flex;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    padding: 0.35rem 0;
+}
+
+.detail-info-item .label {
+    color: var(--text-gray);
+    font-weight: 600;
+    white-space: nowrap;
+    min-width: 80px;
+}
+
+.detail-info-item .value {
+    color: var(--text-dark);
+}
+
+.detail-content-box {
+    background-color: #f9fafb;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: #374151;
+}
+
+.option-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.option-list li {
+    padding: 0.45rem 0.75rem;
+    border-radius: 6px;
+    margin-bottom: 0.3rem;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.option-list li.correct-answer {
+    background-color: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    font-weight: 600;
+    color: #15803d;
+}
+
+.option-list li:not(.correct-answer) {
+    background-color: #f9fafb;
+    border: 1px solid var(--border-color);
+}
+
+/* =========================================
+   查無資料空狀態
+   ========================================= */
+.empty-state {
+    padding: 3rem 1rem;
+    text-align: center;
+}
+
+.empty-state-icon {
+    opacity: 0.4;
+    margin-bottom: 1rem;
+}
+
+.empty-state h6 {
+    font-weight: 700;
+    color: var(--text-gray);
+    margin-bottom: 0.3rem;
+}
+
+.empty-state p {
+    font-size: 0.9rem;
+    color: #9ca3af;
+}
+
+/* =========================================
+   響應式調整
+   ========================================= */
+@media (max-width: 991.98px) {
+    .detail-info-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .stat-card-value {
+        font-size: 1.4rem;
+    }
+}
+
+/* =========================================
+   審題進度條 (Stepper)
+   ========================================= */
+.review-stepper {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 1.25rem 0 0.5rem;
+    gap: 0;
+}
+
+.review-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    flex: 1;
+    max-width: 180px;
+}
+
+/* 圓形節點 */
+.review-step .step-circle {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1rem;
+    position: relative;
+    z-index: 2;
+    transition: all 0.3s ease;
+    background: #f3f4f6;
+    border: 3px solid #d1d5db;
+    color: #9ca3af;
+}
+
+.review-step .step-check {
+    display: none;
+    font-size: 1.2rem;
+}
+
+/* 已完成狀態 */
+.review-step.completed .step-circle {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border-color: #10b981;
+    color: white;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.review-step.completed .step-check {
+    display: block;
+}
+
+.review-step.completed .step-number {
+    display: none;
+}
+
+/* 進行中狀態 */
+.review-step.active .step-circle {
+    background: white;
+    border-color: #2563eb;
+    color: #2563eb;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+    animation: pulse-ring 2s ease-in-out infinite;
+}
+
+@keyframes pulse-ring {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+    }
+
+    50% {
+        box-shadow: 0 0 0 8px rgba(37, 99, 235, 0.08);
+    }
+}
+
+/* 未到達狀態 (預設) */
+.review-step.pending .step-circle {
+    background: #f9fafb;
+    border-color: #e5e7eb;
+    color: #d1d5db;
+}
+
+/* 退回狀態 */
+.review-step.rejected .step-circle {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    border-color: #ef4444;
+    color: white;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.review-step.rejected .step-check {
+    display: none;
+}
+
+.review-step.rejected .step-number::before {
+    content: '✕';
+}
+
+.review-step.rejected .step-number {
+    font-size: 0;
+}
+
+.review-step.rejected .step-number::before {
+    font-size: 1.1rem;
+}
+
+/* 連接線 */
+.step-connector-before,
+.step-connector-after {
+    display: none;
+}
+
+.review-step::before,
+.review-step::after {
+    content: '';
+    position: absolute;
+    top: 22px;
+    height: 3px;
+    background: #e5e7eb;
+    z-index: 1;
+    transition: background 0.3s ease;
+}
+
+.review-step::before {
+    right: 50%;
+    left: 0;
+    margin-right: 26px;
+}
+
+.review-step::after {
+    left: 50%;
+    right: 0;
+    margin-left: 26px;
+}
+
+.review-step:first-child::before,
+.review-step:last-child::after {
+    display: none;
+}
+
+/* 已完成的線 */
+.review-step.completed::before,
+.review-step.completed::after {
+    background: #10b981;
+}
+
+.review-step.active::before {
+    background: #10b981;
+}
+
+/* 步驟標籤 */
+.review-step .step-label {
+    margin-top: 0.6rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #6b7280;
+    transition: color 0.3s ease;
+}
+
+.review-step.completed .step-label {
+    color: #059669;
+}
+
+.review-step.active .step-label {
+    color: #2563eb;
+}
+
+.review-step.rejected .step-label {
+    color: #dc2626;
+}
+
+.review-step .step-sub {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    margin-top: 0.15rem;
+}
+
+.review-step.active .step-sub {
+    color: #60a5fa;
+}
+
+/* =========================================
+   審題評語時間線 (Timeline)
+   ========================================= */
+.review-timeline {
+    position: relative;
+    padding-left: 2rem;
+}
+
+.review-timeline::before {
+    content: '';
+    position: absolute;
+    left: 11px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(180deg, #2563eb 0%, #e5e7eb 100%);
+    border-radius: 2px;
+}
+
+.review-comment-card {
+    position: relative;
+    margin-bottom: 1rem;
+    padding: 1rem 1.25rem;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+}
+
+.review-comment-card:hover {
+    border-color: #bfdbfe;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
+}
+
+/* 時間線圓點 */
+.review-comment-card::before {
+    content: '';
+    position: absolute;
+    left: -2rem;
+    top: 1.2rem;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #2563eb;
+    border: 2px solid white;
+    box-shadow: 0 0 0 2px #2563eb;
+    margin-left: -4px;
+}
+
+.review-comment-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.review-comment-header .reviewer-name {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #1f2937;
+}
+
+.review-comment-header .reviewer-role {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: #eff6ff;
+    color: #1e40af;
+}
+
+.review-comment-header .review-time {
+    font-size: 0.78rem;
+    color: #9ca3af;
+    margin-left: auto;
+}
+
+.review-comment-decision {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 0.5rem;
+}
+
+.decision-adopt {
+    background: #f0fdf4;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+}
+
+.decision-revise {
+    background: #fffbeb;
+    color: #b45309;
+    border: 1px solid #fde68a;
+}
+
+.decision-reject {
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
+
+.review-comment-body {
+    font-size: 0.88rem;
+    color: #374151;
+    line-height: 1.6;
+}
+
+.review-no-comments {
+    text-align: center;
+    padding: 1.5rem;
+    color: #9ca3af;
+    font-size: 0.9rem;
+}
+
+.review-no-comments i {
+    display: block;
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    opacity: 0.4;
+}
+
+/* =========================================
+   題組子題卡片 (Sub-question Card)
+   ========================================= */
+.sub-question-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+    position: relative;
+    overflow: hidden;
+}
+
+.sub-question-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 4px;
+    background: linear-gradient(180deg, #3b82f6 0%, #8b5cf6 100%);
+}
+
+.sub-question-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px dashed #e5e7eb;
+}
+
+.sub-question-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.sub-question-card .review-stepper {
+    padding-top: 0.5rem;
+    margin-bottom: 1rem;
+    background: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid #f1f5f9;
+}
+
+.sub-question-card .detail-section {
+    margin-bottom: 1.5rem;
+}
+
+.sub-question-card .detail-section:last-child {
+    margin-bottom: 0;
+}

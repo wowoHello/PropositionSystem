@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "codereview-roasted": {
+      "source": "openhands/skills",
+      "sourceType": "github",
+      "computedHash": "85db75f204888540252864247776af0f6774df840154e0ebedba96e3db92a53e"
+    }
+  }
+}

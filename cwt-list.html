@@ -10,6 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
     rel="stylesheet" />
   <link rel="stylesheet" href="css/css-reset.css">
+  <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/cwt-list.css">
   <link rel="stylesheet" href="css/quill.snow.css">
   <link rel="stylesheet" href="css/sweetalert2.css">
@@ -194,7 +195,6 @@
             <div class="user-info">
               <div class="user-avatar">沈</div>
               <span class="user-name">沈雅茹</span>
-              <span class="role-badge role-admin" id="currentUserRole">系統管理員</span>
             </div>
             <a href="index.html" class="btn btn-sm btn-light fw-bold text-primary px-3">
               登出
@@ -815,9 +815,9 @@
 
                   <div class="mb-2">
                     <h6 class="fw-bold text-dark border-start border-4 border-secondary ps-2 mb-2">試題解析 (紀錄答案理由)</h6>
-                    <div class="editor-preview-box border rounded-3 p-3" id="preview-g-explanation"
-                      data-field="g-explanation" data-placeholder="請簡要說明正確答案的判斷依據，並簡述其他選項錯誤原因..."
-                      onclick="openCommonEditor(this)"></div>
+                    <div class="editor-preview-box editor-preview-box-unlimited border rounded-3 p-3"
+                      id="preview-g-explanation" data-field="g-explanation"
+                      data-placeholder="請簡要說明正確答案的判斷依據，並簡述其他選項錯誤原因..." onclick="openCommonEditor(this)"></div>
                     <input type="hidden" id="hidden-g-explanation" name="g-explanation">
                   </div>
                 </div>
@@ -872,7 +872,7 @@
                 <div class="col-md-9 bg-white p-4 main-panel">
 
                   <div class="mb-4">
-                    <h6 class="fw-bold text-dark border-start border-4 border-secondary ps-2 mb-2">題目 (可略)</h6>
+                    <h6 class="fw-bold text-dark border-start border-4 border-secondary ps-2 mb-2">題目</h6>
                     <div class="editor-preview-box border rounded-3 p-3" id="preview-lTopic" data-field="lTopic"
                       data-placeholder="點擊輸入長文題幹..." onclick="openCommonEditor(this)"></div>
                     <input type="hidden" id="hidden-lTopic">
@@ -893,9 +893,10 @@
                   <hr class="border-secondary opacity-10">
 
                   <div class="mb-2">
-                    <h6 class="fw-bold text-dark border-start border-4 border-secondary ps-2 mb-2">試題解析 (紀錄答案理由)</h6>
-                    <div class="editor-preview-box border rounded-3 p-3" id="preview-l-explanation"
-                      data-field="l-explanation" data-placeholder="請簡要說明長文題目的解析..." onclick="openCommonEditor(this)">
+                    <h6 class="fw-bold text-dark border-start border-4 border-secondary ps-2 mb-2">批閱說明</h6>
+                    <div class="editor-preview-box editor-preview-box-unlimited border rounded-3 p-3"
+                      id="preview-l-explanation" data-field="l-explanation" data-placeholder="請簡要說明長文題目的批閱說明..."
+                      onclick="openCommonEditor(this)">
                     </div>
                     <input type="hidden" id="hidden-l-explanation" name="l-explanation">
                   </div>
@@ -1298,9 +1299,9 @@
 
                   <div class="mb-2">
                     <h6 class="fw-bold text-dark border-start border-4 border-secondary ps-2 mb-2">試題解析 (紀錄答案理由)</h6>
-                    <div class="editor-preview-box border rounded-3 p-3 bg-white" id="preview-listen-explanation"
-                      data-field="listen-explanation" data-placeholder="請簡要說明正確答案的判斷依據，並簡述其他選項錯誤原因..."
-                      onclick="openCommonEditor(this)">
+                    <div class="editor-preview-box editor-preview-box-unlimited border rounded-3 p-3 bg-white"
+                      id="preview-listen-explanation" data-field="listen-explanation"
+                      data-placeholder="請簡要說明正確答案的判斷依據，並簡述其他選項錯誤原因..." onclick="openCommonEditor(this)">
                     </div>
                     <input type="hidden" id="hidden-listen-explanation" name="listen-explanation">
                   </div>

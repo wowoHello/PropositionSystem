@@ -311,11 +311,17 @@ function openAddRoleModal() {
 // 開啟新增使用者 Modal
 function openAddUserModal() {
   const modal = new bootstrap.Modal(document.getElementById("addUserModal"));
-  // ... (clearing fields) ...
-  document.getElementById("addUserName").value = "";
-  document.getElementById("addUserAccount").value = "";
-  document.getElementById("addUserEmail").value = "";
-  if (document.getElementById("addUserTitle")) document.getElementById("addUserTitle").value = "";
+
+  // ✅ 快取 DOM 引用，避免重複查詢
+  const addUserName = document.getElementById("addUserName");
+  const addUserAccount = document.getElementById("addUserAccount");
+  const addUserEmail = document.getElementById("addUserEmail");
+  const addUserTitle = document.getElementById("addUserTitle");
+
+  if (addUserName) addUserName.value = "";
+  if (addUserAccount) addUserAccount.value = "";
+  if (addUserEmail) addUserEmail.value = "";
+  if (addUserTitle) addUserTitle.value = "";
 
   populateRoleSelects();
 
@@ -350,39 +356,38 @@ function openEditUserModal(index) {
   const modal = new bootstrap.Modal(document.getElementById("editUserModal"));
 
   // 填入 [基本帳號資料]
-  // Ensure options are populated
   populateRoleSelects();
 
-  if (document.getElementById("editUserId")) document.getElementById("editUserId").value = user.id;
-  if (document.getElementById("editRealName")) document.getElementById("editRealName").value = user.name;
-
-  // Split Account and Email
-  if (document.getElementById("editAccount")) document.getElementById("editAccount").value = user.account || "";
-  if (document.getElementById("editEmail")) document.getElementById("editEmail").value = user.email;
-
-  if (document.getElementById("editRole")) document.getElementById("editRole").value = user.role || "admin";
-  if (document.getElementById("editTitle")) document.getElementById("editTitle").value = user.title;
-  if (document.getElementById("editPhone")) document.getElementById("editPhone").value = user.phone;
-
-  // Set Modal Title Name
+  // ✅ 效能修復：快取所有 DOM 引用，避免同 ID 重複查詢
+  const editUserId = document.getElementById("editUserId");
+  const editRealName = document.getElementById("editRealName");
+  const editAccount = document.getElementById("editAccount");
+  const editEmail = document.getElementById("editEmail");
+  const editRole = document.getElementById("editRole");
+  const editTitle = document.getElementById("editTitle");
+  const editPhone = document.getElementById("editPhone");
   const titleNameEl = document.getElementById("modalEditTitleName");
-  if (titleNameEl) {
-    titleNameEl.innerText = user.name;
-  }
+  const accountStatus = document.getElementById("accountStatus");
 
-  if (document.getElementById("accountStatus")) {
-    document.getElementById("accountStatus").checked = (user.status === "active");
-  }
+  if (editUserId) editUserId.value = user.id;
+  if (editRealName) editRealName.value = user.name;
+  if (editAccount) editAccount.value = user.account || "";
+  if (editEmail) editEmail.value = user.email;
+  if (editRole) editRole.value = user.role || "admin";
+  if (editTitle) editTitle.value = user.title;
+  if (editPhone) editPhone.value = user.phone;
+  if (titleNameEl) titleNameEl.innerText = user.name;
+  if (accountStatus) accountStatus.checked = (user.status === "active");
 
   // --- 填入指派區塊的專案下拉選單 ---
+  // ✅ 效能修復：先收集 HTML 再一次性寫入，避免 innerHTML += 迴圈
   const assignSelect = document.getElementById("assignProjectSelect");
   if (assignSelect) {
-    assignSelect.innerHTML = '<option selected disabled>請選擇梯次...</option>';
-    projectsData
-      .filter((p) => p.status === "active")
-      .forEach((p) => {
-        assignSelect.innerHTML += `<option value="${p.id}">${p.year} ${p.name}</option>`;
-      });
+    const activeProjects = projectsData.filter((p) => p.status === "active");
+    const optionsHtml = activeProjects
+      .map((p) => `<option value="${p.id}">${p.year} ${p.name}</option>`)
+      .join("");
+    assignSelect.innerHTML = `<option selected disabled>請選擇梯次...</option>${optionsHtml}`;
   }
 
   // --- 渲染已參與專案列表 ---
@@ -392,11 +397,10 @@ function openEditUserModal(index) {
 }
 
 // 渲染列表的獨立函式
+// ✅ 效能修復：使用陣列收集 HTML 後一次性寫入
 function renderUserProjectList(userId) {
   const projectListDiv = document.getElementById("userProjectHistory");
   if (!projectListDiv) return;
-
-  projectListDiv.innerHTML = "";
 
   // 找出該使用者參與的所有專案
   const userProjects = projectsData.filter((p) =>
@@ -409,10 +413,10 @@ function renderUserProjectList(userId) {
     return;
   }
 
-  userProjects.forEach((p) => {
+  // ✅ 先收集所有 HTML 片段，最後一次性寫入 DOM
+  const fragments = userProjects.map((p) => {
     const memberInfo = p.members.find((m) => m.userId === userId);
 
-    // 翻譯角色標籤
     const roleBadges = memberInfo.roles
       .map((r) => {
         if (r === "teacher")
@@ -425,7 +429,11 @@ function renderUserProjectList(userId) {
       })
       .join("");
 
-    const html = `
+    const statusHtml = p.status === "active"
+      ? '<span class="text-success"><i class="bi bi-circle-fill" style="font-size:6px; vertical-align:middle"></i> 進行中</span>'
+      : '<span class="text-muted">已封存</span>';
+
+    return `
             <div class="d-flex align-items-center justify-content-between p-3 border-bottom">
                 <div>
                     <div class="d-flex align-items-center gap-2">
@@ -438,16 +446,14 @@ function renderUserProjectList(userId) {
                 </div>
                 <div class="d-flex align-items-center gap-3">
                     <div class="text-secondary small">
-                        ${p.status === "active"
-        ? '<span class="text-success"><i class="bi bi-circle-fill" style="font-size:6px; vertical-align:middle"></i> 進行中</span>'
-        : '<span class="text-muted">已封存</span>'
-      }
+                        ${statusHtml}
                     </div>
                 </div>
             </div>
         `;
-    projectListDiv.innerHTML += html;
   });
+
+  projectListDiv.innerHTML = fragments.join("");
 }
 
 function addProjectRoleMock() {

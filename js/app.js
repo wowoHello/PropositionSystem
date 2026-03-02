@@ -356,91 +356,12 @@ function applyFontSize() {
 }
 
 // 建立全域懸浮字體管理器 (Floating Accessibility Widget)
+// ✅ 效能修復：CSS 已搬移至 style.css，此處僅負責 HTML 結構與事件綁定
 function initFloatingFontSizeWidget() {
     // 登入頁不需要
     if (window.location.pathname.endsWith('index.html') || window.location.pathname === '/') return;
 
     const widgetHTML = `
-        <style>
-            .floating-font-widget {
-                position: fixed;
-                bottom: 24px;
-                right: 24px;
-                z-index: 1050;
-                display: flex;
-                align-items: center;
-                justify-content: flex-end;
-                height: 48px;
-            }
-            .font-widget-toggle {
-                width: 48px;
-                height: 48px;
-                border-radius: 50%;
-                background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
-                border: 1px solid #e5e7eb;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset;
-                color: #4b5563;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                cursor: pointer;
-                transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-                position: relative;
-                z-index: 2;
-            }
-            .font-widget-toggle:hover {
-                transform: translateY(-2px) scale(1.05);
-                box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.8) inset;
-                color: #1e3a8a; /* primary-blue-dark approx */
-            }
-            .font-widget-toggle:active {
-                transform: translateY(0) scale(0.95);
-            }
-            .floating-font-widget.expanded .font-widget-toggle {
-                background: #1e3a8a;
-                color: white;
-                box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-                border-color: #1e3a8a;
-                transform: rotate(90deg);
-            }
-            .font-widget-panel {
-                position: absolute;
-                right: 24px;
-                height: 48px;
-                background: rgba(255, 255, 255, 0.95) !important;
-                backdrop-filter: blur(8px);
-                -webkit-backdrop-filter: blur(8px);
-                border: 1px solid rgba(229, 231, 235, 0.8) !important;
-                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
-                padding-right: 32px !important;
-                padding-left: 12px !important;
-                opacity: 0;
-                visibility: hidden;
-                transform: translateX(20px) scale(0.9);
-                transform-origin: right center;
-                transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-                pointer-events: none;
-            }
-            .floating-font-widget.expanded .font-widget-panel {
-                opacity: 1;
-                visibility: visible;
-                transform: translateX(0) scale(1);
-                pointer-events: auto;
-            }
-            .font-widget-panel .btn img {
-                opacity: 0.7;
-                transition: opacity 0.2s;
-            }
-            .font-widget-panel .btn:hover img {
-                opacity: 1;
-            }
-            @media (max-width: 768px) {
-                .floating-font-widget {
-                    bottom: 16px;
-                    right: 16px;
-                }
-            }
-        </style>
         <div class="floating-font-widget" id="floatingFontWidget">
             <button class="font-widget-toggle" title="閱讀設定" id="fontWidgetToggle">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">

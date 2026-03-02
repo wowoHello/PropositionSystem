@@ -382,114 +382,8 @@ const GeneralHandler = (function () {
     };
 })();
 
-/* --- GeneralHandler (一般/精選) --- */
-// const GeneralHandler = (function () {
-//     const quills = {};
-//     const categoryData = {
-//         "文字": ["字音", "字型", "造字原則"], "語詞": ["辭義辨識", "詞彙辨析", "詞性分辨", "語詞應用"],
-//         "成語短語": ["短語辨識", "語詞使用", "文義取得"], "造句標點": ["句義", "句法辨析", "標點符號"],
-//         "修辭技巧": ["修辭類型", "語態變化"], "語文知識": ["語文知識"], "文意判讀": ["段義辨析"]
-//     };
-
-//     function updateCorrectAnswerDisplay(val) {
-//         ['A', 'B', 'C', 'D'].forEach(opt => {
-//             const card = document.getElementById(`optionCard${opt}`);
-//             if (card) val === opt ? card.classList.add('is-correct-answer') : card.classList.remove('is-correct-answer');
-//         });
-//         const dropdown = document.getElementById('gCorrectAnswer');
-//         if (dropdown) val ? dropdown.classList.add('has-answer') : dropdown.classList.remove('has-answer');
-//     }
-
-//     return {
-//         init: function () {
-//             const mainSelect = document.getElementById('gMainCategory');
-//             const subSelect = document.getElementById('gSubCategory');
-//             if (mainSelect) {
-//                 mainSelect.innerHTML = '<option value="">請選擇...</option>';
-//                 Object.keys(categoryData).forEach(key => mainSelect.add(new Option(key, key)));
-//                 mainSelect.addEventListener('change', function () {
-//                     subSelect.innerHTML = '<option value="">請選擇...</option>';
-//                     if (this.value && categoryData[this.value]) {
-//                         subSelect.disabled = false;
-//                         categoryData[this.value].forEach(sub => subSelect.add(new Option(sub, sub)));
-//                     } else {
-//                         subSelect.disabled = true;
-//                         subSelect.innerHTML = '<option value="">請先選擇主類</option>';
-//                     }
-//                 });
-//             }
-
-//             // Init Quills
-//             const configs = [
-//                 { id: 'q-editor-content', key: 'content', tb: window.mainToolbar },
-//                 { id: 'q-editor-explanation', key: 'explanation', tb: window.mainToolbar },
-//                 { id: 'q-editor-optA', key: 'optA', tb: window.optionToolbar },
-//                 { id: 'q-editor-optB', key: 'optB', tb: window.optionToolbar },
-//                 { id: 'q-editor-optC', key: 'optC', tb: window.optionToolbar },
-//                 { id: 'q-editor-optD', key: 'optD', tb: window.optionToolbar }
-//             ];
-
-//             configs.forEach(c => {
-//                 const el = document.getElementById(c.id);
-//                 if (el && !quills[c.key] && !el.classList.contains('ql-container')) {
-//                     quills[c.key] = new Quill('#' + c.id, { theme: 'snow', modules: { toolbar: c.tb }, placeholder: '請輸入...' });
-//                     bindQuillHelpers(quills[c.key], c.id);
-//                 }
-//             });
-
-//             const ans = document.getElementById('gCorrectAnswer');
-//             if (ans) {
-//                 const newAns = ans.cloneNode(true);
-//                 ans.parentNode.replaceChild(newAns, ans);
-//                 newAns.addEventListener('change', function () { updateCorrectAnswerDisplay(this.value); });
-//             }
-//         },
-//         clear: function () {
-//             ['gLevel', 'gDifficulty', 'gMainCategory', 'gCorrectAnswer'].forEach(id => {
-//                 const el = document.getElementById(id); if (el) el.value = '';
-//             });
-//             const sub = document.getElementById('gSubCategory');
-//             if (sub) { sub.innerHTML = '<option value="">請先選擇主類</option>'; sub.disabled = true; }
-//             Object.values(quills).forEach(q => q.setText(''));
-//             updateCorrectAnswerDisplay('');
-//             this.toggleEditable(true);
-//         },
-//         fill: function (data, isViewMode) {
-//             ['gLevel', 'gDifficulty'].forEach(id => { const el = document.getElementById(id); if (el) el.value = data[id.replace('g', '').toLowerCase()] || ''; });
-//             const main = document.getElementById('gMainCategory');
-//             if (main) { main.value = data.mainCat || ''; main.dispatchEvent(new Event('change')); }
-//             const sub = document.getElementById('gSubCategory');
-//             if (sub && data.subCat) sub.value = data.subCat;
-
-//             const setQ = (k, v) => { if (quills[k]) { quills[k].setText(''); if (v) quills[k].clipboard.dangerouslyPasteHTML(0, decodeURIComponent(v)); } };
-//             setQ('content', data.content); setQ('explanation', data.explanation);
-//             ['A', 'B', 'C', 'D'].forEach(o => setQ(`opt${o}`, data[`opt${o}`]));
-
-//             const ans = document.getElementById('gCorrectAnswer');
-//             if (ans) { ans.value = data.ans || ''; updateCorrectAnswerDisplay(data.ans || ''); }
-//             this.toggleEditable(!isViewMode);
-//         },
-//         collect: function () {
-//             return {
-//                 level: document.getElementById('gLevel').value,
-//                 mainCat: document.getElementById('gMainCategory').value,
-//                 subCat: document.getElementById('gSubCategory').value,
-//                 content: encodeURIComponent(quills.content.root.innerHTML),
-//                 summary: quills.content.getText().trim().substring(0, 20) + '...',
-//                 ans: document.getElementById('gCorrectAnswer').value
-//             };
-//         },
-//         toggleEditable: function (editable) {
-//             Object.values(quills).forEach(q => q.enable(editable));
-//             document.querySelectorAll('#form-general input, #form-general select').forEach(el => {
-//                 if (el.id !== 'gPropositioner' && el.id !== 'gSubCategory') el.disabled = !editable;
-//             });
-//             const sub = document.getElementById('gSubCategory');
-//             if (sub && editable && document.getElementById('gMainCategory').value) sub.disabled = false;
-//             document.querySelectorAll('#form-general .punc-btn').forEach(b => b.disabled = !editable);
-//         }
-//     };
-// })();
+// [已移除] 舊版被註解掉的 GeneralHandler 死碼 (~108 行)
+// 使用 git 版本管理追蹤歷史版本，而非保留大段註解。
 
 /* --- LongArticleHandler (長文題目) --- */
 const LongArticleHandler = (function () {
@@ -702,12 +596,11 @@ const ListenHandler = (function () {
                 this.updateCoreIndicator = updateCoreIndicator;
             }
 
-            // 綁定正確答案連動
+            // ✅ 效能修復：使用 data-bound 標記避免重複綁定，取代 cloneNode
             const ans = document.getElementById('liCorrectAnswer');
-            if (ans) {
-                const newAns = ans.cloneNode(true);
-                ans.parentNode.replaceChild(newAns, ans);
-                newAns.addEventListener('change', function () { updateCorrectAnswerDisplay(this.value); });
+            if (ans && !ans.dataset.bound) {
+                ans.dataset.bound = 'true';
+                ans.addEventListener('change', function () { updateCorrectAnswerDisplay(this.value); });
             }
         },
         clear: function () {
@@ -1059,7 +952,7 @@ const ListenGroupHandler = (function () {
 
                             <div class="mt-3">
                                 <label class="form-label fw-bold small text-secondary border-start border-4 border-secondary ps-2 mb-2">試題解析</label>
-                                <div class="editor-preview-box border rounded-3 p-3 bg-white" 
+                                <div class="editor-preview-box editor-preview-box-unlimited border rounded-3 p-3 bg-white" 
                                      id="preview-${uid}-explanation" 
                                      data-field="${uid}-explanation" 
                                      data-placeholder="點擊輸入解析..." 
@@ -1396,11 +1289,11 @@ const ReadingHandler = (function () {
                 if (select) select.value = val;
             };
 
+            // ✅ 效能修復：使用 data-bound 標記避免重複綁定，取代 cloneNode
             const addBtn = document.getElementById('btn-add-reading-sub');
-            if (addBtn) {
-                const newBtn = addBtn.cloneNode(true);
-                addBtn.replaceWith(newBtn);
-                newBtn.addEventListener('click', () => this.addSubQuestion(null, false));
+            if (addBtn && !addBtn.dataset.bound) {
+                addBtn.dataset.bound = 'true';
+                addBtn.addEventListener('click', () => this.addSubQuestion(null, false));
             }
             window.Reading_RemoveSub = (id) => this.removeSub(id);
 
@@ -1559,7 +1452,7 @@ const ReadingHandler = (function () {
                             <hr class="border-secondary opacity-10 my-3">
                             <div class="mb-2">
                                 <label class="form-label fw-bold small text-secondary border-start border-4 border-secondary ps-2 mb-2">試題解析 (紀錄答案理由)</label>
-                                <div class="editor-preview-box border rounded-3 p-3 bg-white" id="preview-${id}_explanation" data-field="${id}_explanation" data-placeholder="請簡要說明正確答案的判斷依據，並簡述其他選項錯誤原因..." onclick="openCommonEditor(this)">${data.explanation ? decodeURIComponent(data.explanation) : ''}</div>
+                                <div class="editor-preview-box editor-preview-box-unlimited border rounded-3 p-3 bg-white" id="preview-${id}_explanation" data-field="${id}_explanation" data-placeholder="請簡要說明正確答案的判斷依據，並簡述其他選項錯誤原因..." onclick="openCommonEditor(this)">${data.explanation ? decodeURIComponent(data.explanation) : ''}</div>
                                 <input type="hidden" id="hidden-${id}_explanation" value="${data.explanation || ''}">
                             </div>
                         </div>
@@ -1864,7 +1757,7 @@ const ShortArticleHandler = (function () {
 
                         <div class="mb-2">
                              <label class="form-label fw-bold small text-secondary border-start border-4 border-secondary ps-2 mb-2">試題解析 (批說)</label>
-                            <div class="editor-preview-box border rounded-3 p-3 bg-white" 
+                            <div class="editor-preview-box editor-preview-box-unlimited border rounded-3 p-3 bg-white" 
                                     id="preview-${id}_explanation" 
                                     data-field="${id}_explanation" 
                                     data-placeholder="請簡要說明短文子題解析..."
@@ -1884,12 +1777,12 @@ const ShortArticleHandler = (function () {
                 if (select) select.value = val;
             };
 
+            // ✅ 效能修復：使用 data-bound 標記避免重複綁定，取代 cloneNode
             const addBtn = document.getElementById('btn-add-s-sub');
-            if (addBtn) {
-                const newBtn = addBtn.cloneNode(true);
-                addBtn.replaceWith(newBtn);
-                newBtn.addEventListener('click', () => {
-                    this.addSubQuestion(null, false); // ★ 新增時設定為 false (收起)
+            if (addBtn && !addBtn.dataset.bound) {
+                addBtn.dataset.bound = 'true';
+                addBtn.addEventListener('click', () => {
+                    this.addSubQuestion(null, false);
                 });
             }
             window.ShortArticle_RemoveSub = (id) => this.removeSub(id);
@@ -2185,7 +2078,7 @@ window.saveProp = function (targetStatus) {
 
 window.deleteRow = function (btn) {
     Swal.fire({ title: '確定刪除?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: '刪除' }).then((r) => {
-        if (r.isConfirmed) { btn.closest('tr').remove(); checkEmptyState(); showToast('已刪除', 'error'); }
+        if (r.isConfirmed) { btn.closest('tr').remove(); checkEmptyState(); updateStats(); sortPropList(); showToast('已刪除', 'error'); }
     });
 };
 
@@ -2250,6 +2143,8 @@ function writeToTable(data) {
     row.setAttribute('data-level', data.level || 'all');
     row.setAttribute('data-json', JSON.stringify(data));
     checkEmptyState();
+    updateStats();
+    sortPropList();
 }
 
 function getActionHtml(status) {
@@ -2265,11 +2160,12 @@ function updateRowActionButtons(row, status) {
     row.cells[7].innerHTML = getActionHtml(status);
 }
 
+// ✅ 效能修復：checkEmptyState 不再連鎖觸發 updateStats() + sortPropList()
+// 呼叫者需自行決定是否要更新統計或排序，避免不必要的重複計算
 function checkEmptyState() {
     const rows = Array.from(document.querySelectorAll('.data-row')).filter(r => r.style.display !== 'none');
     const no = document.getElementById('noDataRow');
     if (no) no.style.display = rows.length === 0 ? 'table-row' : 'none';
-    updateStats(); sortPropList();
 }
 
 function updateStats() {
@@ -2300,6 +2196,7 @@ function updateStats() {
     setT('stat-rejected', s.rejected);
 }
 
+// ✅ 效能修復：使用 DocumentFragment 批次寫入 DOM，避免逐行 insertBefore 觸發 N 次 Reflow
 function sortPropList() {
     const tbody = document.querySelector('tbody');
     const rows = Array.from(document.querySelectorAll('.data-row'));
@@ -2310,15 +2207,19 @@ function sortPropList() {
         if ((pri[sa] || 99) !== (pri[sb] || 99)) return (pri[sa] || 99) - (pri[sb] || 99);
         return b.cells[5].innerText.localeCompare(a.cells[5].innerText);
     });
-    rows.forEach(r => tbody.insertBefore(r, no));
+
+    // 使用 DocumentFragment 避免逐行 DOM 操作
+    const fragment = document.createDocumentFragment();
+    rows.forEach(r => fragment.appendChild(r));
+    tbody.insertBefore(fragment, no);
 }
 
+// ✅ 效能修復：使用 data-bound 標記避免重複綁定，取代 cloneNode
 function initCheckboxLogic() {
     const all = document.querySelector('thead input[type="checkbox"]');
-    if (all) {
-        const clone = all.cloneNode(true);
-        all.parentNode.replaceChild(clone, all);
-        clone.addEventListener('change', function () {
+    if (all && !all.dataset.bound) {
+        all.dataset.bound = 'true';
+        all.addEventListener('change', function () {
             document.querySelectorAll('tbody .data-row input[type="checkbox"]').forEach(c => {
                 if (!c.disabled && c.closest('tr').style.display !== 'none') c.checked = this.checked;
             });
@@ -2404,8 +2305,11 @@ function initTypeSwitcher() {
 }
 
 // --- [補回] Auto Select ---
+// ✅ 效能修復：限定查詢範圍為 #propModal 內的 select，避免遍歷全頁面 DOM
 function initAutoSelect() {
-    document.querySelectorAll('select').forEach(sel => {
+    const modal = document.getElementById('propModal');
+    if (!modal) return;
+    modal.querySelectorAll('select').forEach(sel => {
         if (!sel.multiple && sel.options.length > 0) {
             const valid = Array.from(sel.options).filter(o => o.value && !o.disabled);
             if (valid.length === 1 && sel.value !== valid[0].value) sel.value = valid[0].value;

@@ -27,6 +27,7 @@
 ├── cwt-dashboard.html      # 命題儀錶板
 ├── cwt-prop.html           # 命題專案管理
 ├── cwt-list.html           # 我的命題任務 (核心頁面)
+├── cwt-bank.html           # 題庫總覽 (管理者專用)
 ├── cwt-review.html         # 審題清單
 ├── cwt-role.html           # 角色與權限管理
 ├── cwt-teacher.html        # 教師管理系統
@@ -146,6 +147,14 @@
 - 梯次綁定 (全站通用 or 指定梯次)
 - 資料透過 `localStorage` 持久化
 
+### 10. 題庫總覽 (`cwt-bank.html`)
+
+- 統計卡片 (題庫總題數、本梯次新增、題型種類、命題教師數)
+- 進階篩選 (梯次/題型/難度/審查狀態/關鍵字)
+- 題目列表表格 (編號、題型、難度、主類別、教師、梯次、狀態、日期)
+- 檢視 Modal (題幹、選項、正確答案、解析)
+- 分頁器
+
 ---
 
 ## 頁面導航流程
@@ -162,7 +171,8 @@ firstpage.html (首頁導覽)
     ├── cwt-review.html        (審題清單)
     ├── cwt-role.html          (角色與權限管理)
     ├── cwt-teacher.html       (教師管理系統)
-    └── cwt-announcement.html  (系統公告)
+    ├── cwt-announcement.html  (系統公告)
+    └── cwt-bank.html          (題庫總覽)
 ```
 
 所有子頁面共用頂部 Navbar (定義於各自 HTML 中)，包含：
@@ -226,6 +236,7 @@ role-manager.js (角色權限頁)
 | `cwt-role.html`        | `style.css`, `cwt-role.css`                     |
 | `cwt-teacher.html`     | `style.css`, `cwt-teacher.css`                  |
 | `cwt-announcement.html`| `style.css`, `cwt-announcement.css`             |
+| `cwt-bank.html`        | `style.css`, `cwt-bank.css`                     |
 
 > 所有子頁面皆載入 `quill.snow.css` 與 `sweetalert2.css`。`style.css` 為全站共用樣式 (Navbar、專案切換器等)。
 

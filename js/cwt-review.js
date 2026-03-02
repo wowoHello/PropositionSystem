@@ -12,7 +12,7 @@ let currentStage = 'mutual'; // 當前開啟的審題階段 (mutual/expert/final
 let currentRow = null;       // 當前編輯的 Table Row
 
 // Quill 編輯器實體
-var editors = {
+const editors = {
     mutual: null,
     expert: null,
     final: null
@@ -125,33 +125,35 @@ function initQuillEditors() {
 }
 
 // 綁定標點符號按鈕事件
+// ✅ 效能修復：移除 cloneNode+replaceChild 反模式，改用事件委派避免重複綁定
 function bindPunctuationButtons(editorContainer, quillInstance) {
     const wrapper = editorContainer.closest('.quill-master-container');
     if (!wrapper) return;
 
-    const btns = wrapper.querySelectorAll('.punc-btn');
-    btns.forEach(btn => {
-        // 先移除可能存在的舊監聽器 (保險起見)
-        const newBtn = btn.cloneNode(true);
-        btn.parentNode.replaceChild(newBtn, btn);
+    // 使用事件委派：在父層監聽 click，透過 e.target 判斷是否為 .punc-btn
+    const toolbar = wrapper.querySelector('.punctuation-toolbar');
+    if (!toolbar || toolbar.dataset.bound) return; // 避免重複綁定
+    toolbar.dataset.bound = 'true';
 
-        newBtn.addEventListener('click', function (e) {
-            e.preventDefault();
-            const char = this.getAttribute('data-char');
-            const back = parseInt(this.getAttribute('data-back') || 0);
+    toolbar.addEventListener('click', (e) => {
+        const btn = e.target.closest('.punc-btn');
+        if (!btn) return;
+        e.preventDefault();
 
-            // 插入文字邏輯
-            const range = quillInstance.getSelection(true);
-            if (range) {
-                quillInstance.insertText(range.index, char);
-                quillInstance.setSelection(range.index + char.length - back);
-            } else {
-                // 如果沒有 focus，則插入到最後
-                const length = quillInstance.getLength();
-                quillInstance.insertText(length - 1, char);
-                quillInstance.setSelection(length - 1 + char.length - back);
-            }
-        });
+        const char = btn.getAttribute('data-char');
+        const back = parseInt(btn.getAttribute('data-back') || 0);
+
+        // 插入文字邏輯
+        const range = quillInstance.getSelection(true);
+        if (range) {
+            quillInstance.insertText(range.index, char);
+            quillInstance.setSelection(range.index + char.length - back);
+        } else {
+            // 如果沒有 focus，則插入到最後
+            const length = quillInstance.getLength();
+            quillInstance.insertText(length - 1, char);
+            quillInstance.setSelection(length - 1 + char.length - back);
+        }
     });
 }
 
