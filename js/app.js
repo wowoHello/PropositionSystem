@@ -6,6 +6,126 @@
 // ==========================================
 //  1. 全域設定 (Configs & Constants)
 // ==========================================
+
+// --- HTML 消毒工具 (防止 XSS) ---
+/**
+ * 將不安全的 HTML 字串消毒，只保留安全的標籤與屬性。
+ * 用於將 localStorage 或外部資料插入 innerHTML 前的防護。
+ * @param {string} dirty - 可能含有危險標籤的 HTML 字串
+ * @returns {string} 消毒後的安全 HTML
+ */
+function sanitizeHtml(dirty) {
+    if (!dirty) return '';
+    const doc = new DOMParser().parseFromString(dirty, 'text/html');
+    const ALLOWED_TAGS = new Set([
+        'P', 'BR', 'B', 'I', 'U', 'S', 'STRONG', 'EM', 'SPAN', 'DIV',
+        'UL', 'OL', 'LI', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6',
+        'TABLE', 'THEAD', 'TBODY', 'TR', 'TH', 'TD',
+        'A', 'IMG', 'BLOCKQUOTE', 'PRE', 'CODE', 'SUB', 'SUP'
+    ]);
+    const ALLOWED_ATTRS = new Set([
+        'class', 'style', 'href', 'src', 'alt', 'title', 'target',
+        'colspan', 'rowspan', 'width', 'height'
+    ]);
+    function clean(node) {
+        const children = Array.from(node.childNodes);
+        children.forEach(child => {
+            if (child.nodeType === Node.ELEMENT_NODE) {
+                if (!ALLOWED_TAGS.has(child.tagName)) {
+                    child.remove();
+                    return;
+                }
+                // 移除不安全的屬性
+                Array.from(child.attributes).forEach(attr => {
+                    if (!ALLOWED_ATTRS.has(attr.name)) {
+                        child.removeAttribute(attr.name);
+                    }
+                });
+                // 移除 href/src 中的 javascript: 協定
+                ['href', 'src'].forEach(a => {
+                    const val = child.getAttribute(a);
+                    if (val && val.trim().toLowerCase().startsWith('javascript:')) {
+                        child.removeAttribute(a);
+                    }
+                });
+                clean(child);
+            }
+        });
+    }
+    clean(doc.body);
+    return doc.body.innerHTML;
+}
+
+/**
+ * 跳脫 HTML 特殊字元，將字串轉為純文字安全格式。
+ * 用於不需要保留 HTML 標籤的場景。
+ * @param {string} str - 需要跳脫的字串
+ * @returns {string} 跳脫後的安全字串
+ */
+function escapeHtml(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+/**
+ * 安全版的 JSON.parse，失敗時回傳預設值而非拋出錯誤。
+ * @param {string} jsonStr - JSON 字串
+ * @param {*} fallback - 解析失敗時的回傳值（預設 []）
+ * @returns {*} 解析結果或 fallback
+ */
+function safeJsonParse(jsonStr, fallback = []) {
+    try {
+        return JSON.parse(jsonStr);
+    } catch (e) {
+        console.warn('[safeJsonParse] 解析失敗:', e.message);
+        return fallback;
+    }
+}
+/**
+ * 顯示 Bootstrap Toast 通知。
+ * @param {string} msg - 訊息文字
+ * @param {string} type - Bootstrap 色彩類型 ('success'|'primary'|'error'|'secondary')
+ */
+function showToast(msg, type = 'success') {
+    const el = document.getElementById('liveToast');
+    if (!el) return;
+    const bgClass = type === 'error' ? 'danger' : type;
+    el.className = `toast align-items-center text-white border-0 bg-${bgClass}`;
+    el.querySelector('.toast-body').innerText = msg;
+    if (typeof toastInstance !== 'undefined' && toastInstance) {
+        toastInstance.show();
+    } else {
+        bootstrap.Toast.getOrCreateInstance(el).show();
+    }
+}
+
+/**
+ * 產生固定長度的摘要文字，超過 maxLen 則加上 '...'。
+ * @param {string} text - 原始文字
+ * @param {string} fallback - 文字為空時的替代文字
+ * @param {number} maxLen - 截斷長度（預設 20）
+ * @returns {string}
+ */
+function makeSummary(text, fallback = '未命名題目', maxLen = 20) {
+    const t = (text || '').trim();
+    return t ? (t.substring(0, maxLen) + (t.length > maxLen ? '...' : '')) : fallback;
+}
+
+/**
+ * 統一設定預覽區塊的鎖定/解鎖視覺狀態。
+ * @param {string} formSelector - 表單容器的 CSS 選擇器（如 '#form-general'）
+ * @param {boolean} editable - true=可編輯, false=鎖定
+ */
+function applyPreviewLockState(formSelector, editable) {
+    document.querySelectorAll(`${formSelector} .editor-preview-box`).forEach(el => {
+        el.style.pointerEvents = editable ? 'auto' : 'none';
+        el.style.backgroundColor = editable ? '#fff' : '#f3f4f6';
+        el.style.borderColor = editable ? '#dee2e6' : '#e5e7eb';
+    });
+}
+
 // --- 註冊 Quill 自訂字體 ---
 // 標點符號工具列 HTML 模板 (確保全站一致)
 const PUNCTUATION_BAR_HTML = `
@@ -175,7 +295,7 @@ let currentZoom = 100; // 字體縮放預設值
 document.addEventListener("DOMContentLoaded", function () {
     // A. 初始化 Bootstrap 元件
     const modalEl = document.getElementById('propModal');
-    if (modalEl) propModal = new bootstrap.Modal(modalEl);
+    if (modalEl) propModal = bootstrap.Modal.getOrCreateInstance(modalEl);
 
     const toastEl = document.getElementById('liveToast');
     if (toastEl) toastInstance = new bootstrap.Toast(toastEl);

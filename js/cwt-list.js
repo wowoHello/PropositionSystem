@@ -334,18 +334,7 @@ const GeneralHandler = (function () {
             }
 
             // 5. 處理 isViewMode (鎖定)
-            const previews = document.querySelectorAll('#form-general .editor-preview-box');
-            previews.forEach(el => {
-                if (isViewMode) {
-                    el.style.pointerEvents = 'none';
-                    el.style.backgroundColor = '#f3f4f6';
-                    el.style.borderColor = '#e5e7eb';
-                } else {
-                    el.style.pointerEvents = 'auto';
-                    el.style.backgroundColor = '#fff';
-                    el.style.borderColor = '#dee2e6';
-                }
-            });
+            applyPreviewLockState('#form-general', !isViewMode);
 
             // 鎖定 Radio
             document.querySelectorAll('input[name="gDifficultyRadio"]').forEach(r => {
@@ -375,7 +364,7 @@ const GeneralHandler = (function () {
                 optD: document.getElementById('hidden-g-optD').value,
                 explanation: document.getElementById('hidden-g-explanation').value,
 
-                summary: document.getElementById('preview-g-content').innerText.trim().substring(0, 20) + '...',
+                summary: makeSummary(document.getElementById('preview-g-content').innerText, '未命名一般題目'),
                 ans: document.getElementById('gCorrectAnswer').value
             };
         }
@@ -473,18 +462,7 @@ const LongArticleHandler = (function () {
             setContent('explanation', data.explanation);
 
             // 5. 處理 View Mode 鎖定
-            const previews = document.querySelectorAll('#form-longarticle .editor-preview-box');
-            previews.forEach(el => {
-                if (isViewMode) {
-                    el.style.pointerEvents = 'none';
-                    el.style.backgroundColor = '#f3f4f6';
-                    el.style.borderColor = '#e5e7eb';
-                } else {
-                    el.style.pointerEvents = 'auto';
-                    el.style.backgroundColor = '#fff';
-                    el.style.borderColor = '#dee2e6';
-                }
-            });
+            applyPreviewLockState('#form-longarticle', !isViewMode);
 
             // 鎖定 Radio
             document.querySelectorAll('input[name="lDifficultyRadio"]').forEach(r => {
@@ -512,10 +490,7 @@ const LongArticleHandler = (function () {
                 explanation: document.getElementById('hidden-l-explanation').value,
 
                 // 摘要使用標題 (去除 HTML 標籤)
-                summary: (function () {
-                    const t = document.getElementById('preview-lTopic').innerText.trim();
-                    return t ? (t.substring(0, 20) + (t.length > 20 ? '...' : '')) : '未命名長文題目';
-                })()
+                summary: makeSummary(document.getElementById('preview-lTopic').innerText, '未命名長文題目')
             };
         }
     };
@@ -727,18 +702,7 @@ const ListenHandler = (function () {
             fillBox('listen-explanation', data.explanation);
 
             // 處理 View Mode (鎖定)
-            const previews = document.querySelectorAll('#form-listen .editor-preview-box');
-            previews.forEach(el => {
-                if (isViewMode) {
-                    el.style.pointerEvents = 'none';
-                    el.style.backgroundColor = '#f3f4f6';
-                    el.style.borderColor = '#e5e7eb';
-                } else {
-                    el.style.pointerEvents = 'auto';
-                    el.style.backgroundColor = '#fff';
-                    el.style.borderColor = '#dee2e6';
-                }
-            });
+            applyPreviewLockState('#form-listen', !isViewMode);
 
             // 鎖定 Inputs
             const inputs = document.querySelectorAll('#form-listen input, #form-listen select');
@@ -774,27 +738,12 @@ const ListenHandler = (function () {
                 ans: getVal('liCorrectAnswer'),
                 explanation: getVal('hidden-listen-explanation'),
 
-                summary: (function () {
-                    const p = document.getElementById('preview-liTopic');
-                    const t = p ? p.innerText.trim() : '';
-                    return t ? (t.substring(0, 20) + (t.length > 20 ? '...' : '')) : '未命名聽力題目';
-                })()
+                summary: makeSummary(document.getElementById('preview-liTopic')?.innerText, '未命名聽力題目')
             };
         },
         toggleEditable: function (editable) {
             // Preview Boxes state
-            const previews = document.querySelectorAll('#form-listen .editor-preview-box');
-            previews.forEach(el => {
-                if (!editable) {
-                    el.style.pointerEvents = 'none';
-                    el.style.backgroundColor = '#f8f9fa';
-                    el.style.borderColor = '#e9ecef';
-                } else {
-                    el.style.pointerEvents = 'auto';
-                    el.style.backgroundColor = '#fff';
-                    el.style.borderColor = '#dee2e6';
-                }
-            });
+            applyPreviewLockState('#form-listen', editable);
 
             document.querySelectorAll('#form-listen input, #form-listen select').forEach(el => {
                 // 關鍵：只有不是 liCore 和 liIndicator 的欄位才根據 editable 開關
@@ -1178,18 +1127,7 @@ const ListenGroupHandler = (function () {
             });
 
             // Handle All Preview Boxes in this form
-            const previews = document.querySelectorAll('#form-listengroup .editor-preview-box');
-            previews.forEach(el => {
-                if (!editable) {
-                    el.style.pointerEvents = 'none';
-                    el.style.backgroundColor = '#f8f9fa';
-                    el.style.borderColor = '#e9ecef';
-                } else {
-                    el.style.pointerEvents = 'auto';
-                    el.style.backgroundColor = '#fff';
-                    el.style.borderColor = '#dee2e6';
-                }
-            });
+            applyPreviewLockState('#form-listengroup', editable);
             // 處理 Sidebar 選單的鎖定狀態
             const sidebarSelect = document.getElementById('lgSidebarAnswer');
             if (sidebarSelect) {
@@ -1518,11 +1456,7 @@ const ReadingHandler = (function () {
             this.checkEmptyState();
 
             // ★ FIX: 重置 View Mode 鎖定狀態 (preview box + inputs + radio)
-            document.querySelectorAll('#form-reading .editor-preview-box').forEach(el => {
-                el.style.pointerEvents = 'auto';
-                el.style.backgroundColor = '#fff';
-                el.style.borderColor = '#dee2e6';
-            });
+            applyPreviewLockState('#form-reading', true);
             document.querySelectorAll('input[name="rDifficultyRadio"]').forEach(r => r.disabled = false);
             document.querySelectorAll('#form-reading input:not(.readonly-field), #form-reading select').forEach(el => el.disabled = false);
         },
@@ -1578,11 +1512,7 @@ const ReadingHandler = (function () {
                 genre: document.getElementById('rGenre').value,
                 topic: getVal('hidden-rTopic'),
                 article: getVal('hidden-rArticle'),
-                summary: (function () {
-                    const el = document.getElementById('preview-rTopic');
-                    const text = el ? el.innerText.trim() : '';
-                    return text ? (text.substring(0, 20) + (text.length > 20 ? '...' : '')) : '未命名閱讀題組';
-                })(),
+                summary: makeSummary(document.getElementById('preview-rTopic')?.innerText, '未命名閱讀題組'),
                 subQuestions: []
             };
 
@@ -1612,18 +1542,7 @@ const ReadingHandler = (function () {
             const inputs = document.querySelectorAll('#form-reading input:not(.readonly-field):not([type=radio]), #form-reading select');
             inputs.forEach(el => el.disabled = !editable);
 
-            const previews = document.querySelectorAll('#form-reading .editor-preview-box');
-            previews.forEach(el => {
-                if (!editable) {
-                    el.style.pointerEvents = 'none';
-                    el.style.backgroundColor = '#f3f4f6';
-                    el.style.borderColor = '#e5e7eb';
-                } else {
-                    el.style.pointerEvents = 'auto';
-                    el.style.backgroundColor = '#fff';
-                    el.style.borderColor = '#dee2e6';
-                }
-            });
+            applyPreviewLockState('#form-reading', editable);
             // 額外鎖定 Sidebar
             const sidebarAns = document.getElementById('rSidebarAnswer');
             if (sidebarAns && !editable) sidebarAns.disabled = true;
@@ -1865,11 +1784,7 @@ const ShortArticleHandler = (function () {
             this.checkEmptyState();
 
             // ★ FIX: 重置 View Mode 鎖定狀態 (preview box + inputs + radio)
-            document.querySelectorAll('#form-shortarticle .editor-preview-box').forEach(el => {
-                el.style.pointerEvents = 'auto';
-                el.style.backgroundColor = '#fff';
-                el.style.borderColor = '#dee2e6';
-            });
+            applyPreviewLockState('#form-shortarticle', true);
             document.querySelectorAll('input[name="sDifficultyRadio"]').forEach(r => r.disabled = false);
             document.querySelectorAll('#form-shortarticle input:not(.readonly-field), #form-shortarticle select').forEach(el => el.disabled = false);
         },
@@ -1928,11 +1843,7 @@ const ShortArticleHandler = (function () {
                 genre: document.getElementById('sGenre').value,
                 topic: getVal('hidden-sTopic'),
                 article: getVal('hidden-s-article'),
-                summary: (function () {
-                    const el = document.getElementById('preview-sTopic');
-                    const text = el ? el.innerText.trim() : '';
-                    return text ? (text.substring(0, 20) + (text.length > 20 ? '...' : '')) : '未命名短文題組';
-                })(),
+                summary: makeSummary(document.getElementById('preview-sTopic')?.innerText, '未命名短文題組'),
                 questions: []
             };
 
@@ -1986,18 +1897,7 @@ const ShortArticleHandler = (function () {
             const inputs = document.querySelectorAll('#form-shortarticle input:not(.readonly-field):not([type=radio]), #form-shortarticle select');
             inputs.forEach(el => el.disabled = !editable);
 
-            const previews = document.querySelectorAll('#form-shortarticle .editor-preview-box');
-            previews.forEach(el => {
-                if (!editable) {
-                    el.style.pointerEvents = 'none';
-                    el.style.backgroundColor = '#f3f4f6';
-                    el.style.borderColor = '#e5e7eb';
-                } else {
-                    el.style.pointerEvents = 'auto';
-                    el.style.backgroundColor = '#fff';
-                    el.style.borderColor = '#dee2e6';
-                }
-            });
+            applyPreviewLockState('#form-shortarticle', editable);
         }
     };
 })();
@@ -2042,7 +1942,7 @@ window.openPropModal = function (btn, mode) {
         document.getElementById('editRowFrom').value = row.rowIndex;
         const type = row.getAttribute('data-type');
         const status = row.getAttribute('data-status');
-        const jsonData = JSON.parse(row.getAttribute('data-json') || '{}');
+        const jsonData = safeJsonParse(row.getAttribute('data-json') || '{}', {});
 
         typeSelect.value = type;
 
@@ -2092,7 +1992,7 @@ window.batchUpdateStatus = function (status) {
                 const badge = getStatusClass(status);
                 row.cells[4].innerHTML = `<span class="badge-outline badge-${badge}">${status}</span>`;
                 row.setAttribute('data-status', status);
-                let json = JSON.parse(row.getAttribute('data-json') || '{}');
+                let json = safeJsonParse(row.getAttribute('data-json') || '{}', {});
                 json.status = status;
                 row.setAttribute('data-json', JSON.stringify(json));
 
@@ -2257,13 +2157,7 @@ function getCurrentTime() {
     return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')} ${String(n.getHours()).padStart(2, '0')}:${String(n.getMinutes()).padStart(2, '0')}`;
 }
 
-function showToast(msg, type = 'success') {
-    const el = document.getElementById('liveToast');
-    if (!el) return;
-    el.className = `toast align-items-center text-white border-0 bg-${type === 'error' ? 'danger' : (type === 'secondary' ? 'secondary' : 'primary')}`;
-    el.querySelector('.toast-body').innerText = msg;
-    if (toastInstance) toastInstance.show(); else new bootstrap.Toast(el).show();
-}
+// showToast() 已移至 app.js 共用
 
 function resetSelection() {
     const m = document.querySelector('thead input[type="checkbox"]');

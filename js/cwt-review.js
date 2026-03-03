@@ -38,7 +38,7 @@ const reviewToolbarOptions = [
 document.addEventListener("DOMContentLoaded", function () {
     // A. 初始化 Bootstrap 元件
     const modalEl = document.getElementById('reviewModal');
-    if (modalEl) reviewModal = new bootstrap.Modal(modalEl);
+    if (modalEl) reviewModal = bootstrap.Modal.getOrCreateInstance(modalEl);
 
     // B. 先渲染標點符號工具列 (必須在 Init Quill 之前)
     renderPunctuationToolbars();
@@ -183,11 +183,13 @@ window.openReviewModal = function (btn, stage) {
 
     // 1. 讀取行資料
     const jsonStr = currentRow.getAttribute('data-json');
-    const rowData = jsonStr ? JSON.parse(jsonStr) : {};
+    const rowData = jsonStr ? safeJsonParse(jsonStr, {}) : {};
 
     // 2. 設定 Modal Header 樣式
     const header = document.getElementById('reviewModalHeader');
     const title = document.getElementById('reviewModalTitle');
+    const reviewActions = document.querySelector('.review-actions');
+    const isHistory = (stage === 'history');
 
     // 重置 class
     header.className = 'modal-header';
@@ -204,10 +206,22 @@ window.openReviewModal = function (btn, stage) {
         header.classList.add('review-final');
         title.innerHTML = '<i class="bi bi-shield-check"></i> 審題 - 總審階段';
         showSection('final');
+    } else if (isHistory) {
+        header.classList.add('review-history');
+        title.innerHTML = '<i class="bi bi-clock-history"></i> 檢視 - 審題紀錄';
+        // 歷史模式：隱藏所有意見編輯區，僅保留題目內容 + 試題比對 + 審題決策紀錄
+        document.getElementById('mutualOpinionSection').classList.add('d-none');
+        document.getElementById('expertOpinionSection').classList.add('d-none');
+        document.getElementById('finalOpinionSection').classList.add('d-none');
+    }
+
+    // 歷史模式隱藏決策按鈕，審題模式恢復顯示
+    if (reviewActions) {
+        reviewActions.classList.toggle('d-none', isHistory);
     }
 
     // 3. 填充唯讀資料 (題目內容)
-    document.getElementById('reviewQuestionContent').innerHTML = rowData.stem || '（無題幹內容）';
+    document.getElementById('reviewQuestionContent').innerHTML = sanitizeHtml(rowData.stem) || '（無題幹內容）';
     document.getElementById('reviewQuestionType').innerText = rowData.type || '-';
     document.getElementById('reviewQuestionLevel').innerText = rowData.grade || '-';
 
@@ -224,7 +238,7 @@ window.openReviewModal = function (btn, stage) {
             div.className = `option-display ${isCorrect ? 'correct-answer' : ''}`;
             div.innerHTML = `
                 <span class="option-label">${label}</span>
-                <span class="option-content">${opt}</span>
+                <span class="option-content">${escapeHtml(opt)}</span>
             `;
             optionsContainer.appendChild(div);
         });
@@ -232,7 +246,7 @@ window.openReviewModal = function (btn, stage) {
 
     // 填充解析
     const explainDiv = document.getElementById('reviewExplanation');
-    explainDiv.innerHTML = rowData.analysis ? `<p>${rowData.analysis}</p>` : '<p class="text-muted">無解析資料</p>';
+    explainDiv.innerHTML = rowData.analysis ? `<p>${escapeHtml(rowData.analysis)}</p>` : '<p class="text-muted">無解析資料</p>';
 
     // 4. 清空並重置編輯器
     Object.values(editors).forEach(q => q && q.setText(''));
@@ -601,12 +615,4 @@ function updateStats() {
 //  6. UI 工具 (已移至 app.js)
 // ==========================================
 
-// Toast 顯示 helper
-function showToast(msg, type = 'primary') {
-    const toastEl = document.getElementById('liveToast');
-    if (toastEl) {
-        toastEl.className = `toast align-items-center text-white border-0 bg-${type}`;
-        toastEl.querySelector('.toast-body').innerText = msg;
-        if (toastInstance) toastInstance.show();
-    }
-}
+// showToast() 已移至 app.js 共用

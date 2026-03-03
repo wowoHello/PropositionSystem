@@ -933,7 +933,7 @@
             renderReviewTimeline(item.reviews);
 
             // 題幹：保留換行
-            document.getElementById('modalStem').innerHTML = item.stem.replace(/\n/g, '<br>');
+            document.getElementById('modalStem').innerHTML = escapeHtml(item.stem).replace(/\n/g, '<br>');
 
             // 選項區
             const optionsSection = document.getElementById('modalOptionsSection');
@@ -946,7 +946,7 @@
                     return `
             <li class="${isCorrect ? 'correct-answer' : ''}">
               <strong>${opt.label}.</strong>
-              <span>${opt.text}</span>
+              <span>${escapeHtml(opt.text)}</span>
               ${isCorrect ? '<i class="bi bi-check-circle-fill ms-auto"></i>' : ''}
             </li>
           `;
@@ -956,10 +956,10 @@
             }
 
             // 解析
-            document.getElementById('modalExplanation').innerHTML = item.explanation.replace(/\n/g, '<br>');
+            document.getElementById('modalExplanation').innerHTML = escapeHtml(item.explanation).replace(/\n/g, '<br>');
 
             // 開啟 Modal
-            new bootstrap.Modal(document.getElementById('viewQuestionModal')).show();
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('viewQuestionModal')).show();
         };
 
         // =========================================
