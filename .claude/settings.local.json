@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find . -type f -not -path \"./.*\" -not -path \"*/node_modules/*\" -exec wc -c {} +)"
+    ]
+  }
+}

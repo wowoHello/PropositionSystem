@@ -188,6 +188,8 @@ window.openReviewModal = function (btn, stage) {
     // 2. 設定 Modal Header 樣式
     const header = document.getElementById('reviewModalHeader');
     const title = document.getElementById('reviewModalTitle');
+    const reviewActions = document.querySelector('.review-actions');
+    const isHistory = (stage === 'history');
 
     // 重置 class
     header.className = 'modal-header';
@@ -204,6 +206,18 @@ window.openReviewModal = function (btn, stage) {
         header.classList.add('review-final');
         title.innerHTML = '<i class="bi bi-shield-check"></i> 審題 - 總審階段';
         showSection('final');
+    } else if (isHistory) {
+        header.classList.add('review-history');
+        title.innerHTML = '<i class="bi bi-clock-history"></i> 檢視 - 審題紀錄';
+        // 歷史模式：隱藏所有意見編輯區，僅保留題目內容 + 試題比對 + 審題決策紀錄
+        document.getElementById('mutualOpinionSection').classList.add('d-none');
+        document.getElementById('expertOpinionSection').classList.add('d-none');
+        document.getElementById('finalOpinionSection').classList.add('d-none');
+    }
+
+    // 歷史模式隱藏決策按鈕，審題模式恢復顯示
+    if (reviewActions) {
+        reviewActions.classList.toggle('d-none', isHistory);
     }
 
     // 3. 填充唯讀資料 (題目內容)
