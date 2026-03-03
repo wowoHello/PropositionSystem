@@ -220,6 +220,12 @@ window.openReviewModal = function (btn, stage) {
         reviewActions.classList.toggle('d-none', isHistory);
     }
 
+    // 依據 PRD 規則：僅「總審」階段顯示「不採用」按鈕，互審與專審不提供
+    const btnReject = document.getElementById('btnReject');
+    if (btnReject) {
+        btnReject.classList.toggle('d-none', stage !== 'final');
+    }
+
     // 3. 填充唯讀資料 (題目內容)
     document.getElementById('reviewQuestionContent').innerHTML = sanitizeHtml(rowData.stem) || '（無題幹內容）';
     document.getElementById('reviewQuestionType').innerText = rowData.type || '-';
@@ -393,18 +399,18 @@ window.submitReview = function (action) {
                 let badgeClass = 'badge-completed';
                 let finalStatusText = statusText;
 
-                // 根據 ex-rules.md: 互審結束後進入專審
+                // 根據 PRD 審題流程規則處理狀態流轉
                 if (currentStage === 'mutual') {
+                    // 互審結束後 → 進入專審（僅有採用/改後再審，無不採用）
                     finalStatusText = '專審中';
                     badgeClass = 'badge-expert';
                 } else if (currentStage === 'expert') {
-                    // 根據 ex-rules.md: 專審與互審意見不同進入總審 (此處為 DEMO 簡化，若選擇「採用」以外可能模擬不同意見)
-                    // 若需要模擬不同決策進入總審，可在此擴充。目前依原本邏輯，進入各判決結果，或可強制轉入總審中。
-                    // 為了完整呈現流程，這裡暫時讓專審保持決策結果 (或您可以自定義條件轉為 '總審中')
-                    if (statusText === '改後再審') badgeClass = 'badge-returned';
-                    else if (statusText === '不採用') badgeClass = 'badge-rejected';
-                    else if (statusText === '採用') badgeClass = 'badge-approved';
+                    // 專審結束後 → 進入總審（僅有採用/改後再審，無不採用）
+                    // 無論決策為何，專審後都進入總審階段
+                    finalStatusText = '總審中';
+                    badgeClass = 'badge-final';
                 } else {
+                    // 總審階段 → 最終判決（採用/改後再審/不採用）
                     if (statusText === '改後再審') badgeClass = 'badge-returned';
                     else if (statusText === '不採用') badgeClass = 'badge-rejected';
                     else if (statusText === '採用') badgeClass = 'badge-approved';

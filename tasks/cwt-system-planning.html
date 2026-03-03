@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CWT 命題工作平臺 — 系統規劃書</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0c0e14;
+  --surface: #151821;
+  --surface-2: #1c2030;
+  --surface-3: #242940;
+  --border: #2a3050;
+  --border-active: #4a6cf7;
+  --text: #dfe2ed;
+  --text-dim: #7a82a0;
+  --text-bright: #f0f2fa;
+  --blue: #4a6cf7;
+  --blue-dim: rgba(74,108,247,0.12);
+  --green: #2dd4a0;
+  --green-dim: rgba(45,212,160,0.12);
+  --orange: #f59e0b;
+  --orange-dim: rgba(245,158,11,0.12);
+  --red: #ef4444;
+  --red-dim: rgba(239,68,68,0.12);
+  --purple: #8b5cf6;
+  --purple-dim: rgba(139,92,246,0.12);
+  --cyan: #06b6d4;
+  --cyan-dim: rgba(6,182,212,0.12);
+  --pink: #ec4899;
+  --pink-dim: rgba(236,72,153,0.12);
+  --yellow: #eab308;
+  --yellow-dim: rgba(234,179,8,0.12);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;overflow-x:hidden}
+code,pre{font-family:'JetBrains Mono',monospace}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* ===== HERO ===== */
+.hero{
+  position:relative;padding:56px 32px 32px;text-align:center;
+  background:linear-gradient(180deg,rgba(74,108,247,0.06) 0%,transparent 100%);
+}
+.hero::after{
+  content:'';position:absolute;bottom:0;left:10%;right:10%;height:1px;
+  background:linear-gradient(90deg,transparent,var(--border),transparent);
+}
+.hero h1{
+  font-size:2.2rem;font-weight:900;letter-spacing:-1px;
+  background:linear-gradient(135deg,#fff 30%,var(--blue) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  margin-bottom:6px;
+}
+.hero p{color:var(--text-dim);font-size:0.92rem;font-weight:300}
+
+/* ===== TABS ===== */
+.tabs{
+  display:flex;justify-content:center;gap:3px;padding:24px 24px 0;
+  position:sticky;top:0;z-index:100;
+  background:linear-gradient(180deg,var(--bg) 70%,transparent);
+  padding-bottom:20px;flex-wrap:wrap;
+}
+.tab{
+  padding:9px 18px;border:1px solid var(--border);border-radius:8px;
+  background:var(--surface);color:var(--text-dim);cursor:pointer;
+  font:500 0.82rem 'Noto Sans TC';transition:all .2s;
+  white-space:nowrap;
+}
+.tab:hover{border-color:var(--blue);color:var(--text)}
+.tab.on{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 0 24px rgba(74,108,247,.25)}
+
+/* ===== PANELS ===== */
+.panel{display:none;padding:0 32px 64px;max-width:1440px;margin:0 auto}
+.panel.on{display:block;animation:up .35s ease}
+@keyframes up{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+h2.sec{font-size:1.4rem;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:10px}
+h2.sec .dot{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:.85rem}
+p.desc{color:var(--text-dim);font-size:.88rem;margin-bottom:28px}
+h3.sub{font-size:1.05rem;font-weight:700;margin:28px 0 14px;display:flex;align-items:center;gap:8px}
+
+/* ===== CARDS / GRID ===== */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media(max-width:1024px){.g2,.g3,.g4{grid-template-columns:1fr}}
+
+.card{
+  background:var(--surface);border:1px solid var(--border);border-radius:11px;
+  padding:22px;transition:border-color .25s,box-shadow .25s;
+}
+.card:hover{border-color:rgba(74,108,247,.3);box-shadow:0 0 20px rgba(74,108,247,.04)}
+.card-t{font-weight:700;font-size:.95rem;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+
+/* badges */
+.b{display:inline-block;padding:2px 9px;border-radius:20px;font-size:.7rem;font-weight:600}
+.b-blue{background:var(--blue-dim);color:var(--blue)}
+.b-green{background:var(--green-dim);color:var(--green)}
+.b-orange{background:var(--orange-dim);color:var(--orange)}
+.b-red{background:var(--red-dim);color:var(--red)}
+.b-purple{background:var(--purple-dim);color:var(--purple)}
+.b-cyan{background:var(--cyan-dim);color:var(--cyan)}
+.b-pink{background:var(--pink-dim);color:var(--pink)}
+.b-yellow{background:var(--yellow-dim);color:var(--yellow)}
+
+/* stats */
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px;text-align:center}
+.stat-n{font-size:2rem;font-weight:900;line-height:1}
+.stat-l{font-size:.78rem;color:var(--text-dim);margin-top:2px}
+
+/* ===== TABLES ===== */
+.tbl{width:100%;border-collapse:collapse;font-size:.82rem}
+.tbl th{
+  background:var(--surface-2);padding:9px 12px;text-align:left;
+  font-weight:600;font-size:.74rem;text-transform:uppercase;
+  letter-spacing:.5px;color:var(--text-dim);border-bottom:1px solid var(--border);
+}
+.tbl td{padding:7px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+.tbl tr:hover td{background:rgba(74,108,247,.02)}
+.pk{color:var(--yellow);font-weight:700;font-size:.72rem}
+.fk{color:var(--cyan);font-weight:600;font-size:.72rem}
+.idx{color:var(--purple);font-size:.68rem;font-weight:500}
+code{background:var(--surface-2);padding:1px 5px;border-radius:3px;font-size:.78rem}
+.note-row{padding:8px 12px;font-size:.76rem;color:var(--green);background:var(--green-dim);border-radius:0 0 8px 8px}
+
+/* ===== FLOW ===== */
+.flow-h{overflow-x:auto;padding:10px 0}
+.flow{display:flex;align-items:center;gap:0;min-width:max-content}
+.fs{
+  padding:10px 16px;border-radius:9px;font-size:.82rem;font-weight:500;
+  text-align:center;white-space:nowrap;border:1px solid;min-width:90px;
+}
+.fa{color:var(--text-dim);font-size:1.1rem;padding:0 3px;flex-shrink:0}
+
+/* ===== TREE ===== */
+.tree{list-style:none;padding-left:0}
+.tree li{position:relative;padding:6px 0 6px 30px}
+.tree li::before{content:'';position:absolute;left:9px;top:0;bottom:0;width:1px;background:var(--border)}
+.tree li::after{content:'';position:absolute;left:9px;top:18px;width:14px;height:1px;background:var(--border)}
+.tree>li::before{top:18px}
+.tree li:last-child::before{bottom:50%}
+.tn{
+  display:inline-flex;align-items:center;gap:7px;padding:5px 12px;
+  background:var(--surface-2);border:1px solid var(--border);border-radius:7px;
+  font-size:.84rem;font-weight:500;transition:all .2s;
+}
+.tn:hover{border-color:var(--blue);background:var(--blue-dim)}
+
+/* ===== ER CARD ===== */
+.er{background:var(--surface);border:1px solid var(--border);border-radius:11px;overflow:hidden;transition:all .3s;margin-bottom:16px}
+.er:hover{border-color:rgba(74,108,247,.35);box-shadow:0 0 24px rgba(74,108,247,.06)}
+.er-h{
+  padding:11px 16px;font-weight:700;font-size:.88rem;
+  display:flex;align-items:center;gap:8px;cursor:pointer;
+  border-bottom:1px solid var(--border);user-select:none;
+}
+.er-h .arr{transition:transform .2s;font-size:.7rem;margin-left:auto}
+.er-h.open .arr{transform:rotate(90deg)}
+.er-body{max-height:0;overflow:hidden;transition:max-height .35s ease}
+.er-body.open{max-height:3000px}
+.perf{
+  display:inline-flex;align-items:center;gap:3px;
+  background:var(--green-dim);color:var(--green);
+  padding:1px 7px;border-radius:4px;font-size:.68rem;font-weight:600;
+}
+
+/* ===== MERMAID ===== */
+.mermaid-wrap{
+  background:var(--surface);border:1px solid var(--border);border-radius:11px;
+  padding:24px;overflow-x:auto;margin:20px 0;
+}
+.mermaid-wrap pre{
+  background:var(--surface-2);border-radius:8px;padding:20px;
+  font-size:.78rem;line-height:1.6;overflow-x:auto;color:var(--text);
+  white-space:pre;
+}
+.copy-btn{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:6px 14px;border:1px solid var(--border);border-radius:6px;
+  background:var(--surface-2);color:var(--text-dim);cursor:pointer;
+  font:500 .78rem 'Noto Sans TC';transition:all .2s;margin-bottom:12px;
+}
+.copy-btn:hover{border-color:var(--blue);color:var(--text)}
+
+/* ===== QUESTION CARD ===== */
+.q-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:11px;
+  padding:20px;margin-bottom:14px;border-left:3px solid var(--orange);
+}
+.q-card .q-num{font-weight:700;color:var(--orange);font-size:.88rem;margin-bottom:6px}
+.q-card .q-text{font-size:.88rem;color:var(--text);line-height:1.8}
+
+/* ===== RELATION LINE ===== */
+.rel{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:.84rem;color:var(--text-dim)}
+.rel .from,.rel .to{color:var(--blue);font-weight:600}
+.rel .type{color:var(--yellow);font-size:.72rem;font-weight:700;background:var(--yellow-dim);padding:1px 6px;border-radius:3px}
+
+/* section pill list */
+.pill-list{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.pill{
+  padding:4px 12px;border-radius:20px;font-size:.78rem;font-weight:500;
+  border:1px solid;
+}
+
+@media(max-width:768px){
+  .hero{padding:36px 16px 24px}
+  .hero h1{font-size:1.6rem}
+  .tabs{padding:16px 12px 0}
+  .panel{padding:0 12px 40px}
+}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>CWT 命題工作平臺</h1>
+  <p>系統規劃書 — 業務實體 ╱ 業務規則 ╱ 資料字典 ╱ ER 圖 ╱ 網站架構 ╱ 審題流程 ╱ 待確認事項</p>
+</div>
+
+<nav class="tabs" id="tabs">
+  <div class="tab on" data-p="p-overview">📊 系統總覽</div>
+  <div class="tab" data-p="p-entities">🏢 業務實體</div>
+  <div class="tab" data-p="p-rules">🔗 業務規則</div>
+  <div class="tab" data-p="p-sitemap">🗺️ 網站架構</div>
+  <div class="tab" data-p="p-flow">🔄 審題流程</div>
+  <div class="tab" data-p="p-dict">📖 資料字典</div>
+  <div class="tab" data-p="p-er">📐 ER 圖</div>
+  <div class="tab" data-p="p-edge">⚠️ 待確認事項</div>
+</nav>
+
+<!-- ============================================================ -->
+<!-- PANEL 1: OVERVIEW -->
+<!-- ============================================================ -->
+<div class="panel on" id="p-overview">
+  <h2 class="sec"><span class="dot" style="background:var(--blue-dim);color:var(--blue)">📊</span>系統總覽</h2>
+  <p class="desc">CWT 命題工作平臺的核心數據一覽，幫助團隊快速掌握專案範圍大小。</p>
+
+  <div class="g4" style="margin-bottom:28px">
+    <div class="stat"><div class="stat-n" style="color:var(--blue)">10</div><div class="stat-l">系統頁面</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--green)">7</div><div class="stat-l">題型表單</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--orange)">3</div><div class="stat-l">審題階段</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--purple)">15</div><div class="stat-l">資料表</div></div>
+  </div>
+
+  <div class="g3">
+    <div class="card">
+      <div class="card-t">👥 三種使用者</div>
+      <div style="display:flex;flex-direction:column;gap:8px;font-size:.86rem">
+        <div><span class="b b-blue">命題教師</span> 負責出題 + 互相審閱</div>
+        <div><span class="b b-purple">審題委員</span> 專家學者做專審</div>
+        <div><span class="b b-orange">系統管理員</span> 管專案 + 做總審</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-t">📝 七種題型</div>
+      <div style="display:flex;flex-direction:column;gap:5px;font-size:.84rem">
+        <div>① 一般題目 <span class="b b-blue">四選一</span></div>
+        <div>② 精選題目 <span class="b b-blue">共用表單</span></div>
+        <div>③ 長文題目 <span class="b b-green">文章+解析</span></div>
+        <div>④ 短文題組 <span class="b b-cyan">動態子題</span></div>
+        <div>⑤ 閱讀題組 <span class="b b-cyan">動態子題</span></div>
+        <div>⑥ 聽力題目 <span class="b b-pink">音檔</span></div>
+        <div>⑦ 聽力題組 <span class="b b-pink">固定2子題</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-t">🏗️ 技術方向</div>
+      <div style="display:flex;flex-direction:column;gap:5px;font-size:.84rem">
+        <div><strong>現階段：</strong>HTML5 + Bootstrap 5 + JS</div>
+        <div><strong>目標：</strong>Blazor .NET 10</div>
+        <div><strong>資料庫：</strong>SQL Server（建議）</div>
+        <div><strong>ORM：</strong>Entity Framework Core</div>
+        <div><strong>編輯器：</strong>Quill / SweetAlert2</div>
+        <div><strong>字型：</strong>Noto Sans TC</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:18px">
+    <div class="card-t">⏱️ 專案八階段時程</div>
+    <div class="flow-h">
+      <div class="flow">
+        <div class="fs" style="background:var(--blue-dim);border-color:var(--blue);color:var(--blue)">❶ 專案區間<br><small>自訂起訖</small></div>
+        <div class="fa">→</div>
+        <div class="fs" style="background:var(--green-dim);border-color:var(--green);color:var(--green)">❷ 命題階段<br><small>30天 ⏳</small></div>
+        <div class="fa">→</div>
+        <div class="fs" style="background:var(--yellow-dim);border-color:var(--yellow);color:var(--yellow)">❸ 交互審題<br><small>7天</small></div>
+        <div class="fa">→</div>
+        <div class="fs" style="background:var(--yellow-dim);border-color:var(--yellow);color:var(--yellow)">❹ 互審修題<br><small>7天 ⏳</small></div>
+        <div class="fa">→</div>
+        <div class="fs" style="background:var(--purple-dim);border-color:var(--purple);color:var(--purple)">❺ 專家審題<br><small>14天</small></div>
+        <div class="fa">→</div>
+        <div class="fs" style="background:var(--purple-dim);border-color:var(--purple);color:var(--purple)">❻ 專審修題<br><small>7天 ⏳</small></div>
+        <div class="fa">→</div>
+        <div class="fs" style="background:var(--red-dim);border-color:var(--red);color:var(--red)">❼ 總召審題<br><small>21天</small></div>
+        <div class="fa">→</div>
+        <div class="fs" style="background:var(--red-dim);border-color:var(--red);color:var(--red)">❽ 總審修題<br><small>7天 ⏳</small></div>
+      </div>
+    </div>
+    <p style="font-size:.76rem;color:var(--text-dim);margin-top:8px">⏳ = 倒數 5 天觸發系統提醒。所有預設天數皆可手動調整，各階段依序連動計算。</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PANEL 2: BUSINESS ENTITIES -->
+<!-- ============================================================ -->
+<div class="panel" id="p-entities">
+  <h2 class="sec"><span class="dot" style="background:var(--green-dim);color:var(--green)">🏢</span>核心業務實體</h2>
+  <p class="desc">用白話文說明系統中有哪些核心資料物件，讓非技術人員也能理解。</p>
+
+  <div class="g2">
+    <div class="card" style="border-left:3px solid var(--blue)">
+      <div class="card-t">👤 使用者 (User)</div>
+      <p style="font-size:.86rem">儲存所有能登入系統的人的帳號資訊，包含帳號、密碼、信箱等。不管是 CWT 內部職員、外部命題教師、還是審題專家，都是「使用者」。</p>
+    </div>
+    <div class="card" style="border-left:3px solid var(--purple)">
+      <div class="card-t">🛡️ 角色 (Role)</div>
+      <p style="font-size:.86rem">定義系統裡有哪些「身份」，比如管理者、計畫主持人、總召老師、教務管理者、命題教師、審題委員等。每個角色可以開放不同的功能權限。</p>
+    </div>
+    <div class="card" style="border-left:3px solid var(--green)">
+      <div class="card-t">📁 命題專案 (Project)</div>
+      <p style="font-size:.86rem">也就是「梯次」。每一期命題活動就是一個專案，記錄名稱、年度、起訖日期、合作學校（選填）。一個專案下會有自己的時程規劃、指派人員、題目。</p>
+    </div>
+    <div class="card" style="border-left:3px solid var(--cyan)">
+      <div class="card-t">⏱️ 專案時程 (ProjectPhase)</div>
+      <p style="font-size:.86rem">每個專案有 8 個階段（命題→交互審題→互審修題→...），每個階段有自己的起訖日期和天數。其中 4 個階段會在倒數 5 天時發出系統提醒。</p>
+    </div>
+    <div class="card" style="border-left:3px solid var(--orange)">
+      <div class="card-t">👥 專案成員 (ProjectMember)</div>
+      <p style="font-size:.86rem">記錄「誰被指派到哪個專案」以及「在這個專案裡扮演什麼角色」（命題教師、互審人員、專審人員、總審人員）。同一個人可以被指派到多個專案。</p>
+    </div>
+    <div class="card" style="border-left:3px solid var(--yellow)">
+      <div class="card-t">📝 題目 (Question)</div>
+      <p style="font-size:.86rem">系統最核心的資料。記錄一道試題的所有資訊：屬於哪個專案、誰出的、什麼題型、目前狀態（草稿/完成/送審/互審中/專審中/總審中/採用/不採用）、題目內容等。</p>
+    </div>
+    <div class="card" style="border-left:3px solid var(--pink)">
+      <div class="card-t">📎 子題 (QuestionItem)</div>
+      <p style="font-size:.86rem">「題組」類的題型（短文題組、閱讀題組、聽力題組）下面會有多道子題，每道子題有自己的題幹、選項、答案和解析。獨立題型則不使用此表。</p>
+    </div>
+    <div class="card" style="border-left:3px solid var(--red)">
+      <div class="card-t">🔍 審題紀錄 (Review)</div>
+      <p style="font-size:.86rem">每次有人審一道題，就產生一筆審題紀錄。記錄是誰審的、在哪個階段（互審/專審/總審）、第幾輪、決策結果（採用/改後再審/不採用）、審題意見等。</p>
+    </div>
+    <div class="card" style="border-left:3px solid var(--text-dim)">
+      <div class="card-t">💬 罐頭訊息 (CannedMessage)</div>
+      <p style="font-size:.86rem">審題時可以快速插入的預設評語範本，節省審題委員打字的時間。依照用途分類（互審用、專審用、總審用）。</p>
+    </div>
+    <div class="card" style="border-left:3px solid var(--orange)">
+      <div class="card-t">📢 系統公告 (Announcement)</div>
+      <p style="font-size:.86rem">管理員發布的公告訊息，可以分類（系統/命題/審題/其他）、指定綁定某個梯次或全站通用、可設為置頂。首頁的「今日提醒」就是從這裡撈資料。</p>
+    </div>
+    <div class="card" style="border-left:3px solid var(--green)">
+      <div class="card-t">👨‍🏫 教師資料 (TeacherProfile)</div>
+      <p style="font-size:.86rem">教師人才庫。記錄教師的學經歷、任教學校、專長領域等背景資料。當管理員要在專案中指派命題教師時，會從這裡挑選。</p>
+    </div>
+    <div class="card" style="border-left:3px solid var(--purple)">
+      <div class="card-t">📋 稽核日誌 (AuditLog)</div>
+      <p style="font-size:.86rem">記錄所有重要操作的歷程（誰在什麼時候對哪道題做了什麼事），用來追蹤問題和儀錶板上的「稽核歷程」區塊。</p>
+    </div>
+    <div class="card" style="border-left:3px solid var(--cyan)">
+      <div class="card-t">🔑 密碼重設 (PasswordResetToken)</div>
+      <p style="font-size:.86rem">「忘記密碼」功能用的。當使用者申請重設密碼時，系統產生一組有時效的安全連結，使用者點擊連結後才能設定新密碼。</p>
+    </div>
+    <div class="card" style="border-left:3px solid var(--blue)">
+      <div class="card-t">🔔 系統提醒 (Reminder)</div>
+      <p style="font-size:.86rem">專案時程到期的倒數提醒。系統自動在各階段截止前 5 天產生提醒紀錄，讓首頁「凍結區」顯示紅色倒數。</p>
+    </div>
+    <div class="card" style="border-left:3px solid var(--pink)">
+      <div class="card-t">🔗 權限定義 (Permission)</div>
+      <p style="font-size:.86rem">定義系統中所有可控制的功能項目（如：檢視儀錶板、管理專案、命題、審題等），再透過角色去勾選哪些功能可用。</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PANEL 3: BUSINESS RULES -->
+<!-- ============================================================ -->
+<div class="panel" id="p-rules">
+  <h2 class="sec"><span class="dot" style="background:var(--orange-dim);color:var(--orange)">🔗</span>業務關聯與規則</h2>
+  <p class="desc">用日常語言解釋資料之間的關聯，方便 PM 確認邏輯是否正確。</p>
+
+  <h3 class="sub">📌 實體關聯（誰跟誰有關係）</h3>
+
+  <div class="card" style="margin-bottom:18px">
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="rel">
+        <span class="from">使用者</span> vs <span class="to">角色</span>
+        <span class="type">多對多</span>
+        <span>— 一個人可以身兼多個角色（例如既是命題教師也是互審員），一個角色也可以指派給多人。透過「UserRoles」中間表連接。</span>
+      </div>
+      <div class="rel">
+        <span class="from">專案</span> vs <span class="to">使用者</span>
+        <span class="type">多對多</span>
+        <span>— 一個專案可以指派多位教師和審題委員，一個人也可以參與多個專案。透過「ProjectMembers」中間表連接，並記錄此人在該專案中的角色。</span>
+      </div>
+      <div class="rel">
+        <span class="from">專案</span> vs <span class="to">階段時程</span>
+        <span class="type">1 對多</span>
+        <span>— 一個專案固定有 8 個階段時程，每個時程只屬於一個專案。</span>
+      </div>
+      <div class="rel">
+        <span class="from">專案</span> vs <span class="to">題目</span>
+        <span class="type">1 對多</span>
+        <span>— 一個專案下可以有很多題目，但每道題目只屬於一個專案。</span>
+      </div>
+      <div class="rel">
+        <span class="from">使用者</span> vs <span class="to">題目</span>
+        <span class="type">1 對多</span>
+        <span>— 一位命題教師可以出很多題，但每道題只有一位出題者。</span>
+      </div>
+      <div class="rel">
+        <span class="from">題目</span> vs <span class="to">子題</span>
+        <span class="type">1 對多</span>
+        <span>— 題組類的題目下面可以有多道子題，每道子題只屬於一道母題。獨立題型不會有子題。</span>
+      </div>
+      <div class="rel">
+        <span class="from">題目</span> vs <span class="to">審題紀錄</span>
+        <span class="type">1 對多</span>
+        <span>— 一道題目可能被審多次（互審、專審、總審，總審還可能多輪），每次審題產生一筆紀錄。</span>
+      </div>
+      <div class="rel">
+        <span class="from">使用者</span> vs <span class="to">審題紀錄</span>
+        <span class="type">1 對多</span>
+        <span>— 一位審題委員可以審很多題，每筆審題紀錄只有一位審題者。</span>
+      </div>
+      <div class="rel">
+        <span class="from">專案</span> vs <span class="to">公告</span>
+        <span class="type">1 對多</span>
+        <span>— 公告可以綁定某個專案，也可以設為「全站通用」（ProjectId 為空值）。一個專案可以有多則公告。</span>
+      </div>
+      <div class="rel">
+        <span class="from">使用者</span> vs <span class="to">教師資料</span>
+        <span class="type">1 對 1</span>
+        <span>— 如果某位使用者是教師身份，就會有一筆對應的教師詳細資料（學經歷、專長等）。</span>
+      </div>
+      <div class="rel">
+        <span class="from">角色</span> vs <span class="to">權限</span>
+        <span class="type">多對多</span>
+        <span>— 一個角色可以擁有多項權限，一個權限也可以開放給多個角色。透過「RolePermissions」中間表連接。</span>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="sub">📌 核心業務規則</h3>
+
+  <div class="g2">
+    <div class="card" style="border-left:3px solid var(--red)">
+      <div class="card-t">🔴 三審制度規則</div>
+      <div style="font-size:.86rem;display:flex;flex-direction:column;gap:6px">
+        <div>• <strong>最終決定權歸總審</strong>：只有總審才有「不採用」按鈕</div>
+        <div>• <strong>互審和專審沒有「不採用」</strong>：只能選「採用」或「改後再審」</div>
+        <div>• <strong>專審只做一次</strong>：專審退回修題後，教師改完直接進總審</div>
+        <div>• <strong>總審可循環</strong>：總審「改後再審」→教師修改→再回總審，可反覆</div>
+        <div>• <strong>總審人數彈性</strong>：目前 1 人，未來可能 2 人以上</div>
+      </div>
+    </div>
+    <div class="card" style="border-left:3px solid var(--green)">
+      <div class="card-t">🟢 題目狀態流轉</div>
+      <div style="font-size:.86rem;display:flex;flex-direction:column;gap:6px">
+        <div>• 新建題目預設「未儲存」狀態</div>
+        <div>• 可存為「草稿」或標記「命題完成」</div>
+        <div>• 命題完成後才可以「送審」</div>
+        <div>• 送審後進入三審流程，教師不能再編輯（除非被退回）</div>
+        <div>• 判決完成（採用/不採用）後移到「審核歷史」，只能看不能改</div>
+      </div>
+    </div>
+    <div class="card" style="border-left:3px solid var(--blue)">
+      <div class="card-t">🔵 專案時程連動</div>
+      <div style="font-size:.86rem;display:flex;flex-direction:column;gap:6px">
+        <div>• 設定專案區間後，後續 7 個階段自動依序計算日期</div>
+        <div>• 每個階段有預設天數，但管理員可以手動調整</div>
+        <div>• 調整某階段天數，後面所有階段的日期會自動重算</div>
+        <div>• 4 個需要提醒的階段，會在截止前 5 天自動發提醒</div>
+      </div>
+    </div>
+    <div class="card" style="border-left:3px solid var(--purple)">
+      <div class="card-t">🟣 權限控管規則</div>
+      <div style="font-size:.86rem;display:flex;flex-direction:column;gap:6px">
+        <div>• 登入後，依使用者角色決定能看到哪些功能卡片</div>
+        <div>• 命題總覽限 4 種角色可看：管理者、計畫主持人、總召老師、教務管理者</div>
+        <div>• 儀錶板、專案管理、角色管理、公告管理、教師管理：管理員專用</div>
+        <div>• 命題任務：教師 + 管理員</div>
+        <div>• 審題任務：所有角色皆可使用</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PANEL 4: SITEMAP -->
+<!-- ============================================================ -->
+<div class="panel" id="p-sitemap">
+  <h2 class="sec"><span class="dot" style="background:var(--cyan-dim);color:var(--cyan)">🗺️</span>網站架構圖</h2>
+  <p class="desc">10 個頁面的層級關係、存取權限，以及全站共用的元件。</p>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-t">📂 頁面層級</div>
+      <ul class="tree">
+        <li>
+          <span class="tn">🔐 index.html <span class="b b-green">登入頁</span></span>
+          <ul class="tree">
+            <li>
+              <span class="tn">🏠 firstpage.html <span class="b b-blue">首頁導覽</span></span>
+              <ul class="tree">
+                <li><span class="tn">📊 cwt-dashboard <span class="b b-orange">管理員</span></span></li>
+                <li><span class="tn">📋 cwt-bank <span class="b b-orange">限定角色</span></span></li>
+                <li><span class="tn">📁 cwt-prop <span class="b b-orange">管理員</span></span></li>
+                <li><span class="tn">✏️ cwt-list <span class="b b-red">⭐ 核心</span></span></li>
+                <li><span class="tn">🔍 cwt-review <span class="b b-red">⭐ 核心</span></span></li>
+                <li><span class="tn">🛡️ cwt-role <span class="b b-orange">管理員</span></span></li>
+                <li><span class="tn">📢 cwt-announcement <span class="b b-orange">管理員</span></span></li>
+                <li><span class="tn">👨‍🏫 cwt-teacher <span class="b b-orange">管理員</span></span></li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:18px">
+        <div class="card-t">🧩 全站共用元件</div>
+        <div style="display:flex;flex-direction:column;gap:8px;font-size:.86rem">
+          <div style="padding:10px;background:var(--surface-2);border-radius:7px">
+            <strong>🔝 頂部導覽列</strong><br>
+            <span style="color:var(--text-dim)">左：Logo（回首頁）╱ 中：專案切換器 ╱ 右：使用者名稱+登出</span>
+          </div>
+          <div style="padding:10px;background:var(--surface-2);border-radius:7px">
+            <strong>🔄 專案切換器</strong><br>
+            <span style="color:var(--text-dim)">下拉選單分「進行中/已結束」，切換時廣播 projectChanged 事件，所有頁面自動刷新</span>
+          </div>
+          <div style="padding:10px;background:var(--surface-2);border-radius:7px">
+            <strong>🔤 字體大小調整器</strong><br>
+            <span style="color:var(--text-dim)">右下角浮動按鈕，放大/縮小/重置，即時生效</span>
+          </div>
+          <div style="padding:10px;background:var(--surface-2);border-radius:7px">
+            <strong>📝 共用 Quill 編輯器</strong><br>
+            <span style="color:var(--text-dim)">底部滑入式，含 12 種中文標點工具列</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-t">🛡️ 頁面權限對照表</div>
+        <table class="tbl">
+          <thead><tr><th>頁面</th><th>管理員</th><th>教師</th><th>專家</th></tr></thead>
+          <tbody>
+            <tr><td>首頁導覽</td><td style="color:var(--green)">✅</td><td style="color:var(--green)">✅</td><td style="color:var(--green)">✅</td></tr>
+            <tr><td>命題儀錶板</td><td style="color:var(--green)">✅</td><td style="color:var(--text-dim)">—</td><td style="color:var(--text-dim)">—</td></tr>
+            <tr><td>命題總覽</td><td style="color:var(--green)">✅ <small style="color:var(--text-dim)">(含PI/總召/教務)</small></td><td style="color:var(--text-dim)">—</td><td style="color:var(--text-dim)">—</td></tr>
+            <tr><td>專案管理</td><td style="color:var(--green)">✅</td><td style="color:var(--text-dim)">—</td><td style="color:var(--text-dim)">—</td></tr>
+            <tr><td>命題任務</td><td style="color:var(--green)">✅</td><td style="color:var(--green)">✅</td><td style="color:var(--text-dim)">—</td></tr>
+            <tr><td>審題任務</td><td style="color:var(--green)">✅</td><td style="color:var(--green)">✅</td><td style="color:var(--green)">✅</td></tr>
+            <tr><td>角色管理</td><td style="color:var(--green)">✅</td><td style="color:var(--text-dim)">—</td><td style="color:var(--text-dim)">—</td></tr>
+            <tr><td>公告管理</td><td style="color:var(--green)">✅</td><td style="color:var(--text-dim)">—</td><td style="color:var(--text-dim)">—</td></tr>
+            <tr><td>教師管理</td><td style="color:var(--green)">✅</td><td style="color:var(--text-dim)">—</td><td style="color:var(--text-dim)">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PANEL 5: REVIEW FLOW -->
+<!-- ============================================================ -->
+<div class="panel" id="p-flow">
+  <h2 class="sec"><span class="dot" style="background:var(--red-dim);color:var(--red)">🔄</span>三審制度流程圖</h2>
+  <p class="desc">題目從命製到最終判決的完整生命週期，包含各種分支情境。</p>
+
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-t">📌 三大核心原則</div>
+    <div class="g3" style="gap:10px">
+      <div style="padding:12px;background:var(--surface-2);border-radius:8px;border-left:3px solid var(--red)">
+        <strong>最終決定權</strong><br><span style="font-size:.84rem;color:var(--text-dim)">所有題目的最終採用與否，皆由「總審」決定</span>
+      </div>
+      <div style="padding:12px;background:var(--surface-2);border-radius:8px;border-left:3px solid var(--yellow)">
+        <strong>按鈕限制</strong><br><span style="font-size:.84rem;color:var(--text-dim)">互審與專審不提供「不採用」按鈕</span>
+      </div>
+      <div style="padding:12px;background:var(--surface-2);border-radius:8px;border-left:3px solid var(--green)">
+        <strong>總審人數彈性</strong><br><span style="font-size:.84rem;color:var(--text-dim)">原則 1 人，系統保留擴充至 2 人以上的彈性</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-t">🔀 題目狀態完整流轉</div>
+    <div class="flow-h">
+      <div class="flow">
+        <div class="fs" style="background:rgba(122,130,160,.1);border-color:var(--text-dim);color:var(--text-dim)">未儲存</div>
+        <div class="fa">→</div>
+        <div class="fs" style="background:rgba(122,130,160,.15);border-color:var(--text-dim);color:var(--text)">草稿</div>
+        <div class="fa">→</div>
+        <div class="fs" style="background:var(--blue-dim);border-color:var(--blue);color:var(--blue)">命題完成</div>
+        <div class="fa">→</div>
+        <div class="fs" style="background:var(--yellow-dim);border-color:var(--yellow);color:var(--yellow)">送審</div>
+        <div class="fa">→</div>
+        <div class="fs" style="background:var(--yellow-dim);border-color:var(--yellow);color:var(--yellow)">互審中</div>
+        <div class="fa">→</div>
+        <div class="fs" style="background:var(--purple-dim);border-color:var(--purple);color:var(--purple)">專審中</div>
+        <div class="fa">→</div>
+        <div class="fs" style="background:var(--red-dim);border-color:var(--red);color:var(--red)">總審中</div>
+        <div class="fa">→</div>
+        <div class="fs" style="background:var(--green-dim);border-color:var(--green);color:var(--green)">判決結果</div>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="sub">📋 六種審題情境路徑</h3>
+  <div class="g2">
+    <div class="card">
+      <div class="card-t"><span class="b b-green">情境 A</span> 順利通過</div>
+      <div class="flow-h"><div class="flow" style="font-size:.8rem">
+        <div class="fs" style="background:var(--yellow-dim);border-color:var(--yellow);color:var(--yellow);padding:8px 10px">互審 ✅通過</div>
+        <div class="fa">→</div>
+        <div class="fs" style="background:var(--purple-dim);border-color:var(--purple);color:var(--purple);padding:8px 10px">專審 ✅通過</div>
+        <div class="fa">→</div>
+        <div class="fs" style="background:var(--green-dim);border-color:var(--green);color:var(--green);padding:8px 10px">總審 ✅採用</div>
+      </div></div>
+    </div>
+    <div class="card">
+      <div class="card-t"><span class="b b-yellow">情境 B</span> 互審退回</div>
+      <div class="flow-h"><div class="flow" style="font-size:.8rem">
+        <div class="fs" style="background:var(--yellow-dim);border-color:var(--yellow);color:var(--yellow);padding:8px 10px">互審 🔄改後再審</div>
+        <div class="fa">→</div>
+        <div class="fs" style="background:var(--blue-dim);border-color:var(--blue);color:var(--blue);padding:8px 10px">教師修改</div>
+        <div class="fa">→</div>
+        <div class="fs" style="background:var(--purple-dim);border-color:var(--purple);color:var(--purple);padding:8px 10px">專審</div>
+        <div class="fa">→</div>
+        <div class="fs" style="background:var(--red-dim);border-color:var(--red);color:var(--red);padding:8px 10px">總審</div>
+      </div></div>
+    </div>
+    <div class="card">
+      <div class="card-t"><span class="b b-purple">情境 C</span> 專審退回（關鍵⚡）</div>
+      <div class="flow-h"><div class="flow" style="font-size:.8rem">
+        <div class="fs" style="background:var(--purple-dim);border-color:var(--purple);color:var(--purple);padding:8px 10px">專審 🔄改後再審</div>
+        <div class="fa">→</div>
+        <div class="fs" style="background:var(--blue-dim);border-color:var(--blue);color:var(--blue);padding:8px 10px">教師修改</div>
+        <div class="fa">→</div>
+        <div class="fs" style="background:var(--red-dim);border-color:var(--red);color:var(--red);padding:8px 10px">直接進總審 ⚡</div>
+      </div></div>
+      <p style="font-size:.76rem;color:var(--orange);margin-top:6px">⚡ 專審只做一次，退回修改後跳過專審直接進總審</p>
+    </div>
+    <div class="card">
+      <div class="card-t"><span class="b b-red">情境 D</span> 總審退回（可循環🔁）</div>
+      <div class="flow-h"><div class="flow" style="font-size:.8rem">
+        <div class="fs" style="background:var(--red-dim);border-color:var(--red);color:var(--red);padding:8px 10px">總審 🔄改後再審</div>
+        <div class="fa">→</div>
+        <div class="fs" style="background:var(--blue-dim);border-color:var(--blue);color:var(--blue);padding:8px 10px">教師修改</div>
+        <div class="fa">→</div>
+        <div class="fs" style="background:var(--red-dim);border-color:var(--red);color:var(--red);padding:8px 10px">再回總審 🔁</div>
+      </div></div>
+      <p style="font-size:.76rem;color:var(--orange);margin-top:6px">🔁 可無限循環，直到採用或不採用</p>
+    </div>
+    <div class="card">
+      <div class="card-t"><span class="b b-red">情境 E</span> 總審不採用</div>
+      <div class="flow-h"><div class="flow" style="font-size:.8rem">
+        <div class="fs" style="background:var(--red-dim);border-color:var(--red);color:var(--red);padding:8px 10px">總審 ❌不採用</div>
+        <div class="fa">→</div>
+        <div class="fs" style="background:rgba(122,130,160,.12);border-color:var(--text-dim);color:var(--text-dim);padding:8px 10px">移入審核歷史</div>
+      </div></div>
+    </div>
+    <div class="card">
+      <div class="card-t"><span class="b b-cyan">情境 F</span> 互審純給意見</div>
+      <div class="flow-h"><div class="flow" style="font-size:.8rem">
+        <div class="fs" style="background:var(--yellow-dim);border-color:var(--yellow);color:var(--yellow);padding:8px 10px">互審 💬給意見</div>
+        <div class="fa">→</div>
+        <div class="fs" style="background:rgba(122,130,160,.12);border-color:var(--text-dim);color:var(--text);padding:8px 10px">不影響流程<br>供教師參考</div>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:20px">
+    <div class="card-t">🎛️ 各階段可用決策按鈕對照</div>
+    <table class="tbl">
+      <thead><tr><th>階段</th><th>✅ 採用（通過）</th><th>🔄 改後再審</th><th>❌ 不採用</th><th>說明</th></tr></thead>
+      <tbody>
+        <tr><td><span class="b b-yellow">互審</span></td><td style="color:var(--green)">有</td><td style="color:var(--green)">有</td><td style="color:var(--red)">❌ 無</td><td>教師互審，僅給意見</td></tr>
+        <tr><td><span class="b b-purple">專審</span></td><td style="color:var(--green)">有</td><td style="color:var(--green)">有</td><td style="color:var(--red)">❌ 無</td><td>專家審，僅做一次</td></tr>
+        <tr><td><span class="b b-red">總審</span></td><td style="color:var(--green)">有</td><td style="color:var(--green)">有</td><td style="color:var(--green)">有</td><td>最終決定，可循環</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PANEL 6: DATA DICTIONARY -->
+<!-- ============================================================ -->
+<div class="panel" id="p-dict">
+  <h2 class="sec"><span class="dot" style="background:var(--purple-dim);color:var(--purple)">📖</span>資料字典</h2>
+  <p class="desc">15 張資料表的完整欄位明細。點擊表名可展開/收合。<span class="pk">PK</span>=主鍵 <span class="fk">FK</span>=外來鍵 <span class="idx">IDX</span>=索引</p>
+
+  <!-- ── Users ── -->
+  <div class="er" id="t-users">
+    <div class="er-h open" style="background:var(--blue-dim)"><span>👤</span> Users（使用者帳號）<span class="perf">索引×3</span><span class="arr">▶</span></div>
+    <div class="er-body open">
+      <table class="tbl"><thead><tr><th>業務名稱</th><th>欄位</th><th>型別</th><th>必填</th><th>說明</th></tr></thead><tbody>
+        <tr><td>識別碼</td><td><span class="pk">PK</span> <code>Id</code></td><td>UNIQUEIDENTIFIER</td><td>自動</td><td>GUID，適合分散式系統與未來擴充</td></tr>
+        <tr><td>登入帳號</td><td><code>Account</code></td><td>NVARCHAR(50)</td><td>✅ Unique</td><td><span class="idx">UNIQUE IDX</span> 登入用，不可重複</td></tr>
+        <tr><td>加密密碼</td><td><code>PasswordHash</code></td><td>NVARCHAR(256)</td><td>✅</td><td>使用 bcrypt/SHA256 加密後儲存</td></tr>
+        <tr><td>顯示名稱</td><td><code>DisplayName</code></td><td>NVARCHAR(50)</td><td>✅</td><td>畫面上顯示的使用者名字</td></tr>
+        <tr><td>電子信箱</td><td><code>Email</code></td><td>NVARCHAR(100)</td><td>✅</td><td><span class="idx">IDX</span> 忘記密碼驗證信用</td></tr>
+        <tr><td>使用者類型</td><td><code>UserType</code></td><td>TINYINT</td><td>✅</td><td><span class="idx">IDX</span> 1=內部職員 2=命題教師 3=審題專家</td></tr>
+        <tr><td>帳號啟用</td><td><code>IsActive</code></td><td>BIT</td><td>✅</td><td>預設=1(啟用)，停用後無法登入</td></tr>
+        <tr><td>最後登入</td><td><code>LastLoginAt</code></td><td>DATETIME2</td><td>—</td><td>每次登入成功時更新</td></tr>
+        <tr><td>建立時間</td><td><code>CreatedAt</code></td><td>DATETIME2</td><td>自動</td><td>寫入時自動填入</td></tr>
+        <tr><td>更新時間</td><td><code>UpdatedAt</code></td><td>DATETIME2</td><td>自動</td><td>每次修改時自動更新</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <!-- ── Roles ── -->
+  <div class="er">
+    <div class="er-h" style="background:var(--purple-dim)"><span>🛡️</span> Roles（角色定義）<span class="arr">▶</span></div>
+    <div class="er-body">
+      <table class="tbl"><thead><tr><th>業務名稱</th><th>欄位</th><th>型別</th><th>必填</th><th>說明</th></tr></thead><tbody>
+        <tr><td>角色ID</td><td><span class="pk">PK</span> <code>Id</code></td><td>INT IDENTITY</td><td>自動</td><td>自動遞增</td></tr>
+        <tr><td>角色名稱</td><td><code>RoleName</code></td><td>NVARCHAR(50)</td><td>✅ Unique</td><td>如：管理者、計畫主持人、總召老師</td></tr>
+        <tr><td>角色類型</td><td><code>RoleType</code></td><td>TINYINT</td><td>✅</td><td>1=內部角色 2=外部角色</td></tr>
+        <tr><td>說明</td><td><code>Description</code></td><td>NVARCHAR(200)</td><td>—</td><td>角色用途說明</td></tr>
+        <tr><td>啟用</td><td><code>IsActive</code></td><td>BIT</td><td>✅</td><td>預設=1</td></tr>
+        <tr><td>建立時間</td><td><code>CreatedAt</code></td><td>DATETIME2</td><td>自動</td><td></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <!-- ── Permissions ── -->
+  <div class="er">
+    <div class="er-h" style="background:var(--pink-dim)"><span>🔑</span> Permissions（權限定義）<span class="arr">▶</span></div>
+    <div class="er-body">
+      <table class="tbl"><thead><tr><th>業務名稱</th><th>欄位</th><th>型別</th><th>必填</th><th>說明</th></tr></thead><tbody>
+        <tr><td>權限ID</td><td><span class="pk">PK</span> <code>Id</code></td><td>INT IDENTITY</td><td>自動</td><td></td></tr>
+        <tr><td>權限代碼</td><td><code>PermissionCode</code></td><td>NVARCHAR(50)</td><td>✅ Unique</td><td>如 VIEW_DASHBOARD, MANAGE_PROJECT</td></tr>
+        <tr><td>權限名稱</td><td><code>PermissionName</code></td><td>NVARCHAR(100)</td><td>✅</td><td>中文顯示名「檢視儀錶板」</td></tr>
+        <tr><td>模組分類</td><td><code>Module</code></td><td>NVARCHAR(50)</td><td>✅</td><td>所屬功能模組</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <!-- ── RolePermissions ── -->
+  <div class="er">
+    <div class="er-h" style="background:var(--pink-dim)"><span>🔗</span> RolePermissions（角色-權限）<span class="perf">複合PK</span><span class="arr">▶</span></div>
+    <div class="er-body">
+      <table class="tbl"><thead><tr><th>業務名稱</th><th>欄位</th><th>型別</th><th>必填</th><th>說明</th></tr></thead><tbody>
+        <tr><td>角色</td><td><span class="pk">PK</span><span class="fk">FK</span> <code>RoleId</code></td><td>INT</td><td>✅</td><td>→ Roles.Id</td></tr>
+        <tr><td>權限</td><td><span class="pk">PK</span><span class="fk">FK</span> <code>PermissionId</code></td><td>INT</td><td>✅</td><td>→ Permissions.Id</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <!-- ── UserRoles ── -->
+  <div class="er">
+    <div class="er-h" style="background:var(--blue-dim)"><span>🔗</span> UserRoles（使用者-角色）<span class="perf">複合PK</span><span class="arr">▶</span></div>
+    <div class="er-body">
+      <table class="tbl"><thead><tr><th>業務名稱</th><th>欄位</th><th>型別</th><th>必填</th><th>說明</th></tr></thead><tbody>
+        <tr><td>使用者</td><td><span class="pk">PK</span><span class="fk">FK</span> <code>UserId</code></td><td>UNIQUEIDENTIFIER</td><td>✅</td><td>→ Users.Id</td></tr>
+        <tr><td>角色</td><td><span class="pk">PK</span><span class="fk">FK</span> <code>RoleId</code></td><td>INT</td><td>✅</td><td>→ Roles.Id</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <!-- ── Projects ── -->
+  <div class="er">
+    <div class="er-h" style="background:var(--green-dim)"><span>📁</span> Projects（命題專案/梯次）<span class="perf">索引×2</span><span class="arr">▶</span></div>
+    <div class="er-body">
+      <table class="tbl"><thead><tr><th>業務名稱</th><th>欄位</th><th>型別</th><th>必填</th><th>說明</th></tr></thead><tbody>
+        <tr><td>專案ID</td><td><span class="pk">PK</span> <code>Id</code></td><td>INT IDENTITY</td><td>自動</td><td></td></tr>
+        <tr><td>專案名稱</td><td><code>ProjectName</code></td><td>NVARCHAR(100)</td><td>✅</td><td></td></tr>
+        <tr><td>年度</td><td><code>Year</code></td><td>SMALLINT</td><td>✅</td><td><span class="idx">IDX</span></td></tr>
+        <tr><td>合作學校</td><td><code>SchoolName</code></td><td>NVARCHAR(100)</td><td>—</td><td>選填，可為 NULL（自辦專案）</td></tr>
+        <tr><td>起始日</td><td><code>StartDate</code></td><td>DATE</td><td>✅</td><td></td></tr>
+        <tr><td>結束日</td><td><code>EndDate</code></td><td>DATE</td><td>✅</td><td></td></tr>
+        <tr><td>狀態</td><td><code>Status</code></td><td>TINYINT</td><td>✅</td><td><span class="idx">IDX</span> 1=進行中 2=已結束</td></tr>
+        <tr><td>建立者</td><td><span class="fk">FK</span> <code>CreatedBy</code></td><td>UNIQUEIDENTIFIER</td><td>✅</td><td>→ Users.Id</td></tr>
+        <tr><td>建立時間</td><td><code>CreatedAt</code></td><td>DATETIME2</td><td>自動</td><td></td></tr>
+        <tr><td>更新時間</td><td><code>UpdatedAt</code></td><td>DATETIME2</td><td>自動</td><td></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <!-- ── ProjectPhases ── -->
+  <div class="er">
+    <div class="er-h" style="background:var(--cyan-dim)"><span>⏱️</span> ProjectPhases（專案階段時程）<span class="arr">▶</span></div>
+    <div class="er-body">
+      <table class="tbl"><thead><tr><th>業務名稱</th><th>欄位</th><th>型別</th><th>必填</th><th>說明</th></tr></thead><tbody>
+        <tr><td>階段ID</td><td><span class="pk">PK</span> <code>Id</code></td><td>INT IDENTITY</td><td>自動</td><td></td></tr>
+        <tr><td>所屬專案</td><td><span class="fk">FK</span> <code>ProjectId</code></td><td>INT</td><td>✅</td><td><span class="idx">IDX</span> → Projects.Id</td></tr>
+        <tr><td>階段順序</td><td><code>PhaseOrder</code></td><td>TINYINT</td><td>✅</td><td>1~8</td></tr>
+        <tr><td>階段名稱</td><td><code>PhaseName</code></td><td>NVARCHAR(20)</td><td>✅</td><td>如「命題階段」「交互審題」</td></tr>
+        <tr><td>預設天數</td><td><code>DefaultDays</code></td><td>SMALLINT</td><td>✅</td><td>系統預設值</td></tr>
+        <tr><td>實際天數</td><td><code>ActualDays</code></td><td>SMALLINT</td><td>✅</td><td>管理員可手動修改</td></tr>
+        <tr><td>起始日</td><td><code>StartDate</code></td><td>DATE</td><td>✅</td><td>依前一階段自動計算</td></tr>
+        <tr><td>結束日</td><td><code>EndDate</code></td><td>DATE</td><td>✅</td><td></td></tr>
+        <tr><td>啟用提醒</td><td><code>HasReminder</code></td><td>BIT</td><td>✅</td><td>是否倒數提醒</td></tr>
+        <tr><td>提醒天數</td><td><code>ReminderDays</code></td><td>TINYINT</td><td>✅</td><td>預設 5（倒數 5 天提醒）</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <!-- ── ProjectMembers ── -->
+  <div class="er">
+    <div class="er-h" style="background:var(--orange-dim)"><span>👥</span> ProjectMembers（專案成員）<span class="perf">複合索引</span><span class="arr">▶</span></div>
+    <div class="er-body">
+      <table class="tbl"><thead><tr><th>業務名稱</th><th>欄位</th><th>型別</th><th>必填</th><th>說明</th></tr></thead><tbody>
+        <tr><td>指派ID</td><td><span class="pk">PK</span> <code>Id</code></td><td>INT IDENTITY</td><td>自動</td><td></td></tr>
+        <tr><td>專案</td><td><span class="fk">FK</span> <code>ProjectId</code></td><td>INT</td><td>✅</td><td>→ Projects.Id</td></tr>
+        <tr><td>使用者</td><td><span class="fk">FK</span> <code>UserId</code></td><td>UNIQUEIDENTIFIER</td><td>✅</td><td>→ Users.Id</td></tr>
+        <tr><td>專案角色</td><td><code>MemberRole</code></td><td>TINYINT</td><td>✅</td><td>1=命題教師 2=互審 3=專審 4=總審</td></tr>
+        <tr><td>指派時間</td><td><code>AssignedAt</code></td><td>DATETIME2</td><td>自動</td><td></td></tr>
+      </tbody></table>
+      <div class="note-row">💡 複合唯一索引 (ProjectId, UserId, MemberRole) 避免重複指派，同時加速查詢</div>
+    </div>
+  </div>
+
+  <!-- ── Questions ── -->
+  <div class="er">
+    <div class="er-h" style="background:var(--yellow-dim)"><span>📝</span> Questions（題目主表）<span class="perf">索引×5</span><span class="arr">▶</span></div>
+    <div class="er-body">
+      <table class="tbl"><thead><tr><th>業務名稱</th><th>欄位</th><th>型別</th><th>必填</th><th>說明</th></tr></thead><tbody>
+        <tr><td>題目ID</td><td><span class="pk">PK</span> <code>Id</code></td><td>BIGINT IDENTITY</td><td>自動</td><td>用 BIGINT 預留大量題目空間</td></tr>
+        <tr><td>所屬專案</td><td><span class="fk">FK</span> <code>ProjectId</code></td><td>INT</td><td>✅</td><td><span class="idx">IDX</span> → Projects.Id</td></tr>
+        <tr><td>出題者</td><td><span class="fk">FK</span> <code>AuthorId</code></td><td>UNIQUEIDENTIFIER</td><td>✅</td><td><span class="idx">IDX</span> → Users.Id</td></tr>
+        <tr><td>題型</td><td><code>QuestionType</code></td><td>TINYINT</td><td>✅</td><td><span class="idx">IDX</span> 1=一般 2=精選 3=長文 4=短文題組 5=閱讀題組 6=聽力 7=聽力題組</td></tr>
+        <tr><td>難度等級</td><td><code>DifficultyLevel</code></td><td>TINYINT</td><td>✅</td><td></td></tr>
+        <tr><td>主類別</td><td><code>CategoryMain</code></td><td>NVARCHAR(50)</td><td>—</td><td></td></tr>
+        <tr><td>子類別</td><td><code>CategorySub</code></td><td>NVARCHAR(50)</td><td>—</td><td>與主類別連動下拉</td></tr>
+        <tr><td>狀態碼</td><td><code>Status</code></td><td>TINYINT</td><td>✅</td><td><span class="idx">IDX</span> 0=未儲存 1=草稿 2=完成 3=送審 4=互審中 5=專審中 6=總審中 7=採用 8=不採用 9=改後再審</td></tr>
+        <tr><td>審題階段</td><td><code>ReviewStage</code></td><td>TINYINT</td><td>✅</td><td><span class="idx">IDX</span> 0=未送審 1=互審 2=專審 3=總審</td></tr>
+        <tr><td>專審已完成</td><td><code>ExpertReviewed</code></td><td>BIT</td><td>✅</td><td>預設=0，專審完成後=1（控制「專審僅一次」邏輯）</td></tr>
+        <tr><td>題目內容</td><td><code>ContentJson</code></td><td>NVARCHAR(MAX)</td><td>—</td><td>依題型不同的結構化 JSON</td></tr>
+        <tr><td>建立時間</td><td><code>CreatedAt</code></td><td>DATETIME2</td><td>自動</td><td></td></tr>
+        <tr><td>更新時間</td><td><code>UpdatedAt</code></td><td>DATETIME2</td><td>自動</td><td></td></tr>
+        <tr><td>送審時間</td><td><code>SubmittedAt</code></td><td>DATETIME2</td><td>—</td><td>命題送審時填入</td></tr>
+        <tr><td>判決時間</td><td><code>FinalizedAt</code></td><td>DATETIME2</td><td>—</td><td>採用/不採用時填入</td></tr>
+      </tbody></table>
+      <div class="note-row">💡 ExpertReviewed 欄位是實現「專審只做一次」的關鍵：退回修改後系統檢查此旗標，為 true 就直接跳到總審</div>
+    </div>
+  </div>
+
+  <!-- ── QuestionItems ── -->
+  <div class="er">
+    <div class="er-h" style="background:var(--pink-dim)"><span>📎</span> QuestionItems（子題/選項）<span class="arr">▶</span></div>
+    <div class="er-body">
+      <table class="tbl"><thead><tr><th>業務名稱</th><th>欄位</th><th>型別</th><th>必填</th><th>說明</th></tr></thead><tbody>
+        <tr><td>子題ID</td><td><span class="pk">PK</span> <code>Id</code></td><td>BIGINT IDENTITY</td><td>自動</td><td></td></tr>
+        <tr><td>所屬題目</td><td><span class="fk">FK</span> <code>QuestionId</code></td><td>BIGINT</td><td>✅</td><td><span class="idx">IDX</span> → Questions.Id</td></tr>
+        <tr><td>排序</td><td><code>ItemOrder</code></td><td>TINYINT</td><td>✅</td><td>子題順序</td></tr>
+        <tr><td>題幹</td><td><code>StemHtml</code></td><td>NVARCHAR(MAX)</td><td>✅</td><td>Quill 產生的 HTML</td></tr>
+        <tr><td>選項</td><td><code>OptionsJson</code></td><td>NVARCHAR(MAX)</td><td>✅</td><td>[{label:"A",text:"..."},...]</td></tr>
+        <tr><td>正確答案</td><td><code>CorrectAnswer</code></td><td>NVARCHAR(10)</td><td>✅</td><td>A / B / C / D</td></tr>
+        <tr><td>解析</td><td><code>AnalysisHtml</code></td><td>NVARCHAR(MAX)</td><td>—</td><td></td></tr>
+      </tbody></table>
+      <div class="note-row">💡 僅題組題型使用：短文題組、閱讀題組、聽力題組。一般/精選/長文/聽力把選項放在 Questions.ContentJson</div>
+    </div>
+  </div>
+
+  <!-- ── Reviews ── -->
+  <div class="er">
+    <div class="er-h" style="background:var(--red-dim)"><span>🔍</span> Reviews（審題紀錄）<span class="perf">索引×3</span><span class="arr">▶</span></div>
+    <div class="er-body">
+      <table class="tbl"><thead><tr><th>業務名稱</th><th>欄位</th><th>型別</th><th>必填</th><th>說明</th></tr></thead><tbody>
+        <tr><td>紀錄ID</td><td><span class="pk">PK</span> <code>Id</code></td><td>BIGINT IDENTITY</td><td>自動</td><td></td></tr>
+        <tr><td>題目</td><td><span class="fk">FK</span> <code>QuestionId</code></td><td>BIGINT</td><td>✅</td><td><span class="idx">IDX</span> → Questions.Id</td></tr>
+        <tr><td>審題者</td><td><span class="fk">FK</span> <code>ReviewerId</code></td><td>UNIQUEIDENTIFIER</td><td>✅</td><td><span class="idx">IDX</span> → Users.Id</td></tr>
+        <tr><td>審題階段</td><td><code>Stage</code></td><td>TINYINT</td><td>✅</td><td><span class="idx">IDX</span> 1=互審 2=專審 3=總審</td></tr>
+        <tr><td>審題輪次</td><td><code>Round</code></td><td>TINYINT</td><td>✅</td><td>第幾輪（總審可能多輪）</td></tr>
+        <tr><td>決策</td><td><code>Decision</code></td><td>TINYINT</td><td>✅</td><td>1=採用 2=改後再審 3=不採用</td></tr>
+        <tr><td>審題意見</td><td><code>Comment</code></td><td>NVARCHAR(MAX)</td><td>—</td><td></td></tr>
+        <tr><td>罐頭訊息</td><td><span class="fk">FK</span> <code>CannedMessageId</code></td><td>INT</td><td>—</td><td>→ CannedMessages.Id（可NULL）</td></tr>
+        <tr><td>審題時間</td><td><code>ReviewedAt</code></td><td>DATETIME2</td><td>自動</td><td></td></tr>
+      </tbody></table>
+      <div class="note-row">💡 複合索引 (QuestionId, Stage, Round) 加速查詢某道題在各階段各輪的審題結果</div>
+    </div>
+  </div>
+
+  <!-- ── CannedMessages ── -->
+  <div class="er">
+    <div class="er-h" style="background:rgba(122,130,160,.08)"><span>💬</span> CannedMessages（罐頭訊息）<span class="arr">▶</span></div>
+    <div class="er-body">
+      <table class="tbl"><thead><tr><th>業務名稱</th><th>欄位</th><th>型別</th><th>必填</th><th>說明</th></tr></thead><tbody>
+        <tr><td>訊息ID</td><td><span class="pk">PK</span> <code>Id</code></td><td>INT IDENTITY</td><td>自動</td><td></td></tr>
+        <tr><td>適用分類</td><td><code>Category</code></td><td>TINYINT</td><td>✅</td><td>1=互審 2=專審 3=總審 4=通用</td></tr>
+        <tr><td>訊息內容</td><td><code>MessageText</code></td><td>NVARCHAR(500)</td><td>✅</td><td></td></tr>
+        <tr><td>排序</td><td><code>SortOrder</code></td><td>SMALLINT</td><td>✅</td><td></td></tr>
+        <tr><td>啟用</td><td><code>IsActive</code></td><td>BIT</td><td>✅</td><td>預設=1</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <!-- ── Announcements ── -->
+  <div class="er">
+    <div class="er-h" style="background:var(--orange-dim)"><span>📢</span> Announcements（系統公告）<span class="perf">索引×3</span><span class="arr">▶</span></div>
+    <div class="er-body">
+      <table class="tbl"><thead><tr><th>業務名稱</th><th>欄位</th><th>型別</th><th>必填</th><th>說明</th></tr></thead><tbody>
+        <tr><td>公告ID</td><td><span class="pk">PK</span> <code>Id</code></td><td>INT IDENTITY</td><td>自動</td><td></td></tr>
+        <tr><td>標題</td><td><code>Title</code></td><td>NVARCHAR(200)</td><td>✅</td><td></td></tr>
+        <tr><td>內容</td><td><code>ContentHtml</code></td><td>NVARCHAR(MAX)</td><td>✅</td><td>Quill 編輯器產生的 HTML</td></tr>
+        <tr><td>分類</td><td><code>Category</code></td><td>TINYINT</td><td>✅</td><td><span class="idx">IDX</span> 1=系統 2=命題 3=審題 4=其他</td></tr>
+        <tr><td>綁定專案</td><td><span class="fk">FK</span> <code>ProjectId</code></td><td>INT</td><td>—</td><td><span class="idx">IDX</span> → Projects.Id（NULL=全站通用）</td></tr>
+        <tr><td>置頂</td><td><code>IsPinned</code></td><td>BIT</td><td>✅</td><td><span class="idx">IDX</span> 預設=0</td></tr>
+        <tr><td>狀態</td><td><code>Status</code></td><td>TINYINT</td><td>✅</td><td>0=草稿 1=已發布</td></tr>
+        <tr><td>建立者</td><td><span class="fk">FK</span> <code>CreatedBy</code></td><td>UNIQUEIDENTIFIER</td><td>✅</td><td>→ Users.Id</td></tr>
+        <tr><td>發布時間</td><td><code>PublishedAt</code></td><td>DATETIME2</td><td>—</td><td></td></tr>
+        <tr><td>建立時間</td><td><code>CreatedAt</code></td><td>DATETIME2</td><td>自動</td><td></td></tr>
+        <tr><td>軟刪除</td><td><code>DeletedAt</code></td><td>DATETIME2</td><td>—</td><td>⚠️ 公告不做物理刪除，保留歷史紀錄</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <!-- ── TeacherProfiles ── -->
+  <div class="er">
+    <div class="er-h" style="background:var(--green-dim)"><span>👨‍🏫</span> TeacherProfiles（教師人才庫）<span class="arr">▶</span></div>
+    <div class="er-body">
+      <table class="tbl"><thead><tr><th>業務名稱</th><th>欄位</th><th>型別</th><th>必填</th><th>說明</th></tr></thead><tbody>
+        <tr><td>教師資料ID</td><td><span class="pk">PK</span> <code>Id</code></td><td>INT IDENTITY</td><td>自動</td><td></td></tr>
+        <tr><td>對應帳號</td><td><span class="fk">FK</span> <code>UserId</code></td><td>UNIQUEIDENTIFIER</td><td>✅ Unique</td><td>→ Users.Id（1對1）</td></tr>
+        <tr><td>任教學校</td><td><code>SchoolName</code></td><td>NVARCHAR(100)</td><td>—</td><td></td></tr>
+        <tr><td>任教科目</td><td><code>Subject</code></td><td>NVARCHAR(100)</td><td>—</td><td></td></tr>
+        <tr><td>學歷</td><td><code>Education</code></td><td>NVARCHAR(200)</td><td>—</td><td></td></tr>
+        <tr><td>專長領域</td><td><code>Expertise</code></td><td>NVARCHAR(500)</td><td>—</td><td></td></tr>
+        <tr><td>備註</td><td><code>Notes</code></td><td>NVARCHAR(MAX)</td><td>—</td><td></td></tr>
+        <tr><td>建立時間</td><td><code>CreatedAt</code></td><td>DATETIME2</td><td>自動</td><td></td></tr>
+        <tr><td>更新時間</td><td><code>UpdatedAt</code></td><td>DATETIME2</td><td>自動</td><td></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <!-- ── AuditLogs ── -->
+  <div class="er">
+    <div class="er-h" style="background:var(--purple-dim)"><span>📋</span> AuditLogs（稽核日誌）<span class="perf">索引×2</span><span class="arr">▶</span></div>
+    <div class="er-body">
+      <table class="tbl"><thead><tr><th>業務名稱</th><th>欄位</th><th>型別</th><th>必填</th><th>說明</th></tr></thead><tbody>
+        <tr><td>日誌ID</td><td><span class="pk">PK</span> <code>Id</code></td><td>BIGINT IDENTITY</td><td>自動</td><td></td></tr>
+        <tr><td>操作者</td><td><span class="fk">FK</span> <code>UserId</code></td><td>UNIQUEIDENTIFIER</td><td>✅</td><td><span class="idx">IDX</span> → Users.Id</td></tr>
+        <tr><td>動作類型</td><td><code>Action</code></td><td>NVARCHAR(50)</td><td>✅</td><td><span class="idx">IDX</span> CREATE/UPDATE/DELETE/SUBMIT/REVIEW</td></tr>
+        <tr><td>目標表</td><td><code>TargetTable</code></td><td>NVARCHAR(50)</td><td>✅</td><td>被操作的資料表名</td></tr>
+        <tr><td>目標ID</td><td><code>TargetId</code></td><td>NVARCHAR(50)</td><td>✅</td><td>被操作的紀錄 ID</td></tr>
+        <tr><td>變更內容</td><td><code>Changes</code></td><td>NVARCHAR(MAX)</td><td>—</td><td>JSON 格式紀錄前後差異</td></tr>
+        <tr><td>操作時間</td><td><code>CreatedAt</code></td><td>DATETIME2</td><td>自動</td><td></td></tr>
+      </tbody></table>
+      <div class="note-row">💡 稽核日誌只新增不修改不刪除（Append-Only），配合儀錶板的「稽核歷程」區塊使用</div>
+    </div>
+  </div>
+
+  <!-- ── PasswordResetTokens ── -->
+  <div class="er">
+    <div class="er-h" style="background:var(--cyan-dim)"><span>🔑</span> PasswordResetTokens（密碼重設）<span class="arr">▶</span></div>
+    <div class="er-body">
+      <table class="tbl"><thead><tr><th>業務名稱</th><th>欄位</th><th>型別</th><th>必填</th><th>說明</th></tr></thead><tbody>
+        <tr><td>Token ID</td><td><span class="pk">PK</span> <code>Id</code></td><td>INT IDENTITY</td><td>自動</td><td></td></tr>
+        <tr><td>使用者</td><td><span class="fk">FK</span> <code>UserId</code></td><td>UNIQUEIDENTIFIER</td><td>✅</td><td>→ Users.Id</td></tr>
+        <tr><td>驗證令牌</td><td><code>Token</code></td><td>NVARCHAR(256)</td><td>✅ Unique</td><td>信件連結中的安全碼</td></tr>
+        <tr><td>到期時間</td><td><code>ExpiresAt</code></td><td>DATETIME2</td><td>✅</td><td>建議 24 小時內有效</td></tr>
+        <tr><td>是否已用</td><td><code>IsUsed</code></td><td>BIT</td><td>✅</td><td>預設=0，使用後=1</td></tr>
+        <tr><td>建立時間</td><td><code>CreatedAt</code></td><td>DATETIME2</td><td>自動</td><td></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PANEL 7: ER DIAGRAM -->
+<!-- ============================================================ -->
+<div class="panel" id="p-er">
+  <h2 class="sec"><span class="dot" style="background:var(--cyan-dim);color:var(--cyan)">📐</span>ER 圖（Mermaid 原始碼）</h2>
+  <p class="desc">可直接複製到 Mermaid Live Editor 或 Markdown 中渲染成視覺化圖表，方便會議投影討論。</p>
+
+  <div class="mermaid-wrap">
+    <button class="copy-btn" onclick="copyMermaid()">📋 複製 Mermaid 原始碼</button>
+    <pre id="mermaid-code">erDiagram
+    Users {
+        uniqueidentifier Id PK
+        nvarchar Account UK "登入帳號"
+        nvarchar PasswordHash "加密密碼"
+        nvarchar DisplayName "顯示名稱"
+        nvarchar Email "電子信箱"
+        tinyint UserType "1內部 2教師 3專家"
+        bit IsActive "帳號啟用"
+        datetime2 LastLoginAt "最後登入"
+        datetime2 CreatedAt
+        datetime2 UpdatedAt
+    }
+
+    Roles {
+        int Id PK
+        nvarchar RoleName UK "角色名稱"
+        tinyint RoleType "1內部 2外部"
+        nvarchar Description
+        bit IsActive
+        datetime2 CreatedAt
+    }
+
+    Permissions {
+        int Id PK
+        nvarchar PermissionCode UK "權限代碼"
+        nvarchar PermissionName "權限名稱"
+        nvarchar Module "功能模組"
+    }
+
+    RolePermissions {
+        int RoleId PK,FK
+        int PermissionId PK,FK
+    }
+
+    UserRoles {
+        uniqueidentifier UserId PK,FK
+        int RoleId PK,FK
+    }
+
+    Projects {
+        int Id PK
+        nvarchar ProjectName "專案名稱"
+        smallint Year "年度"
+        nvarchar SchoolName "合作學校(選填)"
+        date StartDate
+        date EndDate
+        tinyint Status "1進行中 2已結束"
+        uniqueidentifier CreatedBy FK
+        datetime2 CreatedAt
+        datetime2 UpdatedAt
+    }
+
+    ProjectPhases {
+        int Id PK
+        int ProjectId FK
+        tinyint PhaseOrder "1-8階段順序"
+        nvarchar PhaseName "階段名稱"
+        smallint DefaultDays "預設天數"
+        smallint ActualDays "實際天數"
+        date StartDate
+        date EndDate
+        bit HasReminder "啟用提醒"
+        tinyint ReminderDays "提前幾天"
+    }
+
+    ProjectMembers {
+        int Id PK
+        int ProjectId FK
+        uniqueidentifier UserId FK
+        tinyint MemberRole "1命題 2互審 3專審 4總審"
+        datetime2 AssignedAt
+    }
+
+    Questions {
+        bigint Id PK
+        int ProjectId FK
+        uniqueidentifier AuthorId FK
+        tinyint QuestionType "1-7題型"
+        tinyint DifficultyLevel "難度"
+        nvarchar CategoryMain "主類別"
+        nvarchar CategorySub "子類別"
+        tinyint Status "0-9狀態碼"
+        tinyint ReviewStage "0-3審題階段"
+        bit ExpertReviewed "專審已完成"
+        nvarchar ContentJson "題目JSON"
+        datetime2 CreatedAt
+        datetime2 UpdatedAt
+        datetime2 SubmittedAt
+        datetime2 FinalizedAt
+    }
+
+    QuestionItems {
+        bigint Id PK
+        bigint QuestionId FK
+        tinyint ItemOrder "排序"
+        nvarchar StemHtml "題幹HTML"
+        nvarchar OptionsJson "選項JSON"
+        nvarchar CorrectAnswer "正確答案"
+        nvarchar AnalysisHtml "解析HTML"
+    }
+
+    Reviews {
+        bigint Id PK
+        bigint QuestionId FK
+        uniqueidentifier ReviewerId FK
+        tinyint Stage "1互審 2專審 3總審"
+        tinyint Round "審題輪次"
+        tinyint Decision "1採用 2改後再審 3不採用"
+        nvarchar Comment "審題意見"
+        int CannedMessageId FK
+        datetime2 ReviewedAt
+    }
+
+    CannedMessages {
+        int Id PK
+        tinyint Category "適用分類"
+        nvarchar MessageText "訊息內容"
+        smallint SortOrder
+        bit IsActive
+    }
+
+    Announcements {
+        int Id PK
+        nvarchar Title "標題"
+        nvarchar ContentHtml "內容HTML"
+        tinyint Category "1系統 2命題 3審題 4其他"
+        int ProjectId FK "綁定專案(可NULL)"
+        bit IsPinned "置頂"
+        tinyint Status "0草稿 1已發布"
+        uniqueidentifier CreatedBy FK
+        datetime2 PublishedAt
+        datetime2 CreatedAt
+        datetime2 DeletedAt "軟刪除"
+    }
+
+    TeacherProfiles {
+        int Id PK
+        uniqueidentifier UserId FK,UK "1對1"
+        nvarchar SchoolName "任教學校"
+        nvarchar Subject "任教科目"
+        nvarchar Education "學歷"
+        nvarchar Expertise "專長領域"
+        nvarchar Notes "備註"
+        datetime2 CreatedAt
+        datetime2 UpdatedAt
+    }
+
+    AuditLogs {
+        bigint Id PK
+        uniqueidentifier UserId FK
+        nvarchar Action "動作類型"
+        nvarchar TargetTable "目標表"
+        nvarchar TargetId "目標ID"
+        nvarchar Changes "變更JSON"
+        datetime2 CreatedAt
+    }
+
+    PasswordResetTokens {
+        int Id PK
+        uniqueidentifier UserId FK
+        nvarchar Token UK "驗證令牌"
+        datetime2 ExpiresAt "到期時間"
+        bit IsUsed "是否已用"
+        datetime2 CreatedAt
+    }
+
+    %% ===== 關聯線 =====
+    Users ||--o{ UserRoles : "擁有角色"
+    Roles ||--o{ UserRoles : "指派給使用者"
+    Roles ||--o{ RolePermissions : "擁有權限"
+    Permissions ||--o{ RolePermissions : "開放給角色"
+
+    Users ||--o| TeacherProfiles : "教師詳細資料"
+    Users ||--o{ PasswordResetTokens : "申請重設密碼"
+    Users ||--o{ AuditLogs : "操作紀錄"
+
+    Users ||--o{ ProjectMembers : "參與專案"
+    Projects ||--o{ ProjectMembers : "指派成員"
+    Projects ||--o{ ProjectPhases : "包含階段"
+    Projects ||--o{ Questions : "包含題目"
+    Projects ||--o{ Announcements : "綁定公告"
+
+    Users ||--o{ Questions : "出題"
+    Questions ||--o{ QuestionItems : "包含子題"
+    Questions ||--o{ Reviews : "被審題"
+    Users ||--o{ Reviews : "進行審題"
+    CannedMessages ||--o{ Reviews : "引用罐頭訊息"</pre>
+  </div>
+
+  <div class="card">
+    <div class="card-t">📝 如何使用這份 ER 圖</div>
+    <div style="font-size:.86rem;display:flex;flex-direction:column;gap:6px">
+      <div>1️⃣ 點擊上方「複製」按鈕，複製全部 Mermaid 原始碼</div>
+      <div>2️⃣ 到 <code>mermaid.live</code> 貼上，立即看到視覺化的 ER 圖</div>
+      <div>3️⃣ 或貼入任何支援 Mermaid 的工具（VS Code、Notion、HackMD、GitHub）</div>
+      <div>4️⃣ 會議時直接投影到大螢幕供團隊討論</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PANEL 8: EDGE CASES -->
+<!-- ============================================================ -->
+<div class="panel" id="p-edge">
+  <h2 class="sec"><span class="dot" style="background:var(--orange-dim);color:var(--orange)">⚠️</span>邊界條件與待確認事項</h2>
+  <p class="desc">以資深系統分析師經驗，列出可能遺漏的業務邏輯或邊界條件。建議在需求會議中逐一向 PM 確認。</p>
+
+  <div class="q-card">
+    <div class="q-num">❓ 問題 1 — 總審多人機制的決策邏輯</div>
+    <div class="q-text">
+      PRD 提到「總審老師原則上 1 人，但系統需保留彈性支援 2 人以上」。<br>
+      <strong>需確認：</strong>如果未來總審有 2 位以上，決策怎麼算？需要全部一致才算通過？還是多數決？如果一位說「採用」另一位說「改後再審」，以誰為準？<br>
+      <span style="color:var(--text-dim);font-size:.82rem">💡 建議：目前資料庫已設計成「每位審題者各自留一筆 Review 紀錄」，可支援多人。但需要另外定義匯總判定規則（多數決/全體一致/主審制）。</span>
+    </div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-num">❓ 問題 2 — 互審的「配對」邏輯</div>
+    <div class="q-text">
+      互審是「命題教師互相審閱」，但系統如何決定 A 老師的題目由 B 老師審？<br>
+      <strong>需確認：</strong>互審配對是管理員手動指定、還是系統自動分配（隨機/輪流）？同一道題的互審是 1 位還是多位教師？如果互審員也是該道題的出題者，系統需不需要擋掉（不能自己審自己）？<br>
+      <span style="color:var(--text-dim);font-size:.82rem">💡 建議：考慮在 ProjectMembers 加入配對欄位，或另建「ReviewAssignment」指派表。</span>
+    </div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-num">❓ 問題 3 — 題目被退回修改後的版本控制</div>
+    <div class="q-text">
+      當審題委員退回題目讓教師修改時，修改前的「原始內容」需不需要保留？<br>
+      <strong>需確認：</strong>是直接覆蓋 Questions.ContentJson（只保留最新版），還是需要記錄每次修改的歷史版本？這會影響到審題委員是否能「比較修改前後差異」。<br>
+      <span style="color:var(--text-dim);font-size:.82rem">💡 建議：若需版本比較功能，建議另建「QuestionVersions」版本歷史表，每次送審前快照一份。</span>
+    </div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-num">❓ 問題 4 — 「改後再審」的修改時間限制</div>
+    <div class="q-text">
+      題目被退回後，教師有沒有修改的截止時間？<br>
+      <strong>需確認：</strong>如果教師遲遲不修改，會不會卡住整個審題流程？是否需要設計「逾期未修改自動通知管理員」或「逾期自動標記為不採用」的機制？<br>
+      <span style="color:var(--text-dim);font-size:.82rem">💡 建議：可參考 ProjectPhases 的「互審修題/專審修題/總審修題」階段時程作為截止依據，搭配倒數提醒。</span>
+    </div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-num">❓ 問題 5 — 帳號刪除策略</div>
+    <div class="q-text">
+      如果某位教師離職或不再合作，帳號怎麼處理？<br>
+      <strong>需確認：</strong>是物理刪除（連同歷史出題紀錄一起消失），還是軟刪除（停用帳號但保留歷史紀錄）？教師管理的「刪除」功能是真的刪掉資料還是只是停用？<br>
+      <span style="color:var(--text-dim);font-size:.82rem">💡 建議：強烈建議使用軟刪除（設 IsActive=false），因為該教師曾經命製的題目和審題紀錄需要保留作為歷史參考。Users 表已有 IsActive 欄位可支援此設計。</span>
+    </div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-num">❓ 問題 6 — 專案結束後的資料處理</div>
+    <div class="q-text">
+      一個專案（梯次）結束後，裡面的題目會怎麼處理？<br>
+      <strong>需確認：</strong>已採用的題目是否會「匯出」到獨立的題庫系統？還是永遠留在這個專案裡？已結束的專案是否需要「封存」機制（不可再修改任何資料）？跨梯次的題目統計分析雖然目前 Out of Scope，但資料結構需不需要預留未來支援的空間？<br>
+      <span style="color:var(--text-dim);font-size:.82rem">💡 建議：目前 Projects 有 Status=2(已結束)，建議再加上「封存日期」欄位，已結束專案下的所有操作改為唯讀。</span>
+    </div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-num">❓ 問題 7 — 聽力題目的音檔儲存</div>
+    <div class="q-text">
+      聽力題目和聽力題組需要音檔，PRD 的 Open Questions 也有提到「音檔上傳是否需要在 DEMO 模擬」。<br>
+      <strong>需確認：</strong>未來正式版的音檔儲存方式為何？是存在 SQL Server（VARBINARY）、雲端物件儲存（Azure Blob / AWS S3）、還是 NAS？目前 Questions.ContentJson 中需不需要預留 AudioFileUrl 欄位？<br>
+      <span style="color:var(--text-dim);font-size:.82rem">💡 建議：不建議將音檔放進資料庫，建議使用 Azure Blob Storage，ContentJson 中只存檔案路徑。可考慮另建 FileAttachments 附件表統一管理。</span>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:24px;border-left:3px solid var(--blue)">
+    <div class="card-t">📎 PRD 原始 Open Questions（同步列入追蹤）</div>
+    <div style="font-size:.86rem;display:flex;flex-direction:column;gap:8px;color:var(--text-dim)">
+      <div>① 教師人才庫的教師資料欄位是否需要與外部系統（如學校系統）同步？</div>
+      <div>② 未來 Blazor 遷移時，是否保留 Quill 編輯器，還是改用 Blazor 原生的富文本元件？</div>
+      <div>③ 聽力題目的音檔上傳功能是否需要在 DEMO 階段模擬？</div>
+      <div>④ 密碼到期與強制變更的規則是否需要在 DEMO 中加入？</div>
+      <div>⑤ 除了命題總覽的 4 種角色層級外，其他功能模組的權限對照表是否需要進一步定義？</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Tab switching
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('.panel').forEach(x=>x.classList.remove('on'));
+    t.classList.add('on');
+    document.getElementById(t.dataset.p).classList.add('on');
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+});
+
+// Collapsible ER cards
+document.querySelectorAll('.er-h').forEach(h=>{
+  h.addEventListener('click',()=>{
+    h.classList.toggle('open');
+    const body=h.nextElementSibling;
+    body.classList.toggle('open');
+  });
+});
+
+// Copy Mermaid
+function copyMermaid(){
+  const code=document.getElementById('mermaid-code').textContent;
+  navigator.clipboard.writeText(code).then(()=>{
+    const btn=document.querySelector('.copy-btn');
+    btn.textContent='✅ 已複製！';
+    setTimeout(()=>{btn.textContent='📋 複製 Mermaid 原始碼'},2000);
+  });
+}
+</script>
+</body>
+</html>
