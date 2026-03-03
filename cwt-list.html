@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>我的命題列表 - CWT 命題工作平臺</title>
+  <title>命題任務 - CWT 命題工作平臺</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
@@ -215,7 +215,7 @@
             <polyline points="9 18 15 12 9 6"></polyline>
           </svg>
         </span>
-        <span class="breadcrumb-current">我的命題任務</span>
+        <span class="breadcrumb-current">命題任務</span>
       </div>
 
 
@@ -224,7 +224,7 @@
 
   <div class="main-content">
     <div class="container px-4">
-      <h1 class="page-title">我的命題任務</h1>
+      <h1 class="page-title">命題任務</h1>
       <p class="page-desc">
         檢視和管理您的所有命題，包括命題草稿、命題完成、命題送審、改後再審與不採用的試題。
       </p>
@@ -320,7 +320,7 @@
 
       <div id="stats-working" class="row g-4 mb-4">
         <div class="col-md-3">
-          <div class="stat-card interactive-card" onclick="filterByStatus('all')">
+          <div class="stat-card interactive-card" data-status="total" onclick="filterByStatus('all')">
             <div class="stat-icon icon-gray">
               <i class="bi bi-folder2-open" style="font-size: 1.5rem;"></i>
             </div>
@@ -330,7 +330,7 @@
           </div>
         </div>
         <div class="col-md-3">
-          <div class="stat-card interactive-card" onclick="filterByStatus('命題草稿')">
+          <div class="stat-card interactive-card" data-status="命題草稿" onclick="filterByStatus('命題草稿')">
             <div class="stat-icon icon-orange interactive" onclick="event.stopPropagation(); batchUpdateStatus('命題草稿')"
               title="批次設為草稿">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
@@ -345,7 +345,7 @@
           </div>
         </div>
         <div class="col-md-3">
-          <div class="stat-card interactive-card" onclick="filterByStatus('命題完成')">
+          <div class="stat-card interactive-card" data-status="命題完成" onclick="filterByStatus('命題完成')">
             <div class="stat-icon icon-green interactive" onclick="event.stopPropagation(); batchUpdateStatus('命題完成')"
               title="批次設為完成">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-check-lg"
@@ -362,7 +362,7 @@
           </div>
         </div>
         <div class="col-md-3">
-          <div class="stat-card interactive-card" onclick="filterByStatus('命題送審')">
+          <div class="stat-card interactive-card" data-status="命題送審" onclick="filterByStatus('命題送審')">
             <div class="stat-icon icon-blue interactive" onclick="event.stopPropagation(); batchUpdateStatus('命題送審')"
               title="批次送審">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-send"
@@ -380,7 +380,7 @@
 
       <div id="stats-review" class="row g-4 mb-4 d-none">
         <div class="col-md-3">
-          <div class="stat-card interactive-card" onclick="filterByStatus('all')">
+          <div class="stat-card interactive-card" data-status="total" onclick="filterByStatus('all')">
             <div class="stat-icon icon-gray">
               <i class="bi bi-folder2-open" style="font-size: 1.5rem;"></i>
             </div>
@@ -604,8 +604,7 @@
     </div>
   </div>
   <!-- 表單區塊 -->
-  <div class="modal fade" id="propModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
-    data-bs-focus="false">
+  <div class="modal fade" id="propModal" tabindex="-1" aria-hidden="true" data-bs-focus="false">
     <div class="modal-dialog modal-fullscreen modal-dialog-centered p-3">
       <div class="modal-content border-0 rounded-4 shadow">
 

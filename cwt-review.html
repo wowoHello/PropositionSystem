@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>審題清單 - CWT 命題工作平臺</title>
+    <title>審題任務 - CWT 命題工作平臺</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="css/quill.snow.css">
@@ -221,7 +221,7 @@
                         <polyline points="9 18 15 12 9 6"></polyline>
                     </svg>
                 </span>
-                <span class="breadcrumb-current">審題清單</span>
+                <span class="breadcrumb-current">審題任務</span>
             </div>
 
             <!-- Text Size Controls (Optional, keeping consistent if desired) -->
@@ -233,7 +233,7 @@
     <!-- 主要內容區 -->
     <div class="main-content">
         <div class="container px-4">
-            <h1 class="page-title">審題清單</h1>
+            <h1 class="page-title">審題任務</h1>
             <p class="page-desc">
                 檢視並審核指派給您的試題，包括互審、專審與總審階段的題目。
             </p>
@@ -339,8 +339,8 @@
             <!-- 統計卡片 -->
             <div id="stats-working" class="row g-4 mb-4">
                 <div class="col-md-3">
-                    <div class="stat-card clickable interactive-card" onclick="filterByStatus('working_all')"
-                        title="顯示全部待審題目">
+                    <div class="stat-card clickable interactive-card" data-status="working_all"
+                        onclick="filterByStatus('working_all')" title="顯示全部待審題目">
                         <div class="stat-icon" style="background-color: #e0f2fe;">
                             <i class="bi bi-folder2-open text-primary" style="font-size: 1.5rem;"></i>
                         </div>
@@ -387,7 +387,8 @@
 
             <div id="stats-history" class="row g-4 mb-4 d-none">
                 <div class="col-md-3">
-                    <div class="stat-card clickable interactive-card" onclick="filterByStatus('history_all')">
+                    <div class="stat-card clickable interactive-card" data-status="history_all"
+                        onclick="filterByStatus('history_all')">
                         <div class="stat-icon" style="background-color: #f3f4f6;">
                             <i class="bi bi-archive-fill text-secondary" style="font-size: 1.5rem;"></i>
                         </div>
@@ -409,7 +410,8 @@
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="stat-card clickable interactive-card" data-status="改後再審" onclick="filterByStatus('改後再審')">
+                    <div class="stat-card clickable interactive-card" data-status="改後再審"
+                        onclick="filterByStatus('改後再審')">
                         <div class="stat-icon" style="background-color: #ffedd5;">
                             <i class="bi bi-arrow-counterclockwise text-warning"
                                 style="font-size: 1.5em; font-weight: bold;"></i>
@@ -531,9 +533,9 @@
                                 <td><span class="proposer-hidden">***（隱藏）</span></td>
                                 <td>2026-01-26 09:45</td>
                                 <td class="action-links">
-                                    <button class="btn btn-link p-0 text-decoration-none fw-bold text-primary"
-                                        onclick="openReviewModal(this, 'expert')">
-                                        <i class="bi bi-pencil-square me-1"></i>審題
+                                    <button class="btn btn-link p-0 text-decoration-none fw-bold text-secondary"
+                                        disabled>
+                                        <i class="bi bi-check2-circle me-1"></i>已決策
                                     </button>
                                 </td>
                             </tr>
@@ -611,9 +613,9 @@
                                 <td><span class="proposer-hidden">***（隱藏）</span></td>
                                 <td>2026-01-23 15:40</td>
                                 <td class="action-links">
-                                    <button class="btn btn-link p-0 text-decoration-none fw-bold text-primary"
-                                        onclick="openReviewModal(this, 'final')">
-                                        <i class="bi bi-pencil-square me-1"></i>審題
+                                    <button class="btn btn-link p-0 text-decoration-none fw-bold text-secondary"
+                                        disabled>
+                                        <i class="bi bi-check2-circle me-1"></i>已決策
                                     </button>
                                 </td>
                             </tr>
@@ -644,7 +646,7 @@
     </div>
 
     <!-- 審題 Modal -->
-    <div class="modal fade" id="reviewModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal fade" id="reviewModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content border-0 rounded-4 shadow">
 
@@ -678,11 +680,11 @@
                         </div>
                     </div>
 
-                    <!-- 一、題目內容（唯讀）-->
+                    <!-- 題目內容（唯讀）-->
                     <div class="section-card readonly-section">
                         <h6 class="section-title">
                             <i class="bi bi-file-text"></i>
-                            一、題目內容
+                            題目內容
                             <span class="badge bg-primary text-white ms-2"><i class="bi bi-lock-fill me-1"></i>唯讀</span>
                         </h6>
 
@@ -774,11 +776,11 @@
                         </div>
                     </div>
 
-                    <!-- 二、互審意見 -->
+                    <!-- 互審意見 -->
                     <div class="section-card mutual-section" id="mutualOpinionSection">
                         <h6 class="section-title">
                             <i class="bi bi-people"></i>
-                            二、互審意見
+                            互審意見
                             <span class="badge bg-purple text-white ms-2" id="mutualOpinionBadge"><i
                                     class="bi bi-pen-fill me-1"></i>必填</span>
                         </h6>
@@ -825,11 +827,11 @@
                         </div>
                     </div>
 
-                    <!-- 三、專審意見 -->
+                    <!-- 專審意見 -->
                     <div class="section-card expert-section d-none" id="expertOpinionSection">
                         <h6 class="section-title">
                             <i class="bi bi-person-badge"></i>
-                            三、專審意見
+                            專審意見
                             <span class="badge bg-warning text-white ms-2" id="expertOpinionBadge"><i
                                     class="bi bi-pen-fill me-1"></i>必填</span>
                         </h6>
@@ -876,11 +878,11 @@
                         </div>
                     </div>
 
-                    <!-- 四、總審意見 -->
+                    <!-- 總審意見 -->
                     <div class="section-card final-section d-none" id="finalOpinionSection">
                         <h6 class="section-title">
                             <i class="bi bi-shield-check"></i>
-                            四、總審意見
+                            總審意見
                             <span class="badge bg-danger text-white ms-2" id="finalOpinionBadge"><i
                                     class="bi bi-pen-fill me-1"></i>必填</span>
                         </h6>

@@ -38,12 +38,13 @@ body {
    ========================================= */
 .hero-stat-banner {
     position: relative;
-    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+    background: linear-gradient(135deg, #f0f4ff 0%, #e8eeff 50%, #f5f0ff 100%);
     border-radius: 16px;
     padding: 2rem 2.5rem;
     overflow: hidden;
-    color: white;
-    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.15);
+    color: #1e293b;
+    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(99, 102, 241, 0.1);
     display: flex;
     align-items: center;
 }
@@ -54,7 +55,7 @@ body {
     top: 0;
     bottom: 0;
     width: 50%;
-    background: radial-gradient(circle at 80% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 60%);
+    background: radial-gradient(circle at 80% 50%, rgba(99, 102, 241, 0.06) 0%, transparent 60%);
     pointer-events: none;
 }
 
@@ -65,7 +66,7 @@ body {
     top: -20px;
     width: 150px;
     height: 150px;
-    border: 3px solid rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(99, 102, 241, 0.06);
     border-radius: 50%;
 }
 
@@ -76,7 +77,7 @@ body {
     bottom: -30px;
     width: 200px;
     height: 200px;
-    border: 2px dashed rgba(255, 255, 255, 0.05);
+    border: 2px dashed rgba(99, 102, 241, 0.05);
     border-radius: 50%;
 }
 
@@ -96,28 +97,33 @@ body {
 }
 
 .hero-stat-icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 16px;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(8px);
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #6366f1 0%, #818cf8 100%);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.8rem;
-    color: #a78bfa;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.05);
+    font-size: 1.6rem;
+    color: #ffffff;
+    border: none;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .hero-stat-icon.text-orange {
-    color: #fb923c;
+    background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
 }
 
 .hero-stat-banner:hover .hero-stat-icon {
-    transform: translateY(-3px);
-    box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.1), 0 8px 16px rgba(0, 0, 0, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3);
+}
+
+.hero-stat-banner:hover .hero-stat-icon.text-orange {
+    box-shadow: 0 6px 16px rgba(245, 158, 11, 0.3);
 }
 
 .hero-stat-text {
@@ -131,29 +137,26 @@ body {
     line-height: 1;
     margin-bottom: 0.2rem;
     letter-spacing: -0.02em;
-    background: linear-gradient(to right, #ffffff, #cbd5e1);
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #1e293b;
 }
 
 .hero-stat-label {
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     font-weight: 600;
-    color: #f8fafc;
+    color: #374151;
     margin-bottom: 0.2rem;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.02em;
 }
 
 .hero-stat-sub {
     font-size: 0.85rem;
-    color: #94a3b8;
+    color: #6b7280;
 }
 
 .hero-stat-divider {
     width: 1px;
-    height: 70px;
-    background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.2), transparent);
+    height: 60px;
+    background: linear-gradient(to bottom, transparent, rgba(99, 102, 241, 0.15), transparent);
     margin: 0 3rem;
 }
 
@@ -167,7 +170,7 @@ body {
     .hero-stat-divider {
         width: 100%;
         height: 1px;
-        background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.2), transparent);
+        background: linear-gradient(to right, transparent, rgba(99, 102, 241, 0.15), transparent);
         margin: 0;
     }
 }
@@ -386,6 +389,48 @@ body {
     background-color: #eff6ff;
     color: #1e40af;
     border: 1px solid #bfdbfe;
+}
+
+/* 三燈號審核狀態指示器 */
+.review-lights {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.review-light {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: #e5e7eb;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.review-light.done {
+    background-color: #22c55e;
+    box-shadow: 0 0 6px rgba(34, 197, 94, 0.35);
+}
+
+.review-light.active {
+    background-color: #22c55e;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+    animation: light-pulse 2s ease-in-out infinite;
+}
+
+.review-light.revise {
+    background-color: #f59e0b;
+    box-shadow: 0 0 6px rgba(245, 158, 11, 0.35);
+}
+
+.review-light.rejected {
+    background-color: #ef4444;
+    box-shadow: 0 0 6px rgba(239, 68, 68, 0.35);
+}
+
+@keyframes light-pulse {
+    0%, 100% { box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2); }
+    50% { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.1); }
 }
 
 /* 操作按鈕 */
@@ -696,6 +741,31 @@ body {
     font-size: 1.1rem;
 }
 
+/* 改後再審狀態（橘色） */
+.review-step.revise .step-circle {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    border-color: #f59e0b;
+    color: white;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.review-step.revise .step-check {
+    display: none;
+}
+
+.review-step.revise .step-number::before {
+    content: '!';
+}
+
+.review-step.revise .step-number {
+    font-size: 0;
+}
+
+.review-step.revise .step-number::before {
+    font-size: 1.1rem;
+    font-weight: 800;
+}
+
 /* 連接線 */
 .step-connector-before,
 .step-connector-after {
@@ -740,6 +810,14 @@ body {
     background: #10b981;
 }
 
+.review-step.revise::before {
+    background: #10b981;
+}
+
+.review-step.rejected::before {
+    background: #10b981;
+}
+
 /* 步驟標籤 */
 .review-step .step-label {
     margin-top: 0.6rem;
@@ -759,6 +837,10 @@ body {
 
 .review-step.rejected .step-label {
     color: #dc2626;
+}
+
+.review-step.revise .step-label {
+    color: #d97706;
 }
 
 .review-step .step-sub {

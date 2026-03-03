@@ -2425,6 +2425,26 @@ function isLockedStatus(status) {
 //  ★ 主要初始化入口 (DOMContentLoaded)
 // ==========================================
 document.addEventListener("DOMContentLoaded", function () {
+    // 綁定 modal 背景點擊自動儲存草稿
+    const propModalEl = document.getElementById('propModal');
+    if (propModalEl) {
+        propModalEl.addEventListener('mousedown', function (e) {
+            // 背景區域的 click target 會是 modal 自身
+            if (e.target === this) {
+                const titleEl = document.getElementById('propModalTitle');
+                // 只有在非檢視模式下，才自動儲存為草稿
+                if (titleEl && titleEl.innerText !== '檢視命題') {
+                    saveProp('命題草稿');
+                } else {
+                    // 檢視模式下點擊背景直接關閉
+                    if (typeof propModal !== 'undefined') {
+                        propModal.hide();
+                    }
+                }
+            }
+        });
+    }
+
     // 1. 初始化 Handlers (部分功能由各別頁面初始化，故保留並調整)
     Object.values(TypeHandlers).forEach(h => { if (h && h.init) h.init(); });
 

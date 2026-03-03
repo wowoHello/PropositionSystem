@@ -123,7 +123,7 @@ body {
 }
 
 .stat-info span {
-      display: block;
+    display: block;
     color: #6b7280;
     font-size: 0.9rem;
     font-weight: 600;
@@ -376,7 +376,7 @@ body {
 /* 1. 互審中 (Purple) */
 .stat-card.interactive-card[data-status="互審中"]:hover {
     border-color: rgba(139, 92, 246, 0.3);
-    box-shadow: 0 12px 24px -6px rgba(139, 92, 246, 0.15);
+    box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
 }
 
 .stat-card.interactive-card[data-status="互審中"]:hover .stat-info span,
@@ -387,18 +387,19 @@ body {
 /* 2. 專審中 (Orange) */
 .stat-card.interactive-card[data-status="專審中"]:hover {
     border-color: rgba(245, 158, 11, 0.3);
-    box-shadow: 0 12px 24px -6px rgba(245, 158, 11, 0.15);
+    box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
 }
 
 .stat-card.interactive-card[data-status="專審中"]:hover .stat-info span,
 .stat-card.interactive-card[data-status="專審中"]:hover .stat-info h4 {
-    color: #f59e0b !important;
+    color: #f97316 !important;
 }
 
 /* 3. 總審中 (Red) */
 .stat-card.interactive-card[data-status="總審中"]:hover {
     border-color: rgba(239, 68, 68, 0.3);
-    box-shadow: 0 12px 24px -6px rgba(239, 68, 68, 0.15);
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.25);
+    /* 淡紅外光線 */
 }
 
 .stat-card.interactive-card[data-status="總審中"]:hover .stat-info span,
@@ -406,21 +407,32 @@ body {
     color: #ef4444 !important;
 }
 
+/* 8. 待審總計 (working_all) -> 藍色 */
+.stat-card.interactive-card[data-status="working_all"]:hover {
+    border-color: rgba(59, 130, 246, 0.3);
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+}
+
+.stat-card.interactive-card[data-status="working_all"]:hover .stat-info span,
+.stat-card.interactive-card[data-status="working_all"]:hover .stat-info h4 {
+    color: #3b82f6 !important;
+}
+
 /* 4. 採用 (Green) */
 .stat-card.interactive-card[data-status="採用"]:hover {
-    border-color: rgba(16, 185, 129, 0.3);
-    box-shadow: 0 12px 24px -6px rgba(16, 185, 129, 0.15);
+    border-color: rgba(59, 130, 246, 0.3);
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
 }
 
 .stat-card.interactive-card[data-status="採用"]:hover .stat-info span,
 .stat-card.interactive-card[data-status="採用"]:hover .stat-info h4 {
-    color: #10b981 !important;
+    color: #2563eb !important;
 }
 
 /* 5. 改後再審 (Orange) */
 .stat-card.interactive-card[data-status="改後再審"]:hover {
     border-color: rgba(249, 115, 22, 0.3);
-    box-shadow: 0 12px 24px -6px rgba(249, 115, 22, 0.15);
+    box-shadow: 0 0 15px rgba(249, 115, 22, 0.4);
 }
 
 .stat-card.interactive-card[data-status="改後再審"]:hover .stat-info span,
@@ -431,11 +443,22 @@ body {
 /* 6. 不採用 (Gray/Red) */
 .stat-card.interactive-card[data-status="不採用"]:hover {
     border-color: rgba(107, 114, 128, 0.3);
-    box-shadow: 0 12px 24px -6px rgba(107, 114, 128, 0.15);
+    box-shadow: 0 0 15px rgba(107, 114, 128, 0.4);
 }
 
 .stat-card.interactive-card[data-status="不採用"]:hover .stat-info span,
 .stat-card.interactive-card[data-status="不採用"]:hover .stat-info h4 {
+    color: #6b7280 !important;
+}
+
+/* 7. 審核紀錄總計 (Gray) */
+.stat-card.interactive-card[data-status="history_all"]:hover {
+    border-color: rgba(107, 114, 128, 0.3);
+    box-shadow: 0 0 15px rgba(107, 114, 128, 0.4);
+}
+
+.stat-card.interactive-card[data-status="history_all"]:hover .stat-info span,
+.stat-card.interactive-card[data-status="history_all"]:hover .stat-info h4 {
     color: #6b7280 !important;
 }
 
@@ -660,19 +683,7 @@ body {
    ========================================================================== */
 .stat-card.interactive-card:hover .stat-info span,
 .stat-card.interactive-card:hover .stat-info h4 {
-    color: var(--primary-blue) !important;
     transition: color 0.3s ease;
-}
-
-/* 針對特定狀態的顏色微調 (可選) */
-.stat-card.interactive-card[data-status="改後再審"]:hover .stat-info h4 {
-    color: #f97316 !important;
-    /* 橘色 */
-}
-
-.stat-card.interactive-card[data-status="採用"]:hover .stat-info h4 {
-    color: #2563eb !important;
-    /* 藍色 */
 }
 
 /* 讓非互動的卡片保持原樣 */

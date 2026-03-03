@@ -390,17 +390,31 @@ window.submitReview = function (action) {
             // simulate state changes. In Blazor, this will be handled automatically by data binding to the model.
             // 1. 更新前端 Table 狀態 (DEMO 用)
             if (currentRow) {
-                // 更新狀態 Badge
                 let badgeClass = 'badge-completed';
-                if (statusText === '改後再審') badgeClass = 'badge-returned';
-                if (statusText === '不採用') badgeClass = 'badge-rejected';
-                if (statusText === '採用') badgeClass = 'badge-approved';
+                let finalStatusText = statusText;
+
+                // 根據 ex-rules.md: 互審結束後進入專審
+                if (currentStage === 'mutual') {
+                    finalStatusText = '專審中';
+                    badgeClass = 'badge-expert';
+                } else if (currentStage === 'expert') {
+                    // 根據 ex-rules.md: 專審與互審意見不同進入總審 (此處為 DEMO 簡化，若選擇「採用」以外可能模擬不同意見)
+                    // 若需要模擬不同決策進入總審，可在此擴充。目前依原本邏輯，進入各判決結果，或可強制轉入總審中。
+                    // 為了完整呈現流程，這裡暫時讓專審保持決策結果 (或您可以自定義條件轉為 '總審中')
+                    if (statusText === '改後再審') badgeClass = 'badge-returned';
+                    else if (statusText === '不採用') badgeClass = 'badge-rejected';
+                    else if (statusText === '採用') badgeClass = 'badge-approved';
+                } else {
+                    if (statusText === '改後再審') badgeClass = 'badge-returned';
+                    else if (statusText === '不採用') badgeClass = 'badge-rejected';
+                    else if (statusText === '採用') badgeClass = 'badge-approved';
+                }
 
                 // 更新第 4 欄 (狀態)
-                currentRow.cells[3].innerHTML = `<span class="badge-outline ${badgeClass}">${statusText}</span>`;
-                currentRow.setAttribute('data-status', statusText);
+                currentRow.cells[3].innerHTML = `<span class="badge-outline ${badgeClass}">${finalStatusText}</span>`;
+                currentRow.setAttribute('data-status', finalStatusText);
 
-                // 更新操作按鈕 (鎖定)
+                // 更新操作按鈕 (鎖定顯示已決策)
                 currentRow.querySelector('.action-links').innerHTML = `
                     <button class="btn btn-link p-0 text-decoration-none fw-bold text-secondary" disabled>
                         <i class="bi bi-check2-circle me-1"></i>已決策
@@ -581,25 +595,35 @@ function updateStats() {
         mutual: 0, expert: 0, final: 0, // Working
         adopt: 0, modify: 0, reject: 0  // History
     };
+    let totalWorkingPending = 0; // 只計算含有「審題」按鈕的數量
+
     const rows = document.querySelectorAll('tbody tr.data-row'); // 只抓有資料的列
     rows.forEach(row => {
         const status = row.getAttribute('data-status');
+
+        // 判斷按鈕文字是否包含「審題」
+        const actionBtn = row.querySelector('.action-links button');
+        const isPendingReview = actionBtn && actionBtn.textContent.includes('審題');
+
         if (status === '互審中') counts.mutual++;
         else if (status === '專審中') counts.expert++;
         else if (status === '總審中') counts.final++;
         else if (status === '採用') counts.adopt++;
         else if (status === '改後再審') counts.modify++;
         else if (status === '不採用') counts.reject++;
+
+        if (['互審中', '專審中', '總審中'].includes(status) && isPendingReview) {
+            totalWorkingPending++;
+        }
     });
 
-    const totalWorking = counts.mutual + counts.expert + counts.final;
     const totalHistory = counts.adopt + counts.modify + counts.reject;
 
     // Helper
     const setTxt = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
 
     // Group A
-    setTxt('stat-total-working', totalWorking);
+    setTxt('stat-total-working', totalWorkingPending);
     setTxt('stat-mutual', counts.mutual);
     setTxt('stat-expert', counts.expert);
     setTxt('stat-final', counts.final);

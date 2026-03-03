@@ -252,7 +252,6 @@
                         </div>
                     </div>
                 </div>
-                <div class="hero-stat-bg-decor"></div>
             </div>
 
             <!-- ========== 篩選區 ========== -->
@@ -334,7 +333,7 @@
                                 <th id="tableThDifficulty">適用等級</th>
                                 <th style="width: 25%">題目</th>
                                 <th class="d-none d-lg-table-cell">命題教師</th>
-                                <th>審查狀態</th>
+                                <th class="text-center">審核階段</th>
                                 <th class="d-none d-lg-table-cell">建立日期</th>
                                 <th class="text-center">操作</th>
                             </tr>
@@ -414,6 +413,52 @@
                         </div>
                     </div>
 
+                    <!-- 聽力音檔 (僅聽力題顯示) -->
+                    <div class="detail-section" id="modalAudioSection" style="display: none;">
+                        <div class="detail-section-title">
+                            <i class="bi bi-volume-up-fill"></i>聽力音檔
+                        </div>
+                        <div class="mt-2">
+                            <audio id="modalAudio" controls class="w-100"
+                                style="height: 40px; border-radius: 8px;"></audio>
+                        </div>
+                    </div>
+
+                    <!-- 題幹內容 -->
+                    <div class="detail-section" id="modalStemSection">
+                        <div class="detail-section-title">
+                            <i class="bi bi-card-text"></i>題幹內容
+                        </div>
+                        <div class="detail-content-box" id="modalStem">
+                            --
+                        </div>
+                    </div>
+
+                    <!-- 選項 -->
+                    <div class="detail-section" id="modalOptionsSection">
+                        <div class="detail-section-title">
+                            <i class="bi bi-list-check"></i>選項
+                        </div>
+                        <ul class="option-list" id="modalOptions">
+                            <!-- 由 JS 動態渲染 -->
+                        </ul>
+                    </div>
+
+                    <!-- 解析 -->
+                    <div class="detail-section" id="modalExplanationSection">
+                        <div class="detail-section-title">
+                            <i class="bi bi-lightbulb-fill"></i>解析說明
+                        </div>
+                        <div class="detail-content-box" id="modalExplanation">
+                            --
+                        </div>
+                    </div>
+
+                    <!-- 子題區塊 (僅題組顯示) -->
+                    <div id="modalSubQuestionsSection" style="display: none;">
+                        <!-- 由 JS 動態渲染多個子題卡片 -->
+                    </div>
+
                     <!-- 審題進度 -->
                     <div class="detail-section" id="modalReviewProgress">
                         <div class="detail-section-title">
@@ -464,52 +509,6 @@
                         <div class="review-timeline" id="reviewTimeline">
                             <!-- 由 JS 動態渲染 -->
                         </div>
-                    </div>
-
-                    <!-- 聽力音檔 (僅聽力題顯示) -->
-                    <div class="detail-section" id="modalAudioSection" style="display: none;">
-                        <div class="detail-section-title">
-                            <i class="bi bi-volume-up-fill"></i>聽力音檔
-                        </div>
-                        <div class="mt-2">
-                            <audio id="modalAudio" controls class="w-100"
-                                style="height: 40px; border-radius: 8px;"></audio>
-                        </div>
-                    </div>
-
-                    <!-- 題幹內容 -->
-                    <div class="detail-section" id="modalStemSection">
-                        <div class="detail-section-title">
-                            <i class="bi bi-card-text"></i>題幹內容
-                        </div>
-                        <div class="detail-content-box" id="modalStem">
-                            --
-                        </div>
-                    </div>
-
-                    <!-- 選項 -->
-                    <div class="detail-section" id="modalOptionsSection">
-                        <div class="detail-section-title">
-                            <i class="bi bi-list-check"></i>選項
-                        </div>
-                        <ul class="option-list" id="modalOptions">
-                            <!-- 由 JS 動態渲染 -->
-                        </ul>
-                    </div>
-
-                    <!-- 解析 -->
-                    <div class="detail-section" id="modalExplanationSection">
-                        <div class="detail-section-title">
-                            <i class="bi bi-lightbulb-fill"></i>解析說明
-                        </div>
-                        <div class="detail-content-box" id="modalExplanation">
-                            --
-                        </div>
-                    </div>
-
-                    <!-- 子題區塊 (僅題組顯示) -->
-                    <div id="modalSubQuestionsSection" style="display: none;">
-                        <!-- 由 JS 動態渲染多個子題卡片 -->
                     </div>
                 </div>
                 <div class="modal-footer bg-light border-0">
@@ -592,8 +591,10 @@
                 id: 'Q-2024-0004', type: '長文題目', difficulty: 3, diffLabel: '難度三（難）',
                 category: '文學賞析', teacher: '李文華', project: '進行中梯次範例一', projectId: '1',
                 status: 'reviewing', date: '2024-10-01',
-                reviewStage: 1,
-                reviews: [],
+                reviewStage: -1,
+                reviews: [
+                    { reviewer: '王偉', role: '互審教師', time: '2024-10-05 11:00', decision: 'revise', comment: '題目立意佳，但答題引導不夠明確，建議調整題幹敘述使考生更容易理解作答方向後重新送審。' }
+                ],
                 stem: '閱讀以下文章後，回答問題：\n\n余光中曾說：「鄉愁是一枚小小的郵票」，試從修辭技巧與情感表達兩個面向，分析此句的文學特色。',
                 options: [],
                 answer: '（長文題，無選項）',
@@ -657,8 +658,9 @@
                 status: 'rejected', date: '2024-10-12',
                 reviewStage: 0,
                 reviews: [
-                    { reviewer: '林志豪', role: '互審教師', time: '2024-10-15 11:00', decision: 'reject', comment: '音檔錄製品質不佳，背景噪音過大影響聽音判斷。建議重新錄製後再提交。' },
-                    { reviewer: '林美芳', role: '專審委員', time: '2024-10-18 16:00', decision: 'reject', comment: '同意互審意見，音檔品質未達標準，不採用。' }
+                    { reviewer: '林志豪', role: '互審教師', time: '2024-10-15 11:00', decision: 'adopt', comment: '題組結構合理，音檔長度適中。通過。' },
+                    { reviewer: '林美芳', role: '專審委員', time: '2024-10-18 16:00', decision: 'adopt', comment: '聽力素材與題目搭配得宜。通過。' },
+                    { reviewer: '沈雅茹', role: '總審委員', time: '2024-10-22 14:30', decision: 'reject', comment: '音檔錄製品質不佳，背景噪音過大影響聽音判斷，不採用。' }
                 ],
                 stem: '【聽力題組】請先聽一段對話後，回答以下兩道子題。',
                 options: [],
@@ -682,11 +684,11 @@
             {
                 id: 'Q-2024-0010', type: '精選題目', difficulty: 2, diffLabel: '難度二（中）',
                 category: '修辭辨識', teacher: '李文華', project: '進行中梯次範例一', projectId: '1',
-                status: 'passed', date: '2024-10-25',
-                reviewStage: 4,
+                status: 'reviewing', date: '2024-10-25',
+                reviewStage: -2,
                 reviews: [
-                    { reviewer: '王偉', role: '互審教師', time: '2024-10-28 09:15', decision: 'adopt', comment: '修辭考核方向正確，「轉化」與「擬人」的區分清楚，建議採用。' },
-                    { reviewer: '林美芳', role: '專審委員', time: '2024-11-02 15:00', decision: 'adopt', comment: '選項鑑別度佳，通過。' }
+                    { reviewer: '王偉', role: '互審教師', time: '2024-10-28 09:15', decision: 'adopt', comment: '修辭考核方向正確，選項設計具有誘答力。通過。' },
+                    { reviewer: '林美芳', role: '專審委員', time: '2024-11-02 15:00', decision: 'revise', comment: '「轉化」與「轉品」的定義在學術界仍有爭議，建議調整選項用語或題幹敘述以避免爭議。' }
                 ],
                 stem: '「春風又綠江南岸」使用了哪一種修辭手法？',
                 options: [
@@ -734,6 +736,64 @@
         };
 
         // =========================================
+        // 三燈號生成器（互審 → 專審 → 總審）
+        //  正數: 1=互審中, 2=專審中, 3=總審中, 4=已通過
+        //  負數: -1=互審改後再審(橘), -2=專審改後再審(橘), -3=總審改後再審(橘)
+        //     0: 總審不採用(紅) — 僅總審有不採用權限
+        // =========================================
+        const buildReviewLights = (reviewStage) => {
+            const stages = ['互審', '專審', '總審'];
+
+            // 0 = 總審不採用：互審通過、專審通過、總審紅燈
+            if (reviewStage === 0) {
+                return `<div class="review-lights">
+                    <span class="review-light done" title="互審（已通過）"></span>
+                    <span class="review-light done" title="專審（已通過）"></span>
+                    <span class="review-light rejected" title="總審（不採用）"></span>
+                </div>`;
+            }
+
+            const absStage = Math.abs(reviewStage);
+            const isRevise = reviewStage < 0; // 負數 = 該階段改後再審
+
+            const lights = stages.map((label, idx) => {
+                const stageNum = idx + 1;
+                let cls = '';
+                let title = label;
+
+                if (isRevise) {
+                    // 負數模式：前面的已通過，該階段橘燈，後面灰色
+                    if (stageNum < absStage) {
+                        cls = 'done';
+                        title = `${label}（已通過）`;
+                    } else if (stageNum === absStage) {
+                        cls = 'revise';
+                        title = `${label}（改後再審）`;
+                    } else {
+                        cls = '';
+                        title = `${label}（待審）`;
+                    }
+                } else {
+                    // 正數模式：正常審題流程
+                    if (reviewStage >= stageNum + 1) {
+                        cls = 'done';
+                        title = `${label}（已通過）`;
+                    } else if (reviewStage === stageNum) {
+                        cls = 'active';
+                        title = `${label}（進行中）`;
+                    } else {
+                        cls = '';
+                        title = `${label}（待審）`;
+                    }
+                }
+
+                return `<span class="review-light ${cls}" title="${title}"></span>`;
+            });
+
+            return `<div class="review-lights">${lights.join('')}</div>`;
+        };
+
+        // =========================================
         // 渲染表格
         // =========================================
         const renderTable = (data) => {
@@ -767,11 +827,13 @@
                 const isListening = item.type === '聽力題目' || item.type === '聽力題組';
                 const configSet = isListening ? difficultyConfig.listening : difficultyConfig.normal;
                 const diff = configSet[item.difficulty] || { label: '--', cssClass: '' };
-                const stat = statusConfig[item.status] || { label: '--', cssClass: '' };
 
                 // 處理題目，去除 HTML 標籤後截斷
                 const stemText = item.stem ? item.stem.replace(/<[^>]*>?/gm, '') : '';
                 const shortenedStem = stemText.length > 25 ? stemText.substring(0, 25) + '...' : stemText;
+
+                // 三燈號：reviewStage 0=退回, 1=互審中, 2=專審中, 3=總審中, 4=已通過
+                const lightsHtml = buildReviewLights(item.reviewStage);
 
                 return `
           <tr>
@@ -780,7 +842,7 @@
             <td><span class="badge-difficulty ${diff.cssClass}">${diff.label}</span></td>
             <td><div class="text-dark fw-medium" title="${stemText.replace(/"/g, '&quot;')}">${shortenedStem}</div></td>
             <td class="d-none d-lg-table-cell">${item.teacher}</td>
-            <td><span class="badge-status ${stat.cssClass}">${stat.label}</span></td>
+            <td class="text-center">${lightsHtml}</td>
             <td class="d-none d-lg-table-cell text-secondary small">${item.date}</td>
             <td class="text-center">
               <button class="btn-view-detail" onclick="viewQuestion('${item.id}')">
@@ -838,31 +900,61 @@
                 { id: 'step-final', label: '總審', subDefault: '最終決議' }
             ];
 
-            // reviewStage: 0=退回, 1=互審中, 2=專審中, 3=總審中, 4=已通過
+            //  正數: 1=互審中, 2=專審中, 3=總審中, 4=已通過
+            //  負數: -1=互審改後再審, -2=專審改後再審, -3=總審改後再審
+            //     0: 總審不採用
+
+            // 0 = 總審不採用
+            if (reviewStage === 0) {
+                steps.forEach((step, idx) => {
+                    const el = document.getElementById(step.id);
+                    const subEl = document.getElementById(`${step.id}-sub`);
+                    el.className = 'review-step';
+                    if (idx < 2) {
+                        el.classList.add('completed');
+                        subEl.textContent = '已通過';
+                    } else {
+                        el.classList.add('rejected');
+                        subEl.textContent = '不採用';
+                    }
+                });
+                return;
+            }
+
+            const absStage = Math.abs(reviewStage);
+            const isRevise = reviewStage < 0;
+
             steps.forEach((step, idx) => {
                 const el = document.getElementById(step.id);
                 const subEl = document.getElementById(`${step.id}-sub`);
                 const stageNum = idx + 1;
 
-                // 清除所有狀態 class
                 el.className = 'review-step';
 
-                if (reviewStage === 0) {
-                    // 退回狀態
-                    el.classList.add('rejected');
-                    subEl.textContent = '已退回';
-                } else if (reviewStage >= stageNum + 1) {
-                    // 此步驟已完成
-                    el.classList.add('completed');
-                    subEl.textContent = '已通過';
-                } else if (reviewStage === stageNum) {
-                    // 此步驟進行中
-                    el.classList.add('active');
-                    subEl.textContent = '進行中';
+                if (isRevise) {
+                    // 負數模式：改後再審（橘色）
+                    if (stageNum < absStage) {
+                        el.classList.add('completed');
+                        subEl.textContent = '已通過';
+                    } else if (stageNum === absStage) {
+                        el.classList.add('revise');
+                        subEl.textContent = '改後再審';
+                    } else {
+                        el.classList.add('pending');
+                        subEl.textContent = step.subDefault;
+                    }
                 } else {
-                    // 尚未到達
-                    el.classList.add('pending');
-                    subEl.textContent = step.subDefault;
+                    // 正數模式：正常流程
+                    if (reviewStage >= stageNum + 1) {
+                        el.classList.add('completed');
+                        subEl.textContent = '已通過';
+                    } else if (reviewStage === stageNum) {
+                        el.classList.add('active');
+                        subEl.textContent = '進行中';
+                    } else {
+                        el.classList.add('pending');
+                        subEl.textContent = step.subDefault;
+                    }
                 }
             });
         };

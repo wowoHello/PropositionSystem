@@ -751,19 +751,35 @@ body {
     box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.06);
 }
 
-.stat-card.interactive-card[data-status="採用"]:hover {
-    border-color: rgba(59, 130, 246, 0.3);
-    box-shadow: 0 12px 24px -6px rgba(59, 130, 246, 0.15);
-}
-
-.stat-card.interactive-card[data-status="改後再審"]:hover {
-    border-color: rgba(249, 115, 22, 0.3);
-    box-shadow: 0 12px 24px -6px rgba(249, 115, 22, 0.15);
-}
-
+/* 灰色系 (有效命題總計、不採用) */
+.stat-card.interactive-card[data-status="total"]:hover,
 .stat-card.interactive-card[data-status="不採用"]:hover {
     border-color: rgba(107, 114, 128, 0.3);
-    box-shadow: 0 12px 24px -6px rgba(107, 114, 128, 0.15);
+    box-shadow: 0 0 15px rgba(107, 114, 128, 0.4);
+    /* 灰色外光線 */
+}
+
+/* 橘色系 (命題草稿、改後再審) */
+.stat-card.interactive-card[data-status="命題草稿"]:hover,
+.stat-card.interactive-card[data-status="改後再審"]:hover {
+    border-color: rgba(249, 115, 22, 0.3);
+    box-shadow: 0 0 15px rgba(249, 115, 22, 0.4);
+    /* 橘色外光線 */
+}
+
+/* 綠色系 (命題完成) */
+.stat-card.interactive-card[data-status="命題完成"]:hover {
+    border-color: rgba(16, 185, 129, 0.3);
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+    /* 綠色外光線 */
+}
+
+/* 藍色系 (命題送審、採用) */
+.stat-card.interactive-card[data-status="命題送審"]:hover,
+.stat-card.interactive-card[data-status="採用"]:hover {
+    border-color: rgba(59, 130, 246, 0.3);
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+    /* 藍色外光線 */
 }
 
 @supports not (selector(:has(*))) {
@@ -861,19 +877,37 @@ body {
    ========================================================================== */
 .stat-card.interactive-card:hover .stat-info span,
 .stat-card.interactive-card:hover .stat-info h4 {
-    color: var(--primary-blue) !important;
     transition: color 0.3s ease;
 }
 
-/* 針對特定狀態的顏色微調 (可選) */
-.stat-card.interactive-card[data-status="改後再審"]:hover .stat-info h4 {
-    color: #f97316 !important;
-    /* 橘色 */
+/* 灰色文字 (有效命題總計、不採用) */
+.stat-card.interactive-card[data-status="total"]:hover .stat-info span,
+.stat-card.interactive-card[data-status="total"]:hover .stat-info h4,
+.stat-card.interactive-card[data-status="不採用"]:hover .stat-info span,
+.stat-card.interactive-card[data-status="不採用"]:hover .stat-info h4 {
+    color: #6b7280 !important;
 }
 
+/* 橘色文字 (命題草稿、改後再審) */
+.stat-card.interactive-card[data-status="命題草稿"]:hover .stat-info span,
+.stat-card.interactive-card[data-status="命題草稿"]:hover .stat-info h4,
+.stat-card.interactive-card[data-status="改後再審"]:hover .stat-info span,
+.stat-card.interactive-card[data-status="改後再審"]:hover .stat-info h4 {
+    color: #f97316 !important;
+}
+
+/* 綠色文字 (命題完成) */
+.stat-card.interactive-card[data-status="命題完成"]:hover .stat-info span,
+.stat-card.interactive-card[data-status="命題完成"]:hover .stat-info h4 {
+    color: #10b981 !important;
+}
+
+/* 藍色文字 (命題送審、採用) */
+.stat-card.interactive-card[data-status="命題送審"]:hover .stat-info span,
+.stat-card.interactive-card[data-status="命題送審"]:hover .stat-info h4,
+.stat-card.interactive-card[data-status="採用"]:hover .stat-info span,
 .stat-card.interactive-card[data-status="採用"]:hover .stat-info h4 {
     color: #2563eb !important;
-    /* 藍色 */
 }
 
 /* 讓非互動的卡片保持原樣 */
