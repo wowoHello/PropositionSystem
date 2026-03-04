@@ -2047,11 +2047,201 @@ function writeToTable(data) {
     sortPropList();
 }
 
+// ============================================================
+// 考試預覽渲染器 — 依題型產生乾淨的考卷 HTML
+// ============================================================
+const PreviewRenderer = {
+    // 安全解碼 URL-encoded HTML
+    decode(val) {
+        if (!val) return '';
+        try { return decodeURIComponent(val); } catch { return val; }
+    },
+
+    // 渲染 A/B/C/D 選項列表
+    renderOptions(data, prefix) {
+        const labels = ['A', 'B', 'C', 'D'];
+        const keys = prefix ? [`${prefix}A`, `${prefix}B`, `${prefix}C`, `${prefix}D`]
+                            : ['optA', 'optB', 'optC', 'optD'];
+        let html = '<ul class="exam-options">';
+        keys.forEach((key, i) => {
+            const content = this.decode(data[key]);
+            html += `<li class="exam-option-item">
+                        <span class="exam-option-label">(${labels[i]})</span>
+                        <span class="exam-option-content">${content || '<span class="text-muted">（未填寫）</span>'}</span>
+                     </li>`;
+        });
+        html += '</ul>';
+        return html;
+    },
+
+    // 渲染聽力音檔 placeholder
+    renderAudioPlayer() {
+        return `<div class="exam-audio-player">
+                    <div class="exam-audio-icon">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z"/>
+                        </svg>
+                    </div>
+                    <div class="exam-audio-info">
+                        <div class="exam-audio-title">請聆聽音檔</div>
+                        <div class="exam-audio-bar">
+                            <div class="exam-audio-progress"></div>
+                        </div>
+                        <div class="exam-audio-time">0:00 / 0:00</div>
+                    </div>
+                </div>`;
+    },
+
+    // ──────── 各題型渲染函式 ────────
+
+    '一般題目': function(data) {
+        const stem = this.decode(data.content);
+        return `<div class="exam-question">
+                    <div class="exam-question-stem">${stem || '<span class="text-muted">（題幹未填寫）</span>'}</div>
+                    ${this.renderOptions(data)}
+                </div>`;
+    },
+
+    '精選題目': function(data) {
+        return this['一般題目'](data);
+    },
+
+    '長文題目': function(data) {
+        const topic = this.decode(data.topic);
+        const content = this.decode(data.content);
+        return `<div class="exam-question">
+                    ${topic ? `<div class="exam-long-topic">${topic}</div>` : ''}
+                    <div class="exam-article-box">${content || '<span class="text-muted">（內容未填寫）</span>'}</div>
+                </div>`;
+    },
+
+    '閱讀題組': function(data) {
+        const topic = this.decode(data.topic);
+        const article = this.decode(data.article);
+        let html = `<div class="exam-question">
+                        <div class="exam-instruction">閱讀下列文章後，回答以下問題：</div>
+                        ${topic ? `<div class="exam-reading-topic">${topic}</div>` : ''}
+                        <div class="exam-article-box">${article || '<span class="text-muted">（文章未填寫）</span>'}</div>`;
+
+        const subs = data.subQuestions || [];
+        if (subs.length > 0) {
+            html += '<div class="exam-sub-questions">';
+            subs.forEach((sub, i) => {
+                const stemHtml = this.decode(sub.content);
+                html += `<div class="exam-sub-question">
+                            <div class="exam-sub-number">${i + 1}.</div>
+                            <div class="exam-sub-body">
+                                <div class="exam-question-stem">${stemHtml || '<span class="text-muted">（子題未填寫）</span>'}</div>
+                                ${this.renderOptions(sub)}
+                            </div>
+                         </div>`;
+            });
+            html += '</div>';
+        }
+        html += '</div>';
+        return html;
+    },
+
+    '短文題組': function(data) {
+        const topic = this.decode(data.topic);
+        const article = this.decode(data.article);
+        let html = `<div class="exam-question">
+                        <div class="exam-instruction">閱讀下列短文後，回答以下問題：</div>
+                        ${topic ? `<div class="exam-reading-topic">${topic}</div>` : ''}
+                        <div class="exam-article-box">${article || '<span class="text-muted">（文章未填寫）</span>'}</div>`;
+
+        const questions = data.questions || [];
+        if (questions.length > 0) {
+            html += '<div class="exam-sub-questions">';
+            questions.forEach((q, i) => {
+                const qContent = this.decode(q.content);
+                html += `<div class="exam-sub-question">
+                            <div class="exam-sub-number">${i + 1}.</div>
+                            <div class="exam-sub-body">
+                                <div class="exam-question-stem">${qContent || '<span class="text-muted">（子題未填寫）</span>'}</div>
+                            </div>
+                         </div>`;
+            });
+            html += '</div>';
+        }
+        html += '</div>';
+        return html;
+    },
+
+    '聽力題目': function(data) {
+        const stem = this.decode(data.content);
+        return `<div class="exam-question">
+                    ${this.renderAudioPlayer()}
+                    <div class="exam-question-stem">${stem || '<span class="text-muted">（題幹未填寫）</span>'}</div>
+                    ${this.renderOptions(data)}
+                </div>`;
+    },
+
+    '聽力題組': function(data) {
+        const parentContent = this.decode(data.content);
+        let html = `<div class="exam-question">
+                        ${this.renderAudioPlayer()}`;
+
+        if (parentContent) {
+            html += `<div class="exam-listen-script">
+                        <div class="exam-listen-script-label">語音內容</div>
+                        <div class="exam-listen-script-body">${parentContent}</div>
+                     </div>`;
+        }
+
+        const subs = data.subs || [];
+        if (subs.length > 0) {
+            html += '<div class="exam-sub-questions">';
+            subs.forEach((sub, i) => {
+                const stemHtml = this.decode(sub.content);
+                html += `<div class="exam-sub-question">
+                            <div class="exam-sub-number">${i + 1}.</div>
+                            <div class="exam-sub-body">
+                                <div class="exam-question-stem">${stemHtml || '<span class="text-muted">（子題未填寫）</span>'}</div>
+                                ${this.renderOptions(sub)}
+                            </div>
+                         </div>`;
+            });
+            html += '</div>';
+        }
+        html += '</div>';
+        return html;
+    }
+};
+
+// 開啟考試預覽 Modal
+window.openPreviewModal = function(btn) {
+    const row = btn.closest('tr');
+    if (!row) return;
+
+    const data = safeJsonParse(row.getAttribute('data-json') || '{}', {});
+    const type = data.type || row.getAttribute('data-type') || '';
+    const renderer = PreviewRenderer[type];
+
+    const body = document.getElementById('examPaperBody');
+    const badge = document.getElementById('examTypeBadge');
+
+    if (!renderer) {
+        body.innerHTML = '<div class="text-center text-muted py-5">不支援此題型的預覽。</div>';
+    } else {
+        body.innerHTML = renderer.call(PreviewRenderer, data);
+    }
+
+    badge.textContent = type;
+
+    const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('previewModal'));
+    modal.show();
+};
+
 function getActionHtml(status) {
-    let html = `<button class="btn btn-link p-0 text-decoration-none fw-bold" onclick="openPropModal(this, 'view')">檢視</button>`;
+    let html = `<button class="btn btn-link p-0 text-decoration-none fw-bold text-info" onclick="openPreviewModal(this)">預覽</button>`;
     if (status !== '命題送審' && status !== '不採用') {
+        // 可編輯列：預覽 | 編輯 | 刪除（有「編輯」就不需要「檢視」）
         html += `<span class="text-muted mx-1">|</span><button class="btn btn-link p-0 text-decoration-none fw-bold text-success" onclick="openPropModal(this, 'edit')">編輯</button>
                  <span class="text-muted mx-1">|</span><button class="btn btn-link p-0 text-decoration-none fw-bold text-danger" onclick="deleteRow(this)">刪除</button>`;
+    } else {
+        // 鎖定列：預覽 | 檢視（唯一能看到答案、解析等後台資訊的入口）
+        html += `<span class="text-muted mx-1">|</span><button class="btn btn-link p-0 text-decoration-none fw-bold" onclick="openPropModal(this, 'view')">檢視</button>`;
     }
     return html;
 }

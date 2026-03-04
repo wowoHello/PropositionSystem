@@ -1116,3 +1116,325 @@ body {
     border-bottom-color: rgba(16, 185, 129, 0.3) !important;
     color: #065f46 !important;
 } */
+
+/* ============================================================
+   考試預覽 — 乾淨的考卷風格
+   設計方向：模擬真實考試卷面，白底、清晰排版、無後台元素
+   ============================================================ */
+
+/* Modal 整體 */
+.exam-paper {
+    border: none;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+}
+
+.exam-paper-header {
+    background: #fff;
+    border-bottom: 2px solid #e2e8f0;
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.exam-paper-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.exam-paper-header svg {
+    color: #64748b;
+}
+
+.exam-type-badge {
+    display: inline-block;
+    padding: 0.25em 0.75em;
+    border-radius: 50rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    background: #eff6ff;
+    color: #2563eb;
+    border: 1px solid #bfdbfe;
+}
+
+.exam-paper-body {
+    padding: 2rem 2.5rem;
+    background: #fff;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 1.05rem;
+    line-height: 1.85;
+    color: #1e293b;
+}
+
+.exam-paper-footer {
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    padding: 0.75rem 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* 題目區塊 */
+.exam-question {
+    animation: examFadeIn 0.3s ease-out;
+}
+
+@keyframes examFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* 題幹 */
+.exam-question-stem {
+    margin-bottom: 1.25rem;
+    padding-left: 1rem;
+    border-left: 4px solid #3b82f6;
+}
+
+.exam-question-stem p {
+    margin: 0;
+}
+
+/* 選項列表 */
+.exam-options {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.exam-option-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.6rem 0.85rem;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background: #fafbfc;
+    transition: background 0.15s;
+}
+
+.exam-option-item:hover {
+    background: #f1f5f9;
+}
+
+.exam-option-label {
+    font-weight: 700;
+    color: #475569;
+    min-width: 2rem;
+    flex-shrink: 0;
+    user-select: none;
+}
+
+.exam-option-content {
+    flex: 1;
+}
+
+.exam-option-content p {
+    margin: 0;
+}
+
+/* 長文題目主題 */
+.exam-long-topic {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.exam-long-topic p {
+    margin: 0;
+}
+
+/* 閱讀 / 短文題組 — 指示語 */
+.exam-instruction {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 0.75rem;
+    letter-spacing: 0.3px;
+}
+
+/* 閱讀題組 — 題目文字 */
+.exam-reading-topic {
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
+.exam-reading-topic p {
+    margin: 0;
+}
+
+/* 文章框 */
+.exam-article-box {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1.75rem;
+    font-size: 1rem;
+    line-height: 1.9;
+    color: #374151;
+}
+
+.exam-article-box p {
+    margin: 0 0 0.5rem;
+}
+
+.exam-article-box p:last-child {
+    margin-bottom: 0;
+}
+
+/* 子題區 */
+.exam-sub-questions {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.exam-sub-question {
+    display: flex;
+    gap: 0.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px dashed #d1d5db;
+}
+
+.exam-sub-question:first-child {
+    border-top: none;
+    padding-top: 0;
+}
+
+.exam-sub-number {
+    font-weight: 700;
+    color: #1e40af;
+    min-width: 1.75rem;
+    flex-shrink: 0;
+    font-size: 1.05rem;
+    padding-top: 1px;
+}
+
+.exam-sub-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.exam-sub-body .exam-question-stem {
+    margin-bottom: 1rem;
+}
+
+/* 聽力音檔播放器 placeholder */
+.exam-audio-player {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    border: 1px solid #bfdbfe;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+}
+
+.exam-audio-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #3b82f6;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.exam-audio-icon svg {
+    color: #fff;
+}
+
+.exam-audio-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.exam-audio-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1e40af;
+    margin-bottom: 0.35rem;
+}
+
+.exam-audio-bar {
+    height: 4px;
+    background: rgba(59, 130, 246, 0.2);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 0.25rem;
+}
+
+.exam-audio-progress {
+    width: 0%;
+    height: 100%;
+    background: #3b82f6;
+    border-radius: 2px;
+}
+
+.exam-audio-time {
+    font-size: 0.72rem;
+    color: #64748b;
+    font-family: 'Space Mono', monospace;
+}
+
+/* 聽力題組 — 語音內容腳本 */
+.exam-listen-script {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.exam-listen-script-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+}
+
+.exam-listen-script-body {
+    font-size: 0.95rem;
+    color: #475569;
+    line-height: 1.75;
+}
+
+.exam-listen-script-body p {
+    margin: 0 0 0.4rem;
+}
+
+.exam-listen-script-body p:last-child {
+    margin-bottom: 0;
+}
+
+/* RWD */
+@media (max-width: 768px) {
+    .exam-paper-body {
+        padding: 1.25rem 1rem;
+        font-size: 1rem;
+    }
+
+    .exam-article-box {
+        padding: 1rem;
+    }
+
+    .exam-option-item {
+        padding: 0.5rem 0.65rem;
+    }
+}
