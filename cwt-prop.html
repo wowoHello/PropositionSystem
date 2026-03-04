@@ -337,52 +337,277 @@
 
     <!-- Project Form Modal -->
     <div class="modal fade" id="projectFormModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content border-0 shadow-lg">
                 <div class="modal-header bg-white border-bottom">
                     <h5 class="modal-title fw-bold" id="projectModalTitle">
-                        新增命題專案
+                        <i class="bi bi-folder-plus me-2 text-primary"></i>新增命題專案
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-4">
                     <input type="hidden" id="projId" />
-                    <div class="row g-3">
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold">年度</label>
-                            <select class="form-select" id="projYear"></select>
+
+                    <!-- 基本資訊區 -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-dark mb-3">
+                            <i class="bi bi-info-circle me-1 text-primary"></i>基本資訊
+                        </h6>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">專案名稱 <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="projName" placeholder="例如：第 113 梯次中文檢定" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">學校 <span
+                                        class="text-muted fw-normal">(選填)</span></label>
+                                <input type="text" class="form-control" id="projSchool" placeholder="例如：國立臺灣大學" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">專案狀態</label>
+                                <select class="form-select" id="projStatus">
+                                    <option value="active">進行中</option>
+                                    <option value="closed">已結案</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">年度 <span
+                                        class="text-muted fw-normal">(自動擷取)</span></label>
+                                <input type="text" class="form-control bg-light" id="projYearDisplay" readonly
+                                    placeholder="依專案區間自動帶入" />
+                                <input type="hidden" id="projYear" />
+                            </div>
                         </div>
-                        <div class="col-md-8">
-                            <label class="form-label fw-bold">學校</label>
-                            <input type="text" class="form-control" id="projSchool" placeholder="例如：國立臺灣大學" />
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label fw-bold">專案狀態</label>
-                            <select class="form-select" id="projStatus">
-                                <option value="active">進行中</option>
-                                <option value="closed">已結案</option>
-                            </select>
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label fw-bold">專案名稱</label>
-                            <input type="text" class="form-control" id="projName" placeholder="例如：第 113 梯次中文檢定" />
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">開始日期</label>
-                            <input type="date" class="form-control" id="projStart" />
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">結束日期</label>
-                            <input type="date" class="form-control" id="projEnd" />
+                    </div>
+
+                    <hr class="my-3" />
+
+                    <!-- 時程規劃區 -->
+                    <div>
+                        <h6 class="fw-bold text-dark mb-3">
+                            <i class="bi bi-calendar-range me-1 text-primary"></i>時程規劃設定
+                        </h6>
+                        <p class="text-muted small mb-3">
+                            <i class="bi bi-info-circle me-1"></i>
+                            設定專案區間後，各階段將自動連動計算預設日期，您可手動調整。
+                            <span class="badge bg-warning bg-opacity-25 text-warning ms-1">
+                                <i class="bi bi-bell-fill me-1"></i>標記
+                            </span>
+                            表示倒數 5 天時系統將跳出提醒。
+                        </p>
+
+                        <!-- 8 階段時程表 -->
+                        <div class="schedule-timeline">
+                            <!-- 1. 專案區間 -->
+                            <div class="schedule-item" data-step="1">
+                                <div class="schedule-marker">
+                                    <span class="step-number">1</span>
+                                </div>
+                                <div class="schedule-content">
+                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                        <span class="fw-bold text-dark">專案區間</span>
+                                    </div>
+                                    <div class="row g-2">
+                                        <div class="col-md-6">
+                                            <label class="form-label small text-muted mb-1">開始日期</label>
+                                            <input type="date" class="form-control form-control-sm" id="projStart" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label small text-muted mb-1">結束日期</label>
+                                            <input type="date" class="form-control form-control-sm" id="projEnd" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 2. 命題階段 -->
+                            <div class="schedule-item" data-step="2">
+                                <div class="schedule-marker">
+                                    <span class="step-number">2</span>
+                                </div>
+                                <div class="schedule-content">
+                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                        <span class="fw-bold text-dark">命題階段</span>
+                                        <span class="badge bg-secondary bg-opacity-10 text-secondary small">預設 30
+                                            天</span>
+                                        <span class="badge bg-warning bg-opacity-25 text-warning small">
+                                            <i class="bi bi-bell-fill me-1"></i>倒數 5 天提醒
+                                        </span>
+                                    </div>
+                                    <div class="row g-2">
+                                        <div class="col-md-6">
+                                            <label class="form-label small text-muted mb-1">開始日期</label>
+                                            <input type="date" class="form-control form-control-sm" id="schedStart2" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label small text-muted mb-1">結束日期</label>
+                                            <input type="date" class="form-control form-control-sm" id="schedEnd2" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 3. 交互審題 -->
+                            <div class="schedule-item" data-step="3">
+                                <div class="schedule-marker">
+                                    <span class="step-number">3</span>
+                                </div>
+                                <div class="schedule-content">
+                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                        <span class="fw-bold text-dark">交互審題</span>
+                                        <span class="badge bg-secondary bg-opacity-10 text-secondary small">命題階段後 7
+                                            天</span>
+                                    </div>
+                                    <div class="row g-2">
+                                        <div class="col-md-6">
+                                            <label class="form-label small text-muted mb-1">開始日期</label>
+                                            <input type="date" class="form-control form-control-sm" id="schedStart3" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label small text-muted mb-1">結束日期</label>
+                                            <input type="date" class="form-control form-control-sm" id="schedEnd3" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 4. 互審修題 -->
+                            <div class="schedule-item" data-step="4">
+                                <div class="schedule-marker">
+                                    <span class="step-number">4</span>
+                                </div>
+                                <div class="schedule-content">
+                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                        <span class="fw-bold text-dark">互審修題</span>
+                                        <span class="badge bg-secondary bg-opacity-10 text-secondary small">交互審題後 7
+                                            天</span>
+                                        <span class="badge bg-warning bg-opacity-25 text-warning small">
+                                            <i class="bi bi-bell-fill me-1"></i>倒數 5 天提醒
+                                        </span>
+                                    </div>
+                                    <div class="row g-2">
+                                        <div class="col-md-6">
+                                            <label class="form-label small text-muted mb-1">開始日期</label>
+                                            <input type="date" class="form-control form-control-sm" id="schedStart4" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label small text-muted mb-1">結束日期</label>
+                                            <input type="date" class="form-control form-control-sm" id="schedEnd4" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 5. 專家審題 -->
+                            <div class="schedule-item" data-step="5">
+                                <div class="schedule-marker">
+                                    <span class="step-number">5</span>
+                                </div>
+                                <div class="schedule-content">
+                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                        <span class="fw-bold text-dark">專家審題</span>
+                                        <span class="badge bg-secondary bg-opacity-10 text-secondary small">互審修題後 14
+                                            天</span>
+                                    </div>
+                                    <div class="row g-2">
+                                        <div class="col-md-6">
+                                            <label class="form-label small text-muted mb-1">開始日期</label>
+                                            <input type="date" class="form-control form-control-sm" id="schedStart5" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label small text-muted mb-1">結束日期</label>
+                                            <input type="date" class="form-control form-control-sm" id="schedEnd5" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 6. 專審修題 -->
+                            <div class="schedule-item" data-step="6">
+                                <div class="schedule-marker">
+                                    <span class="step-number">6</span>
+                                </div>
+                                <div class="schedule-content">
+                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                        <span class="fw-bold text-dark">專審修題</span>
+                                        <span class="badge bg-secondary bg-opacity-10 text-secondary small">專家審題後 7
+                                            天</span>
+                                        <span class="badge bg-warning bg-opacity-25 text-warning small">
+                                            <i class="bi bi-bell-fill me-1"></i>倒數 5 天提醒
+                                        </span>
+                                    </div>
+                                    <div class="row g-2">
+                                        <div class="col-md-6">
+                                            <label class="form-label small text-muted mb-1">開始日期</label>
+                                            <input type="date" class="form-control form-control-sm" id="schedStart6" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label small text-muted mb-1">結束日期</label>
+                                            <input type="date" class="form-control form-control-sm" id="schedEnd6" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 7. 總召審題 -->
+                            <div class="schedule-item" data-step="7">
+                                <div class="schedule-marker">
+                                    <span class="step-number">7</span>
+                                </div>
+                                <div class="schedule-content">
+                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                        <span class="fw-bold text-dark">總召審題</span>
+                                        <span class="badge bg-secondary bg-opacity-10 text-secondary small">專審修題後 21
+                                            天</span>
+                                    </div>
+                                    <div class="row g-2">
+                                        <div class="col-md-6">
+                                            <label class="form-label small text-muted mb-1">開始日期</label>
+                                            <input type="date" class="form-control form-control-sm" id="schedStart7" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label small text-muted mb-1">結束日期</label>
+                                            <input type="date" class="form-control form-control-sm" id="schedEnd7" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 8. 總審修題 -->
+                            <div class="schedule-item" data-step="8">
+                                <div class="schedule-marker">
+                                    <span class="step-number">8</span>
+                                </div>
+                                <div class="schedule-content">
+                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                        <span class="fw-bold text-dark">總審修題</span>
+                                        <span class="badge bg-secondary bg-opacity-10 text-secondary small">總召審題後 7
+                                            天</span>
+                                        <span class="badge bg-warning bg-opacity-25 text-warning small">
+                                            <i class="bi bi-bell-fill me-1"></i>倒數 5 天提醒
+                                        </span>
+                                    </div>
+                                    <div class="row g-2">
+                                        <div class="col-md-6">
+                                            <label class="form-label small text-muted mb-1">開始日期</label>
+                                            <input type="date" class="form-control form-control-sm" id="schedStart8" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label small text-muted mb-1">結束日期</label>
+                                            <input type="date" class="form-control form-control-sm" id="schedEnd8" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer border-top-0 pt-0">
+                <div class="modal-footer border-top">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">
                         取消
                     </button>
                     <button type="button" class="btn btn-primary fw-bold px-4" onclick="saveProject()">
-                        儲存
+                        <i class="bi bi-check-lg me-1"></i>儲存
                     </button>
                 </div>
             </div>
@@ -656,8 +881,8 @@
 
         // 初始化
         document.addEventListener("DOMContentLoaded", () => {
-            initYearSelect(); // For Modal Year Select
-            initSidebarFilters(); // New: Init Sidebar Filters
+            initScheduleCascade(); // 初始化時程連動事件
+            initSidebarFilters();
             renderProjectList();
             renderProjectDetail();
             initMemberModal();
@@ -935,13 +1160,138 @@
         );
         let isEditMode = false;
 
+        // 時程階段預設天數定義
+        // [Blazor Migration Note] 此設定物件可移至 appsettings.json 或 C# 常數類別
+        const scheduleDefaults = [
+            { step: 2, label: '命題階段', days: 30 },
+            { step: 3, label: '交互審題', days: 7 },
+            { step: 4, label: '互審修題', days: 7 },
+            { step: 5, label: '專家審題', days: 14 },
+            { step: 6, label: '專審修題', days: 7 },
+            { step: 7, label: '總召審題', days: 21 },
+            { step: 8, label: '總審修題', days: 7 },
+        ];
+
+        // 日期加天數工具函式
+        const addDays = (dateStr, days) => {
+            const d = new Date(dateStr);
+            d.setDate(d.getDate() + days);
+            return d.toISOString().split('T')[0];
+        };
+
+        // 日期加 1 天（下一階段開始 = 上一階段結束 + 1 天）
+        const nextDay = (dateStr) => addDays(dateStr, 1);
+
+        // 自動計算年度（從專案區間開始日期擷取年份）
+        const updateYearFromStart = () => {
+            const startVal = document.getElementById('projStart').value;
+            const yearDisplay = document.getElementById('projYearDisplay');
+            const yearHidden = document.getElementById('projYear');
+            if (startVal) {
+                const year = new Date(startVal).getFullYear();
+                yearDisplay.value = `${year} 年度`;
+                yearHidden.value = year;
+            } else {
+                yearDisplay.value = '';
+                yearHidden.value = '';
+            }
+        };
+
+        // 時程連動計算：從 projStart 開始依序計算各階段日期
+        const cascadeScheduleDates = () => {
+            const projStartVal = document.getElementById('projStart').value;
+            if (!projStartVal) return;
+
+            // 階段 2 的開始 = 專案開始
+            let prevEnd = '';
+            const step2Start = document.getElementById('schedStart2');
+            const step2End = document.getElementById('schedEnd2');
+            step2Start.value = projStartVal;
+            // 如果結束日期還沒填，自動算預設
+            if (!step2End.value) {
+                step2End.value = addDays(projStartVal, scheduleDefaults[0].days);
+            }
+            prevEnd = step2End.value;
+
+            // 階段 3~8 依序連動
+            for (let i = 1; i < scheduleDefaults.length; i++) {
+                const { step, days } = scheduleDefaults[i];
+                const startEl = document.getElementById(`schedStart${step}`);
+                const endEl = document.getElementById(`schedEnd${step}`);
+
+                startEl.value = nextDay(prevEnd);
+                if (!endEl.value) {
+                    endEl.value = addDays(startEl.value, days);
+                }
+                prevEnd = endEl.value;
+            }
+
+            // 專案區間結束日期 = 總審修題結束日期
+            document.getElementById('projEnd').value = prevEnd;
+        };
+
+        // 當某一階段結束日期被手動修改時，向下連動後續階段
+        const cascadeFromStep = (changedStep) => {
+            const stepIndex = scheduleDefaults.findIndex(s => s.step === changedStep);
+            if (stepIndex === -1) return;
+
+            let prevEnd = document.getElementById(
+                changedStep === 2 ? 'schedEnd2' : `schedEnd${changedStep}`
+            ).value;
+
+            if (!prevEnd) return;
+
+            // 連動後續階段
+            for (let i = stepIndex + 1; i < scheduleDefaults.length; i++) {
+                const { step, days } = scheduleDefaults[i];
+                const startEl = document.getElementById(`schedStart${step}`);
+                const endEl = document.getElementById(`schedEnd${step}`);
+
+                startEl.value = nextDay(prevEnd);
+                endEl.value = addDays(startEl.value, days);
+                prevEnd = endEl.value;
+            }
+
+            // 專案區間結束日期 = 總審修題結束日期
+            document.getElementById('projEnd').value = prevEnd;
+        };
+
+        // 初始化時程連動事件監聽
+        const initScheduleCascade = () => {
+            // 專案區間開始日期變動 → 連動年度 + 全部時程
+            document.getElementById('projStart').addEventListener('change', () => {
+                updateYearFromStart();
+                // 重置所有時程結束日期，重新計算
+                for (const { step } of scheduleDefaults) {
+                    document.getElementById(`schedEnd${step}`).value = '';
+                }
+                cascadeScheduleDates();
+            });
+
+            // 各階段結束日期變動 → 連動後續階段
+            for (const { step } of scheduleDefaults) {
+                document.getElementById(`schedEnd${step}`).addEventListener('change', () => {
+                    cascadeFromStep(step);
+                });
+            }
+        };
+
+        // 清空所有時程欄位
+        const clearScheduleFields = () => {
+            for (const { step } of scheduleDefaults) {
+                document.getElementById(`schedStart${step}`).value = '';
+                document.getElementById(`schedEnd${step}`).value = '';
+            }
+            document.getElementById('projYearDisplay').value = '';
+            document.getElementById('projYear').value = '';
+        };
+
         function openProjectModal(mode) {
             const modalTitle = document.getElementById("projectModalTitle");
             const formFields = {
                 id: document.getElementById("projId"),
-                year: document.getElementById("projYear"),
                 name: document.getElementById("projName"),
-                school: document.getElementById("projSchool"), // New
+                school: document.getElementById("projSchool"),
                 status: document.getElementById("projStatus"),
                 start: document.getElementById("projStart"),
                 end: document.getElementById("projEnd"),
@@ -949,26 +1299,45 @@
 
             if (mode === "add") {
                 isEditMode = false;
-                modalTitle.innerText = "新增命題專案";
+                modalTitle.innerHTML = '<i class="bi bi-folder-plus me-2 text-primary"></i>新增命題專案';
                 // 清空表單
                 formFields.id.value = "";
                 formFields.name.value = "";
-                formFields.school.value = ""; // Clear
+                formFields.school.value = "";
                 formFields.start.value = "";
                 formFields.end.value = "";
                 formFields.status.value = "active";
+                clearScheduleFields();
             } else {
                 isEditMode = true;
-                modalTitle.innerText = "編輯專案內容";
+                modalTitle.innerHTML = '<i class="bi bi-pencil-square me-2 text-primary"></i>編輯專案內容';
                 // 填入現有資料
                 const p = projectsData.find((x) => x.id === currentProjectId);
                 formFields.id.value = p.id;
-                formFields.year.value = p.year;
                 formFields.name.value = p.name;
-                formFields.school.value = p.school || ""; // Fill
+                formFields.school.value = p.school || "";
                 formFields.status.value = p.status;
                 formFields.start.value = p.startDate;
                 formFields.end.value = p.endDate;
+
+                // 填入時程資料（若有），否則自動計算
+                if (p.schedule) {
+                    for (const { step } of scheduleDefaults) {
+                        const data = p.schedule.find(s => s.step === step);
+                        if (data) {
+                            document.getElementById(`schedStart${step}`).value = data.start || '';
+                            document.getElementById(`schedEnd${step}`).value = data.end || '';
+                        }
+                    }
+                } else {
+                    clearScheduleFields();
+                    // 自動計算
+                    for (const { step } of scheduleDefaults) {
+                        document.getElementById(`schedEnd${step}`).value = '';
+                    }
+                    cascadeScheduleDates();
+                }
+                updateYearFromStart();
             }
             projectModal.show();
         }
@@ -979,13 +1348,21 @@
 
         function saveProject() {
             const idField = document.getElementById("projId").value;
+            const yearVal = document.getElementById("projYear").value;
             const newData = {
-                year: parseInt(document.getElementById("projYear").value),
+                year: yearVal ? parseInt(yearVal) : new Date().getFullYear(),
                 name: document.getElementById("projName").value,
-                school: document.getElementById("projSchool").value, // Collect
+                school: document.getElementById("projSchool").value,
                 status: document.getElementById("projStatus").value,
                 startDate: document.getElementById("projStart").value,
                 endDate: document.getElementById("projEnd").value,
+                // 收集 8 階段時程資料
+                schedule: scheduleDefaults.map(({ step, label }) => ({
+                    step,
+                    label,
+                    start: document.getElementById(`schedStart${step}`).value,
+                    end: document.getElementById(`schedEnd${step}`).value,
+                })),
             };
 
             if (!newData.name) {
@@ -993,6 +1370,15 @@
                     icon: 'warning',
                     title: '提示',
                     text: '請輸入專案名稱'
+                });
+                return;
+            }
+
+            if (!newData.startDate) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: '提示',
+                    text: '請設定專案區間開始日期'
                 });
                 return;
             }
@@ -1016,11 +1402,7 @@
                 currentProjectId = newId; // 切換到新專案
             }
 
-            // 更新 Sidebar Filters 的選項 (如果有新學校或新年度)
-            // 比較簡單的做法是直接重刷 initSidebarFilters，但目前 initSidebarFilters 是 appendChild，
-            // 所以要先清空 (除了第一項 'all')。這裡為了簡單，先不即時更新 Filtes 選項，或者直接重載頁面。
-            // 更好的做法是把 initSidebarFilters 的邏輯抽出來，每次 saveProject 後呼叫並「重置」選項。
-            // 這裡做個簡易版重新整理 Filters
+            // 更新 Sidebar Filters 的選項
             rebuildSidebarFilters();
 
             projectModal.hide();
