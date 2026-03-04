@@ -335,7 +335,7 @@
                                 <th class="d-none d-lg-table-cell">命題教師</th>
                                 <th class="text-center">審核階段</th>
                                 <th class="d-none d-lg-table-cell">建立日期</th>
-                                <th class="text-center">操作</th>
+                                <th class="d-none d-lg-table-cell">修改日期</th>
                             </tr>
                         </thead>
                         <tbody id="bankTableBody">
@@ -360,159 +360,55 @@
         </div>
     </div>
 
-    <!-- ========== 檢視題目 Modal ========== -->
-    <div class="modal fade" id="viewQuestionModal" tabindex="-1" aria-hidden="true">
+    <!-- ========== 題目詳情 Modal ========== -->
+    <div class="modal fade" id="viewQuestionModal" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-            <div class="modal-content border-0 shadow">
-                <div class="modal-header text-white" style="background-color: #2563eb;">
-                    <h5 class="modal-title fw-bold" id="modalTitle">
-                        <i class="bi bi-file-earmark-text me-2"></i>題目詳情
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-file-earmark-text"></i> 題目詳情
+                        <span class="modal-question-id" id="modalQuestionId"></span>
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body p-4">
-                    <!-- 基本資訊 -->
-                    <div class="detail-section">
-                        <div class="detail-section-title">
-                            <i class="bi bi-info-circle-fill"></i>基本資訊
+                <div class="modal-body" id="modalBody">
+                    <!-- 三燈 Stepper -->
+                    <div class="review-stepper" id="modalStepper">
+                        <div class="review-step pending" id="step-peer">
+                            <div class="step-circle">
+                                <span class="step-number">1</span>
+                                <span class="step-check">&#10003;</span>
+                            </div>
+                            <div class="step-label">互審</div>
+                            <div class="step-sub" id="step-peer-sub">教師互審</div>
+                            <div class="step-time" id="step-peer-time"></div>
                         </div>
-                        <div class="detail-info-grid">
-                            <div class="detail-info-item">
-                                <span class="label">題目編號：</span>
-                                <span class="value" id="modalId">--</span>
+                        <div class="review-step pending" id="step-expert">
+                            <div class="step-circle">
+                                <span class="step-number">2</span>
+                                <span class="step-check">&#10003;</span>
                             </div>
-                            <div class="detail-info-item">
-                                <span class="label">題型：</span>
-                                <span class="value" id="modalType">--</span>
+                            <div class="step-label">專審</div>
+                            <div class="step-sub" id="step-expert-sub">專家審查</div>
+                            <div class="step-time" id="step-expert-time"></div>
+                        </div>
+                        <div class="review-step pending" id="step-final">
+                            <div class="step-circle">
+                                <span class="step-number">3</span>
+                                <span class="step-check">&#10003;</span>
                             </div>
-                            <div class="detail-info-item">
-                                <span class="label" id="modalLabelDifficulty">適用等級：</span>
-                                <span class="value" id="modalDifficulty">--</span>
-                            </div>
-                            <div class="detail-info-item">
-                                <span class="label">主類別：</span>
-                                <span class="value" id="modalCategory">--</span>
-                            </div>
-                            <div class="detail-info-item">
-                                <span class="label">命題教師：</span>
-                                <span class="value" id="modalTeacher">--</span>
-                            </div>
-                            <div class="detail-info-item">
-                                <span class="label">所屬梯次：</span>
-                                <span class="value" id="modalProject">--</span>
-                            </div>
-                            <div class="detail-info-item">
-                                <span class="label">建立日期：</span>
-                                <span class="value" id="modalDate">--</span>
-                            </div>
-                            <div class="detail-info-item">
-                                <span class="label">審查狀態：</span>
-                                <span class="value" id="modalStatus">--</span>
-                            </div>
+                            <div class="step-label">總審</div>
+                            <div class="step-sub" id="step-final-sub">最終決議</div>
+                            <div class="step-time" id="step-final-time"></div>
                         </div>
                     </div>
-
-                    <!-- 聽力音檔 (僅聽力題顯示) -->
-                    <div class="detail-section" id="modalAudioSection" style="display: none;">
-                        <div class="detail-section-title">
-                            <i class="bi bi-volume-up-fill"></i>聽力音檔
-                        </div>
-                        <div class="mt-2">
-                            <audio id="modalAudio" controls class="w-100"
-                                style="height: 40px; border-radius: 8px;"></audio>
-                        </div>
-                    </div>
-
-                    <!-- 題幹內容 -->
-                    <div class="detail-section" id="modalStemSection">
-                        <div class="detail-section-title">
-                            <i class="bi bi-card-text"></i>題幹內容
-                        </div>
-                        <div class="detail-content-box" id="modalStem">
-                            --
-                        </div>
-                    </div>
-
-                    <!-- 選項 -->
-                    <div class="detail-section" id="modalOptionsSection">
-                        <div class="detail-section-title">
-                            <i class="bi bi-list-check"></i>選項
-                        </div>
-                        <ul class="option-list" id="modalOptions">
-                            <!-- 由 JS 動態渲染 -->
-                        </ul>
-                    </div>
-
-                    <!-- 解析 -->
-                    <div class="detail-section" id="modalExplanationSection">
-                        <div class="detail-section-title">
-                            <i class="bi bi-lightbulb-fill"></i>解析說明
-                        </div>
-                        <div class="detail-content-box" id="modalExplanation">
-                            --
-                        </div>
-                    </div>
-
-                    <!-- 子題區塊 (僅題組顯示) -->
-                    <div id="modalSubQuestionsSection" style="display: none;">
-                        <!-- 由 JS 動態渲染多個子題卡片 -->
-                    </div>
-
-                    <!-- 審題進度 -->
-                    <div class="detail-section" id="modalReviewProgress">
-                        <div class="detail-section-title">
-                            <i class="bi bi-signpost-split-fill"></i>審題進度
-                        </div>
-                        <div class="review-stepper" id="reviewStepper">
-                            <!-- 步驟 1：互審 -->
-                            <div class="review-step" id="step-peer">
-                                <div class="step-connector-before"></div>
-                                <div class="step-circle">
-                                    <i class="bi bi-check-lg step-check"></i>
-                                    <span class="step-number">1</span>
-                                </div>
-                                <div class="step-connector-after"></div>
-                                <div class="step-label">互審</div>
-                                <div class="step-sub" id="step-peer-sub">教師互審</div>
-                            </div>
-                            <!-- 步驟 2：專審 -->
-                            <div class="review-step" id="step-expert">
-                                <div class="step-connector-before"></div>
-                                <div class="step-circle">
-                                    <i class="bi bi-check-lg step-check"></i>
-                                    <span class="step-number">2</span>
-                                </div>
-                                <div class="step-connector-after"></div>
-                                <div class="step-label">專審</div>
-                                <div class="step-sub" id="step-expert-sub">專家審查</div>
-                            </div>
-                            <!-- 步驟 3：總審 -->
-                            <div class="review-step" id="step-final">
-                                <div class="step-connector-before"></div>
-                                <div class="step-circle">
-                                    <i class="bi bi-check-lg step-check"></i>
-                                    <span class="step-number">3</span>
-                                </div>
-                                <div class="step-connector-after"></div>
-                                <div class="step-label">總審</div>
-                                <div class="step-sub" id="step-final-sub">最終決議</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 審題評語 -->
-                    <div class="detail-section" id="modalReviewComments">
-                        <div class="detail-section-title">
-                            <i class="bi bi-chat-square-quote-fill"></i>審題評語
-                        </div>
-                        <div class="review-timeline" id="reviewTimeline">
-                            <!-- 由 JS 動態渲染 -->
-                        </div>
-                    </div>
+                    <!-- JS 動態渲染區 -->
+                    <div id="modalDynamicContent"></div>
                 </div>
-                <div class="modal-footer bg-light border-0">
-                    <button type="button" class="btn btn-secondary w-100" data-bs-dismiss="modal">關閉</button>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-lg"></i> 關閉
+                    </button>
                 </div>
             </div>
         </div>
@@ -534,7 +430,7 @@
             {
                 id: 'Q-2024-0001', type: '一般題目', difficulty: 1, diffLabel: '難度一（易）',
                 category: '字形辨識', teacher: '李文華', project: '進行中梯次範例一', projectId: '1',
-                status: 'passed', date: '2024-09-15',
+                status: 'passed', date: '2024-09-15', modifyDate: '2024-09-30',
                 reviewStage: 4,
                 reviews: [
                     { reviewer: '陳秀蘭', role: '互審教師', time: '2024-09-20 14:30', decision: 'adopt', comment: '題目設計良好，選項具有鑑別度，文字敘述清晰。建議採用。' },
@@ -553,7 +449,7 @@
             {
                 id: 'Q-2024-0002', type: '一般題目', difficulty: 2, diffLabel: '難度二（中）',
                 category: '詞義辨析', teacher: '陳秀蘭', project: '進行中梯次範例一', projectId: '1',
-                status: 'reviewing', date: '2024-09-18',
+                status: 'reviewing', date: '2024-09-18', modifyDate: '2024-09-22',
                 reviewStage: 2,
                 reviews: [
                     { reviewer: '林志豪', role: '互審教師', time: '2024-09-22 09:45', decision: 'adopt', comment: '用語精準，選項設計具有誘答力。「獨樹一幟」的選項 A 容易混淆，鑑別度佳。建議採用。' }
@@ -571,7 +467,7 @@
             {
                 id: 'Q-2024-0003', type: '精選題目', difficulty: 3, diffLabel: '難度三（難）',
                 category: '閱讀理解', teacher: '林志豪', project: '進行中梯次範例一', projectId: '1',
-                status: 'passed', date: '2024-09-20',
+                status: 'passed', date: '2024-09-20', modifyDate: '2024-10-01',
                 reviewStage: 4,
                 reviews: [
                     { reviewer: '王偉', role: '互審教師', time: '2024-09-25 11:00', decision: 'revise', comment: '選項 C「專注記住每一個細節」與文意有些接近，建議修改為更明顯的誘答選項，降低爭議。' },
@@ -590,7 +486,7 @@
             {
                 id: 'Q-2024-0004', type: '長文題目', difficulty: 3, diffLabel: '難度三（難）',
                 category: '文學賞析', teacher: '李文華', project: '進行中梯次範例一', projectId: '1',
-                status: 'reviewing', date: '2024-10-01',
+                status: 'reviewing', date: '2024-10-01', modifyDate: '2024-10-08',
                 reviewStage: -1,
                 reviews: [
                     { reviewer: '王偉', role: '互審教師', time: '2024-10-05 11:00', decision: 'revise', comment: '題目立意佳，但答題引導不夠明確，建議調整題幹敘述使考生更容易理解作答方向後重新送審。' }
@@ -603,7 +499,7 @@
             {
                 id: 'Q-2024-0005', type: '一般題目', difficulty: 1, diffLabel: '難度一（易）',
                 category: '字音辨識', teacher: '陳秀蘭', project: '進行中梯次範例一', projectId: '1',
-                status: 'passed', date: '2024-09-22',
+                status: 'passed', date: '2024-09-22', modifyDate: '2024-09-30',
                 reviewStage: 4,
                 reviews: [
                     { reviewer: '李文華', role: '互審教師', time: '2024-09-26 16:30', decision: 'adopt', comment: '字音辨識方向正確，選項設計符合基礎程度考生的程度，通過。' },
@@ -622,7 +518,7 @@
             {
                 id: 'Q-2024-0006', type: '聽力題目', difficulty: 2, diffLabel: '難度二（中）',
                 category: '語句理解', teacher: '王偉', project: '進行中梯次範例一', projectId: '1',
-                status: 'passed', date: '2024-10-05',
+                status: 'passed', date: '2024-10-05', modifyDate: '2024-10-12',
                 reviewStage: 4,
                 reviews: [
                     { reviewer: '陳秀蘭', role: '互審教師', time: '2024-10-08 10:00', decision: 'adopt', comment: '聽力素材清晰，選項設計合理。通過。' },
@@ -641,21 +537,56 @@
             {
                 id: 'Q-2024-0007', type: '閱讀題組', difficulty: 4, diffLabel: '難度四（精熟）',
                 category: '文學鑑賞', teacher: '李文華', project: '進行中梯次範例一', projectId: '1',
-                status: 'reviewing', date: '2024-11-01',
+                status: 'reviewing', date: '2024-11-01', modifyDate: '2024-11-10',
                 reviewStage: 3,
                 reviews: [
                     { reviewer: '陳秀蘭', role: '互審教師', time: '2024-11-05 14:20', decision: 'adopt', comment: '古文選材佳，子題設計由淺入深，具有梯度。建議採用。' },
                     { reviewer: '張國維', role: '專審委員', time: '2024-11-10 10:45', decision: 'revise', comment: '第二子題的選項 C 與正確答案語意過於接近，建議修改選項用語以提高鑑別度。' }
                 ],
-                stem: '閱讀以下古文節選，回答第1～3題。\n\n「庖丁為文惠君解牛，手之所觸，肩之所倚...」（《莊子‧養生主》）',
+                stem: '閱讀以下古文節選，回答第1～3題。\n\n「庖丁為文惠君解牛，手之所觸，肩之所倚，足之所履，膝之所踦，砉然嚮然，奏刀騞然，莫不中音。合於桑林之舞，乃中經首之會。」（《莊子‧養生主》）',
                 options: [],
                 answer: '（題組，含子題）',
-                explanation: '此為閱讀題組，包含3道子題。考核學生對古典文學的理解、修辭分析與主旨歸納能力。'
+                explanation: '此為閱讀題組，包含3道子題。考核學生對古典文學的理解、修辭分析與主旨歸納能力。',
+                subQuestions: [
+                    {
+                        stem: '文中「手之所觸，肩之所倚，足之所履，膝之所踦」使用了何種修辭手法？',
+                        options: [
+                            { label: 'A', text: '譬喻', correct: false },
+                            { label: 'B', text: '排比', correct: true },
+                            { label: 'C', text: '轉化', correct: false },
+                            { label: 'D', text: '誇飾', correct: false }
+                        ],
+                        answer: 'B',
+                        explanation: '「手之所觸，肩之所倚，足之所履，膝之所踦」四個句式結構相同，屬排比修辭。'
+                    },
+                    {
+                        stem: '「合於桑林之舞，乃中經首之會」意在說明什麼？',
+                        options: [
+                            { label: 'A', text: '庖丁解牛時動作配合音樂節拍', correct: false },
+                            { label: 'B', text: '庖丁技藝精湛，動作如舞蹈般優美', correct: true },
+                            { label: 'C', text: '文惠君觀看庖丁表演舞蹈', correct: false },
+                            { label: 'D', text: '解牛是古代祭祀儀式的一部分', correct: false }
+                        ],
+                        answer: 'B',
+                        explanation: '桑林、經首皆為古代樂曲名，此處比喻庖丁技藝純熟，解牛動作優美如舞。'
+                    },
+                    {
+                        stem: '本文主旨最接近下列何者？',
+                        options: [
+                            { label: 'A', text: '技術的學習需要天賦', correct: false },
+                            { label: 'B', text: '熟能生巧，順應自然之理', correct: true },
+                            { label: 'C', text: '飲食文化是中華傳統精髓', correct: false },
+                            { label: 'D', text: '屠宰應該追求效率', correct: false }
+                        ],
+                        answer: 'B',
+                        explanation: '莊子借庖丁解牛的故事，闡述養生之道在於順應自然、依理而行。'
+                    }
+                ]
             },
             {
                 id: 'Q-2024-0008', type: '聽力題組', difficulty: 3, diffLabel: '難度三（難）',
                 category: '語文表達', teacher: '王偉', project: '進行中梯次範例一', projectId: '1',
-                status: 'rejected', date: '2024-10-12',
+                status: 'rejected', date: '2024-10-12', modifyDate: '2024-10-22',
                 reviewStage: 0,
                 reviews: [
                     { reviewer: '林志豪', role: '互審教師', time: '2024-10-15 11:00', decision: 'adopt', comment: '題組結構合理，音檔長度適中。通過。' },
@@ -665,12 +596,36 @@
                 stem: '【聽力題組】請先聽一段對話後，回答以下兩道子題。',
                 options: [],
                 answer: '（題組，含子題）',
-                explanation: '此為聽力題組，含固定兩道子題（難度三 + 難度四），需聆聽音檔後回答。題目因音檔品質問題未通過審查。'
+                explanation: '此為聽力題組，含固定兩道子題（難度三 + 難度四），需聆聽音檔後回答。題目因音檔品質問題未通過審查。',
+                subQuestions: [
+                    {
+                        stem: '根據對話內容，說話者最可能在什麼場合？',
+                        options: [
+                            { label: 'A', text: '學校教室', correct: false },
+                            { label: 'B', text: '醫院診間', correct: false },
+                            { label: 'C', text: '辦公室會議室', correct: true },
+                            { label: 'D', text: '百貨公司櫃台', correct: false }
+                        ],
+                        answer: 'C',
+                        explanation: '對話中提及「報告」、「進度」、「下週一前」等關鍵詞，可推斷為職場情境。'
+                    },
+                    {
+                        stem: '對話中的女性最後表達了什麼態度？',
+                        options: [
+                            { label: 'A', text: '強烈不滿', correct: false },
+                            { label: 'B', text: '欣然接受', correct: false },
+                            { label: 'C', text: '委婉拒絕', correct: false },
+                            { label: 'D', text: '勉強同意', correct: true }
+                        ],
+                        answer: 'D',
+                        explanation: '女性語氣中有遲疑但最終答應，屬於「勉強同意」的態度表達。'
+                    }
+                ]
             },
             {
                 id: 'Q-2024-0009', type: '短文題組', difficulty: 2, diffLabel: '難度二（中）',
                 category: '閱讀理解', teacher: '林志豪', project: '進行中梯次範例一', projectId: '1',
-                status: 'passed', date: '2024-10-20',
+                status: 'passed', date: '2024-10-20', modifyDate: '2024-10-30',
                 reviewStage: 4,
                 reviews: [
                     { reviewer: '李文華', role: '互審教師', time: '2024-10-25 13:30', decision: 'adopt', comment: '短文選文具哲理性，子題設計能考核推論能力，通過。' },
@@ -679,12 +634,24 @@
                 stem: '閱讀下面短文，回答第1～2題。\n\n「一個人的價值不在於他擁有什麼，而在於他貢獻了什麼。真正有意義的人生，是不斷為他人創造價值的過程。」',
                 options: [],
                 answer: '（題組，含子題）',
-                explanation: '此為短文題組，包含2道子題，需閱讀短文後分別作答。重點考核學生對文意的理解與推論能力。'
+                explanation: '此為短文題組，包含2道子題，需閱讀短文後分別作答。重點考核學生對文意的理解與推論能力。',
+                subQuestions: [
+                    {
+                        stem: '作者認為衡量一個人價值的標準是什麼？請根據短文內容加以說明。',
+                        options: [],
+                        explanation: '作者認為一個人的價值取決於「貢獻了什麼」，而非「擁有什麼」，強調付出與創造價值的重要性。'
+                    },
+                    {
+                        stem: '你同意作者的觀點嗎？請舉出一個生活實例，說明你的看法。',
+                        options: [],
+                        explanation: '此為開放式題目，重點考核學生能否結合自身經驗闡述對「價值」的理解與反思能力。'
+                    }
+                ]
             },
             {
                 id: 'Q-2024-0010', type: '精選題目', difficulty: 2, diffLabel: '難度二（中）',
                 category: '修辭辨識', teacher: '李文華', project: '進行中梯次範例一', projectId: '1',
-                status: 'reviewing', date: '2024-10-25',
+                status: 'reviewing', date: '2024-10-25', modifyDate: '2024-11-02',
                 reviewStage: -2,
                 reviews: [
                     { reviewer: '王偉', role: '互審教師', time: '2024-10-28 09:15', decision: 'adopt', comment: '修辭考核方向正確，選項設計具有誘答力。通過。' },
@@ -835,20 +802,25 @@
                 // 三燈號：reviewStage 0=退回, 1=互審中, 2=專審中, 3=總審中, 4=已通過
                 const lightsHtml = buildReviewLights(item.reviewStage);
 
+                // 題型 badge class
+                const typeClassMap = {
+                    '一般題目': 'type-general', '精選題目': 'type-selected',
+                    '長文題目': 'type-long',   '短文題組': 'type-short',
+                    '閱讀題組': 'type-reading', '聽力題目': 'type-listen',
+                    '聽力題組': 'type-listengrp'
+                };
+                const typeCls = typeClassMap[item.type] || '';
+
                 return `
-          <tr>
-            <td class="fw-bold text-primary">${item.id}</td>
-            <td><span class="badge-type">${item.type}</span></td>
+          <tr class="clickable-row" data-id="${item.id}" onclick="viewQuestion('${item.id}')">
+            <td class="cell-id">${item.id}</td>
+            <td><span class="type-badge ${typeCls}">${item.type}</span></td>
             <td><span class="badge-difficulty ${diff.cssClass}">${diff.label}</span></td>
-            <td><div class="text-dark fw-medium" title="${stemText.replace(/"/g, '&quot;')}">${shortenedStem}</div></td>
-            <td class="d-none d-lg-table-cell">${item.teacher}</td>
+            <td><div class="cell-summary" title="${stemText.replace(/"/g, '&quot;')}">${shortenedStem}</div></td>
+            <td class="d-none d-lg-table-cell"><div class="cell-teacher"><span class="teacher-avatar">${item.teacher.charAt(0)}</span>${item.teacher}</div></td>
             <td class="text-center">${lightsHtml}</td>
-            <td class="d-none d-lg-table-cell text-secondary small">${item.date}</td>
-            <td class="text-center">
-              <button class="btn-view-detail" onclick="viewQuestion('${item.id}')">
-                <i class="bi bi-eye me-1"></i>檢視
-              </button>
-            </td>
+            <td class="d-none d-lg-table-cell cell-date">${item.date}</td>
+            <td class="d-none d-lg-table-cell cell-date">${item.modifyDate || item.date}</td>
           </tr>
         `;
             }).join('');
@@ -891,17 +863,17 @@
         };
 
         // =========================================
-        // 審題進度條渲染
+        // 三燈 Stepper 渲染（含審核時間戳）
         // =========================================
-        const renderReviewStepper = (reviewStage) => {
+        const renderReviewStepper = (reviewStage, reviews) => {
             const steps = [
-                { id: 'step-peer', label: '互審', subDefault: '教師互審' },
-                { id: 'step-expert', label: '專審', subDefault: '專家審查' },
-                { id: 'step-final', label: '總審', subDefault: '最終決議' }
+                { id: 'step-peer',   label: '互審', subDefault: '教師互審', reviewIdx: 0 },
+                { id: 'step-expert', label: '專審', subDefault: '專家審查', reviewIdx: 1 },
+                { id: 'step-final',  label: '總審', subDefault: '最終決議', reviewIdx: 2 }
             ];
 
             //  正數: 1=互審中, 2=專審中, 3=總審中, 4=已通過
-            //  負數: -1=互審改後再審, -2=專審改後再審, -3=總審改後再審
+            //  負數: -1=互審改後再審, -2=專審改後再審
             //     0: 總審不採用
 
             // 0 = 總審不採用
@@ -918,67 +890,217 @@
                         subEl.textContent = '不採用';
                     }
                 });
-                return;
+            } else {
+                const absStage = Math.abs(reviewStage);
+                const isRevise = reviewStage < 0;
+
+                steps.forEach((step, idx) => {
+                    const el = document.getElementById(step.id);
+                    const subEl = document.getElementById(`${step.id}-sub`);
+                    const stageNum = idx + 1;
+
+                    el.className = 'review-step';
+
+                    if (isRevise) {
+                        // 負數模式：改後再審（橘色）
+                        if (stageNum < absStage) {
+                            el.classList.add('completed');
+                            subEl.textContent = '已通過';
+                        } else if (stageNum === absStage) {
+                            el.classList.add('revise');
+                            subEl.textContent = '改後再審';
+                        } else {
+                            el.classList.add('pending');
+                            subEl.textContent = step.subDefault;
+                        }
+                    } else {
+                        // 正數模式：正常流程
+                        if (reviewStage >= stageNum + 1) {
+                            el.classList.add('completed');
+                            subEl.textContent = '已通過';
+                        } else if (reviewStage === stageNum) {
+                            el.classList.add('active');
+                            subEl.textContent = '進行中';
+                        } else {
+                            el.classList.add('pending');
+                            subEl.textContent = step.subDefault;
+                        }
+                    }
+                });
             }
 
-            const absStage = Math.abs(reviewStage);
-            const isRevise = reviewStage < 0;
-
-            steps.forEach((step, idx) => {
+            // 渲染每步的審核時間戳
+            steps.forEach((step) => {
                 const el = document.getElementById(step.id);
-                const subEl = document.getElementById(`${step.id}-sub`);
-                const stageNum = idx + 1;
+                const timeEl = document.getElementById(`${step.id}-time`);
+                const review = reviews && reviews[step.reviewIdx];
 
-                el.className = 'review-step';
-
-                if (isRevise) {
-                    // 負數模式：改後再審（橘色）
-                    if (stageNum < absStage) {
-                        el.classList.add('completed');
-                        subEl.textContent = '已通過';
-                    } else if (stageNum === absStage) {
-                        el.classList.add('revise');
-                        subEl.textContent = '改後再審';
-                    } else {
-                        el.classList.add('pending');
-                        subEl.textContent = step.subDefault;
-                    }
+                // 只有已動作的步驟（completed / revise / rejected）才顯示時間
+                if (review && review.time &&
+                    (el.classList.contains('completed') || el.classList.contains('revise') || el.classList.contains('rejected'))) {
+                    timeEl.textContent = review.time;
+                    timeEl.style.display = 'block';
                 } else {
-                    // 正數模式：正常流程
-                    if (reviewStage >= stageNum + 1) {
-                        el.classList.add('completed');
-                        subEl.textContent = '已通過';
-                    } else if (reviewStage === stageNum) {
-                        el.classList.add('active');
-                        subEl.textContent = '進行中';
-                    } else {
-                        el.classList.add('pending');
-                        subEl.textContent = step.subDefault;
-                    }
+                    timeEl.textContent = '';
+                    timeEl.style.display = 'none';
                 }
             });
         };
 
         // =========================================
-        // 審題評語時間線渲染
+        // Modal 動態內容渲染
+        // 順序：基本資訊 → 題目內容 → 解析 → 審題評語
         // =========================================
-        const renderReviewTimeline = (reviews) => {
-            const container = document.getElementById('reviewTimeline');
+        const renderModalContent = (item) => {
+            const isListening = item.type === '聽力題目' || item.type === '聽力題組';
+            const configSet = isListening ? difficultyConfig.listening : difficultyConfig.normal;
+            const diff = configSet[item.difficulty] || {};
+            const typeClassMap = {
+                '一般題目': 'type-general', '精選題目': 'type-selected',
+                '長文題目': 'type-long',   '短文題組': 'type-short',
+                '閱讀題組': 'type-reading', '聽力題目': 'type-listen',
+                '聽力題組': 'type-listengrp'
+            };
 
-            if (!reviews || reviews.length === 0) {
-                container.innerHTML = `
-                    <div class="review-no-comments">
-                        <i class="bi bi-chat-square-dots"></i>
-                        尚無審題評語
+            let html = '';
+
+            // ① 基本資訊
+            html += `<div class="detail-section">
+                <div class="section-title"><i class="bi bi-info-circle"></i> 基本資訊</div>
+                <div class="meta-grid">
+                    <div class="meta-item">
+                        <div class="meta-label">${isListening ? '難度' : '適用等級'}</div>
+                        <div class="meta-value"><span class="badge-difficulty ${diff.cssClass || ''}">${diff.label || item.diffLabel || '--'}</span></div>
                     </div>
-                `;
-                return;
+                    <div class="meta-item">
+                        <div class="meta-label">主類別</div>
+                        <div class="meta-value">${item.category}</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">命題教師</div>
+                        <div class="meta-value">${item.teacher}</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">所屬梯次</div>
+                        <div class="meta-value">${item.project}</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">建立日期</div>
+                        <div class="meta-value">${item.date}</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">修改日期</div>
+                        <div class="meta-value">${item.modifyDate || item.date}</div>
+                    </div>
+                </div>
+            </div>`;
+
+            // ② 題目內容
+            const isGroupType = item.type === '短文題組' || item.type === '閱讀題組' || item.type === '聽力題組';
+
+            html += `<div class="detail-section">
+                <div class="section-title"><i class="bi bi-file-earmark-text"></i> 題目內容</div>
+                <div class="question-card">
+                    <div class="q-type-label">
+                        <span class="type-badge ${typeClassMap[item.type] || ''}" style="font-size:0.72rem; padding:0.15rem 0.5rem;">${item.type}</span>
+                    </div>`;
+
+            // 聽力音檔 placeholder
+            if (isListening) {
+                html += `<div class="q-audio-player">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z"/>
+                    </svg>
+                    <div style="flex:1">
+                        <div style="font-size:0.82rem; font-weight:600; margin-bottom:3px;">請聆聽音檔</div>
+                        <div class="q-audio-bar"><div class="q-audio-bar-fill"></div></div>
+                    </div>
+                    <span style="font-size:0.72rem; opacity:0.7;">0:00 / 0:00</span>
+                </div>`;
             }
 
-            container.innerHTML = reviews.map(r => {
-                const dec = decisionConfig[r.decision] || { label: '--', icon: 'bi-dash', cssClass: '' };
-                return `
-                    <div class="review-comment-card">
+            // 題幹（母題）
+            const isArticleType = item.type === '長文題目' || item.type === '短文題組' || item.type === '閱讀題組';
+            if (isArticleType) {
+                html += `<div class="q-article-box">${escapeHtml(item.stem).replace(/\n/g, '<br>')}</div>`;
+            } else {
+                html += `<div class="q-stem">${escapeHtml(item.stem).replace(/\n/g, '<br>')}</div>`;
+            }
+
+            // 母題選項（非題組類型才有）
+            if (!isGroupType && item.options && item.options.length > 0) {
+                html += '<div class="q-options">';
+                item.options.forEach(opt => {
+                    const correctCls = opt.correct ? ' correct-opt' : '';
+                    html += `<div class="q-option-item${correctCls}">
+                        <span class="q-option-label">(${opt.label})</span>
+                        <span>${escapeHtml(opt.text)}</span>
+                        ${opt.correct ? '<i class="bi bi-check-circle-fill ms-auto" style="color:#10b981; flex-shrink:0;"></i>' : ''}
+                    </div>`;
+                });
+                html += '</div>';
+            }
+
+            // 題組子題
+            if (isGroupType && item.subQuestions && item.subQuestions.length > 0) {
+                html += '<div class="q-sub-questions">';
+                item.subQuestions.forEach((sub, i) => {
+                    html += `<div class="q-sub-question">
+                        <div class="q-sub-number">第 ${i + 1} 題</div>
+                        <div class="q-sub-body">
+                            <div class="q-sub-stem">${escapeHtml(sub.stem).replace(/\n/g, '<br>')}</div>`;
+
+                    // 子題選項（閱讀題組、聽力題組有選項；短文題組為論述題無選項）
+                    if (sub.options && sub.options.length > 0) {
+                        html += '<div class="q-options">';
+                        sub.options.forEach(opt => {
+                            const correctCls = opt.correct ? ' correct-opt' : '';
+                            html += `<div class="q-option-item${correctCls}">
+                                <span class="q-option-label">(${opt.label})</span>
+                                <span>${escapeHtml(opt.text)}</span>
+                                ${opt.correct ? '<i class="bi bi-check-circle-fill ms-auto" style="color:#10b981; flex-shrink:0;"></i>' : ''}
+                            </div>`;
+                        });
+                        html += '</div>';
+                    } else {
+                        html += `<div class="q-sub-essay-hint">
+                            <i class="bi bi-pencil-square"></i> 論述題（自由作答）
+                        </div>`;
+                    }
+
+                    // 子題解析
+                    if (sub.explanation) {
+                        html += `<div class="q-sub-explanation">
+                            <span class="q-sub-explanation-label"><i class="bi bi-lightbulb"></i> 解析</span>
+                            ${escapeHtml(sub.explanation).replace(/\n/g, '<br>')}
+                        </div>`;
+                    }
+
+                    html += '</div></div>';
+                });
+                html += '</div>';
+            }
+
+            html += '</div></div>';
+
+            // ③ 解析說明
+            if (item.explanation) {
+                html += `<div class="detail-section">
+                    <div class="section-title"><i class="bi bi-lightbulb"></i> 解析說明</div>
+                    <div class="detail-content-box">${escapeHtml(item.explanation).replace(/\n/g, '<br>')}</div>
+                </div>`;
+            }
+
+            // ④ 審題評語
+            html += `<div class="detail-section">
+                <div class="section-title"><i class="bi bi-chat-square-quote"></i> 審題評語</div>`;
+
+            if (item.reviews && item.reviews.length > 0) {
+                html += '<div class="review-timeline">';
+                item.reviews.forEach(r => {
+                    const dec = decisionConfig[r.decision] || { label: '--', icon: 'bi-dash', cssClass: '' };
+                    html += `<div class="review-comment-card">
                         <div class="review-comment-header">
                             <span class="reviewer-name">${r.reviewer}</span>
                             <span class="reviewer-role">${r.role}</span>
@@ -988,70 +1110,50 @@
                             <i class="bi ${dec.icon}"></i> ${dec.label}
                         </div>
                         <div class="review-comment-body">${r.comment}</div>
-                    </div>
-                `;
-            }).join('');
+                    </div>`;
+                });
+                html += '</div>';
+            } else {
+                html += `<div class="review-no-comments">
+                    <i class="bi bi-chat-square-dots"></i>
+                    尚無審題評語
+                </div>`;
+            }
+
+            html += '</div>';
+
+            return html;
         };
 
         // =========================================
-        // 檢視題目 Modal
+        // 開啟題目詳情 Modal
         // =========================================
+        let currentActiveRow = null;
+
         const viewQuestion = (questionId) => {
             const item = mockBankData.find(q => q.id === questionId);
             if (!item) return;
 
-            const isListening = item.type === '聽力題目' || item.type === '聽力題組';
-            const configSet = isListening ? difficultyConfig.listening : difficultyConfig.normal;
-            const diff = configSet[item.difficulty] || {};
-            const stat = statusConfig[item.status] || {};
-
-            document.getElementById('modalId').textContent = item.id;
-            document.getElementById('modalType').textContent = item.type;
-            document.getElementById('modalLabelDifficulty').textContent = isListening ? '難度：' : '適用等級：';
-
-            const labelText = diff.label || item.diffLabel || '--';
-            document.getElementById('modalDifficulty').innerHTML = `<span class="badge-difficulty ${diff.cssClass}">${labelText}</span>`;
-
-            document.getElementById('modalCategory').textContent = item.category;
-            document.getElementById('modalTeacher').textContent = item.teacher;
-            document.getElementById('modalProject').textContent = item.project;
-            document.getElementById('modalDate').textContent = item.date;
-            document.getElementById('modalStatus').innerHTML = `<span class="badge-status ${stat.cssClass}">${stat.label}</span>`;
-
-            // 審題進度條
-            renderReviewStepper(item.reviewStage);
-
-            // 審題評語
-            renderReviewTimeline(item.reviews);
-
-            // 題幹：保留換行
-            document.getElementById('modalStem').innerHTML = escapeHtml(item.stem).replace(/\n/g, '<br>');
-
-            // 選項區
-            const optionsSection = document.getElementById('modalOptionsSection');
-            const optionsList = document.getElementById('modalOptions');
-
-            if (item.options.length > 0) {
-                optionsSection.style.display = '';
-                optionsList.innerHTML = item.options.map(opt => {
-                    const isCorrect = opt.correct;
-                    return `
-            <li class="${isCorrect ? 'correct-answer' : ''}">
-              <strong>${opt.label}.</strong>
-              <span>${escapeHtml(opt.text)}</span>
-              ${isCorrect ? '<i class="bi bi-check-circle-fill ms-auto"></i>' : ''}
-            </li>
-          `;
-                }).join('');
-            } else {
-                optionsSection.style.display = 'none';
+            // 設定 active row
+            if (currentActiveRow) currentActiveRow.classList.remove('active-row');
+            const row = document.querySelector(`tr[data-id="${questionId}"]`);
+            if (row) {
+                row.classList.add('active-row');
+                currentActiveRow = row;
             }
 
-            // 解析
-            document.getElementById('modalExplanation').innerHTML = escapeHtml(item.explanation).replace(/\n/g, '<br>');
+            // 更新 header
+            document.getElementById('modalQuestionId').textContent = item.id;
 
-            // 開啟 Modal
-            bootstrap.Modal.getOrCreateInstance(document.getElementById('viewQuestionModal')).show();
+            // 渲染 stepper（含時間戳）
+            renderReviewStepper(item.reviewStage, item.reviews);
+
+            // 渲染動態內容
+            document.getElementById('modalDynamicContent').innerHTML = renderModalContent(item);
+
+            // 顯示 Modal
+            const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('viewQuestionModal'));
+            modal.show();
         };
 
         // =========================================
@@ -1129,6 +1231,14 @@
             document.getElementById('filterKeyword').addEventListener('input', performFilter);
 
             document.getElementById('btnReset').addEventListener('click', resetFilters);
+
+            // Modal 關閉時清除 active-row
+            document.getElementById('viewQuestionModal').addEventListener('hidden.bs.modal', () => {
+                if (currentActiveRow) {
+                    currentActiveRow.classList.remove('active-row');
+                    currentActiveRow = null;
+                }
+            });
 
             // 監聽梯次切換事件
             document.addEventListener('projectChanged', (e) => {
