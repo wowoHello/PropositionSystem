@@ -531,8 +531,7 @@ body {
 .modal-body {
     background: linear-gradient(180deg, #f1f5f9 0%, #f8fafc 30%, #ffffff 100%);
     padding: 1.5rem;
-    max-height: 70vh;
-    overflow-y: auto;
+    /* max-height 與 overflow 由 cwt-review-page.css 雙欄佈局控制 */
 }
 
 /* 區塊卡片 */

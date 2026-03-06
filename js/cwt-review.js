@@ -176,6 +176,134 @@ window.insertQuickTextQuill = function (editorKeyRef, text) {
 //  4. 彈窗與業務邏輯 (Modal Logic)
 // ==========================================
 
+// ==========================================
+//  4a. 題目內容渲染 (支援 7 種題型)
+// ==========================================
+function renderQuestionContent(rowData) {
+    const type = rowData.type || '';
+    const isGroupType = ['閱讀題組', '短文題組', '聽力題組'].includes(type);
+    const isListeningType = ['聽力題目', '聽力題組'].includes(type);
+    const isEssayType = type === '長文題目';
+
+    // ---------- 1. 題幹 ----------
+    const stemEl = document.getElementById('reviewQuestionContent');
+    stemEl.innerHTML = '';
+
+    // 聽力音檔 placeholder
+    if (isListeningType || rowData.hasAudio) {
+        stemEl.innerHTML += `
+            <div class="review-audio-player">
+                <i class="bi bi-volume-up-fill"></i>
+                <div style="flex:1">
+                    <div class="fw-bold small mb-1">聽力音檔</div>
+                    <audio controls style="width:100%;height:32px"><source src="#" type="audio/mpeg"></audio>
+                </div>
+            </div>`;
+    }
+
+    // 文章段落（閱讀/短文題組）
+    if (rowData.article) {
+        const articleHtml = escapeHtml(rowData.article).replace(/\n/g, '<br>');
+        stemEl.innerHTML += `
+            <div class="review-article-box mb-3">
+                <div class="review-article-label"><i class="bi bi-book me-1"></i>文本 / 資料</div>
+                <div class="review-article-content">${articleHtml}</div>
+            </div>`;
+    }
+
+    // 題幹文字
+    const stemHtml = (rowData.stem ? escapeHtml(rowData.stem).replace(/\n/g, '<br>') : '（無題幹內容）');
+    stemEl.innerHTML += `<p style="line-height:1.8">${stemHtml}</p>`;
+
+    // ---------- 2. 選項 ----------
+    const optWrapper = document.getElementById('reviewOptionsWrapper');
+    const optContainer = document.getElementById('reviewOptionsContainer');
+    optContainer.innerHTML = '';
+
+    if (!isGroupType && !isEssayType && rowData.options && rowData.options.length > 0) {
+        // 一般 / 精選 / 聽力題目：平面選項
+        optWrapper.style.display = '';
+        rowData.options.forEach((opt, idx) => {
+            const label = String.fromCharCode(65 + idx);
+            const isCorrect = rowData.analysis && rowData.analysis.includes(label);
+            optContainer.innerHTML += `
+                <div class="option-display ${isCorrect ? 'correct-answer' : ''}">
+                    <span class="option-label">${label}</span>
+                    <span class="option-content">${escapeHtml(opt)}</span>
+                </div>`;
+        });
+    } else if (isEssayType) {
+        // 長文題目：寫作引導
+        optWrapper.style.display = '';
+        optContainer.innerHTML = `
+            <div class="review-essay-prompt">
+                <i class="bi bi-pencil-square me-1"></i>
+                論述題（自由作答）
+                ${rowData.wordLimit ? '<span class="ms-2 text-muted">建議字數：' + escapeHtml(rowData.wordLimit) + '</span>' : ''}
+            </div>`;
+    } else {
+        // 題組類型：選項由子題各自呈現
+        optWrapper.style.display = 'none';
+    }
+
+    // ---------- 3. 子題（題組類型） ----------
+    const subContainer = document.getElementById('reviewSubQuestionsContainer');
+    subContainer.innerHTML = '';
+
+    if (isGroupType && rowData.subQuestions && rowData.subQuestions.length > 0) {
+        let subHtml = '<div class="review-sub-questions">';
+        subHtml += '<label class="form-label fw-bold small text-secondary mb-2">子題</label>';
+
+        rowData.subQuestions.forEach((sub, i) => {
+            subHtml += `<div class="review-sub-question">
+                <div class="review-sub-number">第 ${i + 1} 題</div>
+                <div class="review-sub-stem">${escapeHtml(sub.stem).replace(/\n/g, '<br>')}</div>`;
+
+            if (sub.options && sub.options.length > 0) {
+                // 選擇題子題
+                sub.options.forEach((opt, j) => {
+                    const label = String.fromCharCode(65 + j);
+                    const isAns = sub.answer === label;
+                    subHtml += `
+                        <div class="option-display ${isAns ? 'correct-answer' : ''}" style="margin-left:0.5rem">
+                            <span class="option-label">${label}</span>
+                            <span class="option-content">${escapeHtml(opt)}</span>
+                        </div>`;
+                });
+            } else {
+                // 論述題子題
+                subHtml += `
+                    <div class="review-essay-prompt" style="margin-left:0.5rem">
+                        <i class="bi bi-pencil-square me-1"></i>論述題（自由作答）
+                    </div>`;
+            }
+
+            if (sub.explanation) {
+                subHtml += `
+                    <div class="review-sub-explanation">
+                        <i class="bi bi-lightbulb me-1"></i>${escapeHtml(sub.explanation)}
+                    </div>`;
+            }
+            subHtml += '</div>';
+        });
+
+        subHtml += '</div>';
+        subContainer.innerHTML = subHtml;
+    }
+
+    // ---------- 4. 解析 ----------
+    const explainDiv = document.getElementById('reviewExplanation');
+    if (rowData.analysis) {
+        explainDiv.innerHTML = `<p>${escapeHtml(rowData.analysis).replace(/\n/g, '<br>')}</p>`;
+    } else {
+        explainDiv.innerHTML = '<p class="text-muted">無解析資料</p>';
+    }
+}
+
+// ==========================================
+//  4b. 彈窗與業務邏輯 (Modal Logic)
+// ==========================================
+
 // 開啟審題彈窗 (HTML onclick 呼叫用)
 window.openReviewModal = function (btn, stage) {
     currentStage = stage;
@@ -226,33 +354,18 @@ window.openReviewModal = function (btn, stage) {
         btnReject.classList.toggle('d-none', stage !== 'final');
     }
 
-    // 3. 填充唯讀資料 (題目內容)
-    document.getElementById('reviewQuestionContent').innerHTML = sanitizeHtml(rowData.stem) || '（無題幹內容）';
+    // 3. 填充唯讀資料 (題目內容) — 支援 7 種題型
     document.getElementById('reviewQuestionType').innerText = rowData.type || '-';
     document.getElementById('reviewQuestionLevel').innerText = rowData.grade || '-';
 
-    // 填充選項 (DOM 產生)
-    const optionsContainer = document.getElementById('reviewOptionsContainer');
-    optionsContainer.innerHTML = '';
-    if (rowData.options && Array.isArray(rowData.options)) {
-        rowData.options.forEach((opt, idx) => {
-            const label = String.fromCharCode(65 + idx); // A, B, C...
-            // 簡單判斷是否為正確答案 (假設 JSON 內有標記 analysis)
-            const isCorrect = rowData.analysis && rowData.analysis.includes(label);
-
-            const div = document.createElement('div');
-            div.className = `option-display ${isCorrect ? 'correct-answer' : ''}`;
-            div.innerHTML = `
-                <span class="option-label">${label}</span>
-                <span class="option-content">${escapeHtml(opt)}</span>
-            `;
-            optionsContainer.appendChild(div);
-        });
+    // 從 tr 取得送審時間
+    const submitTimeCell = currentRow.cells[5];
+    if (submitTimeCell) {
+        document.getElementById('reviewSubmitTime').innerText = submitTimeCell.innerText.trim();
     }
 
-    // 填充解析
-    const explainDiv = document.getElementById('reviewExplanation');
-    explainDiv.innerHTML = rowData.analysis ? `<p>${escapeHtml(rowData.analysis)}</p>` : '<p class="text-muted">無解析資料</p>';
+    // 呼叫統一渲染函式
+    renderQuestionContent(rowData);
 
     // 4. 清空並重置編輯器
     Object.values(editors).forEach(q => q && q.setText(''));

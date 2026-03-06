@@ -1,0 +1,1832 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CWT 命審階段時程 — 功能邏輯討論</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0f172a;
+    --paper: #f8fafc;
+    --surface: #ffffff;
+    --border: #e2e8f0;
+    --muted: #64748b;
+    --phase-prop: #f59e0b;
+    --phase-cross: #6366f1;
+    --phase-cross-fix: #818cf8;
+    --phase-expert: #0891b2;
+    --phase-expert-fix: #22d3ee;
+    --phase-final: #7c3aed;
+    --phase-final-fix: #a78bfa;
+    --lock: #ef4444;
+    --unlock: #10b981;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.04);
+    --shadow-lg: 0 4px 32px rgba(0,0,0,0.08);
+    --radius: 12px;
+    --mono: 'DM Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Noto Sans TC', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.8;
+    overflow-x: hidden;
+  }
+
+  /* === HERO === */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background: var(--ink);
+    overflow: hidden;
+  }
+
+  .hero-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(99,102,241,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(99,102,241,0.06) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+
+  .hero-glow {
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.3;
+  }
+
+  .hero-glow.g1 {
+    top: -10%;
+    left: 20%;
+    background: var(--phase-cross);
+  }
+
+  .hero-glow.g2 {
+    bottom: -10%;
+    right: 15%;
+    background: var(--phase-final);
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    max-width: 760px;
+    padding: 2rem;
+  }
+
+  .hero-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 100px;
+    color: rgba(255,255,255,0.6);
+    font-size: 0.8rem;
+    font-family: var(--mono);
+    letter-spacing: 1px;
+    margin-bottom: 2rem;
+    animation: fadeIn 0.8s ease-out;
+  }
+
+  .chip-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--phase-cross);
+    animation: blink 2s infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .hero h1 {
+    font-size: clamp(2.2rem, 5.5vw, 3.8rem);
+    font-weight: 900;
+    color: #fff;
+    line-height: 1.25;
+    margin-bottom: 1.2rem;
+    animation: fadeInUp 0.8s ease-out 0.15s both;
+  }
+
+  .hero h1 .accent {
+    background: linear-gradient(135deg, #818cf8, #c084fc, #f0abfc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .hero p {
+    font-size: 1.05rem;
+    color: rgba(255,255,255,0.55);
+    max-width: 520px;
+    margin: 0 auto 2rem;
+    animation: fadeInUp 0.8s ease-out 0.3s both;
+  }
+
+  .hero-meta {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    animation: fadeInUp 0.8s ease-out 0.45s both;
+  }
+
+  .hero-meta span {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: rgba(255,255,255,0.35);
+  }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* === SIDE NAV === */
+  .side-nav {
+    position: fixed;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .side-nav a {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(99,102,241,0.2);
+    border: 1.5px solid var(--phase-cross);
+    transition: all 0.3s;
+    display: block;
+  }
+
+  .side-nav a:hover,
+  .side-nav a.active {
+    background: var(--phase-cross);
+    transform: scale(1.4);
+  }
+
+  /* === SECTION COMMON === */
+  section { padding: 80px 24px; }
+  .container { max-width: 1060px; margin: 0 auto; }
+
+  .section-label {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--phase-cross);
+    font-weight: 500;
+    margin-bottom: 10px;
+  }
+
+  .section-title {
+    font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+    font-weight: 900;
+    line-height: 1.35;
+    margin-bottom: 0.8rem;
+  }
+
+  .section-desc {
+    font-size: 0.95rem;
+    color: var(--muted);
+    max-width: 600px;
+    margin-bottom: 2.5rem;
+  }
+
+  /* === BIG PICTURE === */
+  .bigpic { background: var(--paper); }
+
+  .bigpic-desc {
+    font-size: 0.95rem;
+    color: #475569;
+    max-width: 700px;
+    margin-bottom: 2.5rem;
+    line-height: 1.9;
+  }
+
+  .timeline-bar {
+    display: flex;
+    gap: 2px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+  }
+
+  .tbar-seg {
+    flex: 1;
+    padding: 14px 10px;
+    text-align: center;
+    color: #fff;
+    font-size: 0.78rem;
+    font-weight: 700;
+    position: relative;
+    transition: flex 0.4s;
+    cursor: default;
+    min-width: 0;
+  }
+
+  .tbar-seg:hover { flex: 1.6; }
+
+  .tbar-seg .tbar-num {
+    display: block;
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    opacity: 0.7;
+    margin-bottom: 2px;
+  }
+
+  .tbar-seg.s1 { background: var(--phase-prop); }
+  .tbar-seg.s2 { background: var(--phase-cross); }
+  .tbar-seg.s3 { background: var(--phase-cross-fix); }
+  .tbar-seg.s4 { background: var(--phase-expert); }
+  .tbar-seg.s5 { background: var(--phase-expert-fix); }
+  .tbar-seg.s6 { background: var(--phase-final); }
+  .tbar-seg.s7 { background: var(--phase-final-fix); }
+
+  .timeline-legend {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+
+  .tl-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+
+  .tl-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  /* === PHASE CARDS === */
+  .phases-section { background: #f1f5f9; }
+
+  .phase-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+    overflow: hidden;
+    transition: box-shadow 0.3s;
+  }
+
+  .phase-card:hover { box-shadow: var(--shadow-lg); }
+
+  .phase-head {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+
+  .phase-head::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+  }
+
+  .phase-card.p1 .phase-head::before { background: var(--phase-prop); }
+  .phase-card.p2 .phase-head::before { background: var(--phase-cross); }
+  .phase-card.p3 .phase-head::before { background: var(--phase-cross-fix); }
+  .phase-card.p4 .phase-head::before { background: var(--phase-expert); }
+  .phase-card.p5 .phase-head::before { background: var(--phase-expert-fix); }
+  .phase-card.p6 .phase-head::before { background: var(--phase-final); }
+  .phase-card.p7 .phase-head::before { background: var(--phase-final-fix); }
+
+  .phase-badge {
+    padding: 4px 12px;
+    border-radius: 8px;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  .phase-card.p1 .phase-badge { background: var(--phase-prop); }
+  .phase-card.p2 .phase-badge { background: var(--phase-cross); }
+  .phase-card.p3 .phase-badge { background: var(--phase-cross-fix); }
+  .phase-card.p4 .phase-badge { background: var(--phase-expert); }
+  .phase-card.p5 .phase-badge { background: var(--phase-expert-fix); }
+  .phase-card.p6 .phase-badge { background: var(--phase-final); }
+  .phase-card.p7 .phase-badge { background: var(--phase-final-fix); }
+
+  .phase-name {
+    font-size: 1.1rem;
+    font-weight: 900;
+    flex: 1;
+  }
+
+  .lock-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 12px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  .lock-tag.locked { background: #fee2e2; color: #b91c1c; }
+  .lock-tag.unlocked { background: #d1fae5; color: #047857; }
+
+  .phase-body {
+    padding: 20px 24px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .pb-block h4 {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .pb-block p {
+    font-size: 0.88rem;
+    color: #475569;
+    line-height: 1.7;
+  }
+
+  .btn-group {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .btn-mock {
+    padding: 7px 16px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    border: 2px solid;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .btn-adopt { background: #d1fae5; color: #047857; border-color: #a7f3d0; }
+  .btn-redo { background: #fef3c7; color: #b45309; border-color: #fde68a; }
+  .btn-reject { background: #fee2e2; color: #b91c1c; border-color: #fecaca; }
+  .btn-comment { background: #e0e7ff; color: #4338ca; border-color: #c7d2fe; }
+  .btn-none { background: #f1f5f9; color: #cbd5e1; border-color: #e2e8f0; text-decoration: line-through; }
+
+  .note-box {
+    grid-column: 1 / -1;
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 0.85rem;
+    color: #92400e;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    line-height: 1.65;
+  }
+
+  .note-box.blue-note {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    color: #1e40af;
+  }
+
+  .note-box.red-note {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #991b1b;
+  }
+
+  .note-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 2px; }
+
+  /* === ASSIGNMENT LOGIC === */
+  .assign-section { background: var(--paper); }
+
+  .assign-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin-top: 2rem;
+  }
+
+  .assign-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 24px;
+    transition: all 0.3s;
+    border-top: 3px solid var(--border);
+  }
+
+  .assign-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+
+  .assign-card:nth-child(1) { border-top-color: var(--phase-cross); }
+  .assign-card:nth-child(2) { border-top-color: var(--phase-expert); }
+  .assign-card:nth-child(3) { border-top-color: var(--phase-final); }
+
+  .assign-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    margin-bottom: 14px;
+  }
+
+  .assign-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+  .assign-card p { font-size: 0.85rem; color: var(--muted); line-height: 1.7; }
+
+  .assign-rule {
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: #fef3c7;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #92400e;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* === LOCK/UNLOCK PATTERN === */
+  .pattern-section { background: #f1f5f9; }
+
+  .pattern-track {
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .pattern-row {
+    display: flex;
+    align-items: stretch;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+
+  .pat-phase {
+    width: 180px;
+    padding: 14px 18px;
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .pat-state {
+    flex: 1;
+    padding: 14px 18px;
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 0.85rem;
+    color: #475569;
+  }
+
+  .pat-lock {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .pat-lock.on { background: #fee2e2; color: #b91c1c; }
+  .pat-lock.off { background: #d1fae5; color: #047857; }
+
+  /* === CLOSING LOGIC === */
+  .closing-section { background: var(--paper); }
+
+  .closing-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 32px;
+    margin-top: 2rem;
+    border-left: 5px solid #ef4444;
+  }
+
+  .closing-card h3 {
+    font-size: 1.15rem;
+    font-weight: 900;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .closing-card p {
+    font-size: 0.92rem;
+    color: #475569;
+    line-height: 1.8;
+    margin-bottom: 1rem;
+  }
+
+  .closing-diagram {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+  }
+
+  .cd-box {
+    padding: 14px 20px;
+    border-radius: 10px;
+    text-align: center;
+    min-width: 150px;
+    flex: 1;
+    transition: transform 0.3s;
+  }
+
+  .cd-box:hover { transform: translateY(-2px); }
+
+  .cd-box.adopted {
+    background: #d1fae5;
+    border: 2px solid #a7f3d0;
+  }
+
+  .cd-box.not-adopted {
+    background: #fee2e2;
+    border: 2px solid #fecaca;
+  }
+
+  .cd-box h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
+  .cd-box p { font-size: 0.8rem; color: var(--muted); margin: 0; }
+
+  .cd-arrow {
+    display: flex;
+    align-items: center;
+    color: #cbd5e1;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+
+  /* === FLOW SUMMARY === */
+  .summary-section { background: #f1f5f9; }
+
+  .summary-flow {
+    margin-top: 2rem;
+    position: relative;
+  }
+
+  .sf-row {
+    display: flex;
+    align-items: stretch;
+    margin-bottom: 0;
+  }
+
+  .sf-timeline {
+    width: 52px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .sf-dot {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    color: #fff;
+    z-index: 2;
+    flex-shrink: 0;
+    font-weight: 700;
+  }
+
+  .sf-line {
+    width: 2px;
+    flex: 1;
+    background: #e2e8f0;
+  }
+
+  .sf-line.dashed {
+    background: repeating-linear-gradient(to bottom, #e2e8f0 0 5px, transparent 5px 10px);
+  }
+
+  .sf-card {
+    flex: 1;
+    margin: 4px 0 4px 14px;
+    padding: 16px 20px;
+    background: var(--surface);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    border-left: 3px solid transparent;
+    transition: transform 0.2s;
+  }
+
+  .sf-card:hover { transform: translateX(3px); }
+
+  .sf-card h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 3px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .sf-card p { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+
+  .sf-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 5px;
+    font-size: 0.68rem;
+    font-weight: 600;
+  }
+
+  /* Return arrows */
+  .sf-return {
+    margin: 4px 0 4px 66px;
+    padding: 10px 16px;
+    background: #fffbeb;
+    border: 1px dashed #fde68a;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    color: #92400e;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* === SIMULATION === */
+  .sim-section { background: var(--paper); }
+
+  .sim-scenario {
+    margin-top: 2rem;
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+  }
+
+  .sim-header {
+    background: linear-gradient(135deg, var(--phase-final), #9333ea);
+    color: #fff;
+    padding: 24px 28px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .sim-header h3 { font-size: 1.1rem; font-weight: 700; }
+  .sim-header span { font-size: 1.5rem; }
+
+  .sim-body { padding: 28px; }
+
+  .sim-setup {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+
+  .sim-stat {
+    background: #f8fafc;
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+    border: 1px solid var(--border);
+  }
+
+  .sim-stat .ss-num {
+    font-size: 1.8rem;
+    font-weight: 900;
+    line-height: 1.2;
+  }
+
+  .sim-stat .ss-label {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .sim-step-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin: 20px 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .sim-step-title .step-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .sim-distrib {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 12px;
+  }
+
+  .sim-person {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    transition: all 0.3s;
+  }
+
+  .sim-person:hover { border-color: var(--phase-final); transform: translateY(-2px); }
+
+  .sim-person-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .sim-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    color: #fff;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .sim-person-name { font-weight: 700; font-size: 0.95rem; }
+  .sim-person-role { font-size: 0.75rem; color: var(--muted); }
+
+  .sim-bar-wrap {
+    margin-top: 10px;
+  }
+
+  .sim-bar-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .sim-bar {
+    height: 28px;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    background: #f1f5f9;
+  }
+
+  .sim-bar-fill {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #fff;
+    transition: width 0.6s ease;
+  }
+
+  .sim-bar-fill.allowed { background: var(--phase-final); }
+  .sim-bar-fill.blocked { background: #ef4444; }
+  .sim-bar-fill.must { background: var(--phase-expert); }
+  .sim-bar-fill.free { background: var(--phase-final); }
+
+  .sim-rule-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-top: 8px;
+  }
+
+  .srt-block { background: #fee2e2; color: #b91c1c; }
+  .srt-must { background: #cffafe; color: #0e7490; }
+  .srt-free { background: #d1fae5; color: #047857; }
+
+  .sim-expert-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-top: 8px;
+  }
+
+  .sim-expert-chip {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+    font-size: 0.82rem;
+    font-weight: 600;
+    transition: all 0.3s;
+  }
+
+  .sim-expert-chip:hover { border-color: var(--phase-expert); }
+
+  .sim-expert-chip .ec-name { margin-bottom: 2px; }
+  .sim-expert-chip .ec-count { font-size: 0.75rem; color: var(--muted); }
+  .sim-expert-chip.is-chief { border-color: var(--phase-final); background: #f5f3ff; }
+
+  .sim-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 24px 0;
+  }
+
+  .sim-key-insight {
+    background: #fefce8;
+    border: 1px solid #fde68a;
+    border-radius: 10px;
+    padding: 18px 22px;
+    margin-top: 16px;
+  }
+
+  .sim-key-insight h4 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #92400e;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .sim-key-insight p {
+    font-size: 0.85rem;
+    color: #78350f;
+    line-height: 1.7;
+  }
+
+  @media (max-width: 768px) {
+    .sim-distrib { grid-template-columns: 1fr; }
+    .sim-expert-grid { grid-template-columns: repeat(2, 1fr); }
+    .sim-setup { grid-template-columns: repeat(2, 1fr); }
+    .round-cards { grid-template-columns: 1fr !important; }
+  }
+
+  /* === THREE ROUNDS === */
+  .round-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  .round-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: all 0.3s;
+  }
+
+  .round-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+
+  .round-head {
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #fff;
+  }
+
+  .round-head .round-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+  }
+
+  .round-body {
+    padding: 16px 18px;
+  }
+
+  .round-body p {
+    font-size: 0.84rem;
+    color: #475569;
+    line-height: 1.65;
+    margin-bottom: 8px;
+  }
+
+  .round-who {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .rw-teacher { background: #fef3c7; color: #92400e; }
+  .rw-chief { background: #ede9fe; color: #6d28d9; }
+
+  .round-connector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 0;
+    color: #94a3b8;
+    font-size: 0.78rem;
+  }
+
+  .round-result {
+    margin-top: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  .rr-return { background: #fef3c7; color: #b45309; border: 1px dashed #fde68a; }
+  .rr-final { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+
+  /* === FOOTER === */
+  .footer {
+    background: var(--ink);
+    color: rgba(255,255,255,0.4);
+    text-align: center;
+    padding: 40px 24px;
+    font-size: 0.82rem;
+  }
+
+  .footer strong { color: rgba(255,255,255,0.8); }
+
+  /* === RESPONSIVE === */
+  @media (max-width: 768px) {
+    .phase-body { grid-template-columns: 1fr; }
+    .side-nav { display: none; }
+    .pat-phase { width: 120px; font-size: 0.78rem; }
+    .overview-intro { grid-template-columns: 1fr; }
+    .timeline-bar { flex-wrap: wrap; }
+    .tbar-seg { min-width: 100px; }
+  }
+
+  /* === SCROLL REVEAL === */
+  .reveal {
+    opacity: 0;
+    transform: translateY(32px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+</style>
+</head>
+<body>
+
+<!-- Side Nav -->
+<nav class="side-nav">
+  <a href="#hero"></a>
+  <a href="#bigpic"></a>
+  <a href="#phases"></a>
+  <a href="#assign"></a>
+  <a href="#simulation"></a>
+  <a href="#pattern"></a>
+  <a href="#summary"></a>
+  <a href="#closing"></a>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow g1"></div>
+  <div class="hero-glow g2"></div>
+  <div class="hero-content">
+    <div class="hero-chip"><span class="chip-dot"></span> 內部討論用</div>
+    <h1>命審階段時程<br><span class="accent">功能邏輯說明</span></h1>
+    <p>完整拆解 7 個階段的鎖定規則、分題邏輯、<br>按鈕權限、三次退回機制，以及結案判定機制。</p>
+    <div class="hero-meta">
+      <span>STATUS: DRAFT</span>
+      <span>VERSION: 1.0</span>
+      <span>2026-03-05</span>
+    </div>
+  </div>
+</section>
+
+<!-- BIG PICTURE -->
+<section class="bigpic" id="bigpic">
+  <div class="container">
+    <span class="section-label reveal">全局時序</span>
+    <h2 class="section-title reveal">七個階段，一條主線</h2>
+    <p class="bigpic-desc reveal">整個命審流程由考務人員控制，依序開啟 7 個階段。每個階段有明確的開始和結束，前一階段結束後才能進入下一階段。審題（第 2、4、6 階段）和修題（第 3、5、7 階段）是交替出現的。</p>
+
+    <div class="timeline-bar reveal">
+      <div class="tbar-seg s1"><span class="tbar-num">①</span>命題</div>
+      <div class="tbar-seg s2"><span class="tbar-num">②</span>交互審</div>
+      <div class="tbar-seg s3"><span class="tbar-num">③</span>互審修題</div>
+      <div class="tbar-seg s4"><span class="tbar-num">④</span>專家審</div>
+      <div class="tbar-seg s5"><span class="tbar-num">⑤</span>專審修題</div>
+      <div class="tbar-seg s6"><span class="tbar-num">⑥</span>總召審</div>
+      <div class="tbar-seg s7"><span class="tbar-num">⑦</span>總召修題</div>
+    </div>
+
+    <div class="timeline-legend reveal">
+      <div class="tl-item"><div class="tl-dot" style="background:var(--phase-prop);"></div> 命題階段</div>
+      <div class="tl-item"><div class="tl-dot" style="background:var(--phase-cross);"></div> 交互審題系列</div>
+      <div class="tl-item"><div class="tl-dot" style="background:var(--phase-expert);"></div> 專家審題系列</div>
+      <div class="tl-item"><div class="tl-dot" style="background:var(--phase-final);"></div> 總召審題系列</div>
+    </div>
+  </div>
+</section>
+
+<!-- PHASE CARDS -->
+<section class="phases-section" id="phases">
+  <div class="container">
+    <span class="section-label reveal">各階段詳解</span>
+    <h2 class="section-title reveal">每個階段做什麼？有什麼規則？</h2>
+    <p class="section-desc reveal">以下逐一說明每個階段的操作者、題目狀態、可用按鈕。</p>
+
+    <!-- Phase 1: 命題 -->
+    <div class="phase-card p1 reveal">
+      <div class="phase-head">
+        <span class="phase-badge">階段 1</span>
+        <span class="phase-name">命題階段</span>
+        <span class="lock-tag unlocked">🔓 編輯開放</span>
+      </div>
+      <div class="phase-body">
+        <div class="pb-block">
+          <h4>誰在操作</h4>
+          <p>命題教師</p>
+        </div>
+        <div class="pb-block">
+          <h4>做什麼事</h4>
+          <p>建立題目、編輯內容、確認完成後按「送審」，題目就會進入<strong>待審佇列</strong>等候分派。</p>
+        </div>
+        <div class="pb-block">
+          <h4>可用按鈕</h4>
+          <div class="btn-group">
+            <span class="btn-mock" style="background:#dbeafe; color:#1d4ed8; border-color:#bfdbfe;">📤 送審</span>
+            <span class="btn-mock" style="background:#f1f5f9; color:#475569; border-color:#e2e8f0;">💾 存為草稿</span>
+            <span class="btn-mock" style="background:#f1f5f9; color:#475569; border-color:#e2e8f0;">✓ 儲存並確認</span>
+          </div>
+        </div>
+        <div class="pb-block">
+          <h4>題目鎖定狀態</h4>
+          <p>編輯<strong>開放</strong>，老師可以自由修改所有未送審的題目。</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 2: 交互審題 -->
+    <div class="phase-card p2 reveal">
+      <div class="phase-head">
+        <span class="phase-badge">階段 2</span>
+        <span class="phase-name">交互審題</span>
+        <span class="lock-tag locked">🔒 編輯鎖定</span>
+      </div>
+      <div class="phase-body">
+        <div class="pb-block">
+          <h4>誰在操作</h4>
+          <p>梯次中的命題教師互相審查（A 老師審 B 老師的題、B 老師審 C 老師的題…）</p>
+        </div>
+        <div class="pb-block">
+          <h4>做什麼事</h4>
+          <p>系統把待審佇列的題目<strong>平均分配</strong>給梯次內的命題人員。老師查看分到的題目，<strong>只給意見</strong>，不做通過或退回的決定。</p>
+        </div>
+        <div class="pb-block">
+          <h4>可用按鈕</h4>
+          <div class="btn-group">
+            <span class="btn-mock btn-comment">💬 給予意見</span>
+            <span class="btn-mock btn-none">✅ 採用</span>
+            <span class="btn-mock btn-none">🔄 改後再審</span>
+            <span class="btn-mock btn-none">❌ 不採用</span>
+          </div>
+        </div>
+        <div class="pb-block">
+          <h4>題目鎖定狀態</h4>
+          <p>所有命題題目<strong>鎖定不可編輯</strong>，確保審題期間題目內容不會被改動。</p>
+        </div>
+        <div class="note-box">
+          <span class="note-icon">⚠️</span>
+          <div><strong>迴避規則：</strong>自己出的題目不會被分配給自己審。系統會自動排除，確保審題的公正性。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 3: 互審修題 -->
+    <div class="phase-card p3 reveal">
+      <div class="phase-head">
+        <span class="phase-badge">階段 3</span>
+        <span class="phase-name">互審修題</span>
+        <span class="lock-tag unlocked">🔓 編輯開放</span>
+      </div>
+      <div class="phase-body">
+        <div class="pb-block">
+          <h4>誰在操作</h4>
+          <p>命題教師（修改自己出的題目）</p>
+        </div>
+        <div class="pb-block">
+          <h4>做什麼事</h4>
+          <p>查看互審老師留下的意見，根據建議修改題目。改好後再次按「送審」，題目重新進入<strong>待審佇列</strong>，等待下一階段分派。</p>
+        </div>
+        <div class="pb-block">
+          <h4>可用按鈕</h4>
+          <div class="btn-group">
+            <span class="btn-mock" style="background:#dbeafe; color:#1d4ed8; border-color:#bfdbfe;">📤 再次送審</span>
+            <span class="btn-mock" style="background:#f1f5f9; color:#475569; border-color:#e2e8f0;">💾 存為草稿</span>
+          </div>
+        </div>
+        <div class="pb-block">
+          <h4>題目鎖定狀態</h4>
+          <p>編輯<strong>重新開放</strong>，交互審題任務同步<strong>停止</strong>。</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 4: 專家審題 -->
+    <div class="phase-card p4 reveal">
+      <div class="phase-head">
+        <span class="phase-badge">階段 4</span>
+        <span class="phase-name">專家審題</span>
+        <span class="lock-tag locked">🔒 編輯鎖定</span>
+      </div>
+      <div class="phase-body">
+        <div class="pb-block">
+          <h4>誰在操作</h4>
+          <p>梯次中指定的<strong>審題人員</strong>（專業審題老師）</p>
+        </div>
+        <div class="pb-block">
+          <h4>做什麼事</h4>
+          <p>系統把待審佇列的題目<strong>平均分配</strong>給審題人員。除了給意見之外，這一關<strong>多了決策按鈕</strong>，可以決定採用或退回修改。</p>
+        </div>
+        <div class="pb-block">
+          <h4>可用按鈕</h4>
+          <div class="btn-group">
+            <span class="btn-mock btn-comment">💬 給予意見</span>
+            <span class="btn-mock btn-adopt">✅ 採用</span>
+            <span class="btn-mock btn-redo">🔄 改後再審</span>
+            <span class="btn-mock btn-reject">❌ 不採用</span>
+          </div>
+        </div>
+        <div class="pb-block">
+          <h4>題目鎖定狀態</h4>
+          <p>所有命題題目<strong>鎖定不可編輯</strong>。</p>
+        </div>
+        <div class="note-box">
+          <span class="note-icon">⚠️</span>
+          <div><strong>雙重身份注意：</strong>有些老師同時是命題人員和審題人員。系統要確保自己出的題目不會分配給自己審。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 5: 專審修題 -->
+    <div class="phase-card p5 reveal">
+      <div class="phase-head">
+        <span class="phase-badge">階段 5</span>
+        <span class="phase-name">專審修題</span>
+        <span class="lock-tag unlocked">🔓 編輯開放</span>
+      </div>
+      <div class="phase-body">
+        <div class="pb-block">
+          <h4>誰在操作</h4>
+          <p>命題教師（修改被退回的題目）</p>
+        </div>
+        <div class="pb-block">
+          <h4>做什麼事</h4>
+          <p>查看專審老師的意見和決策結果，針對「改後再審」的題目進行修改，改好後再次送審進入<strong>待審佇列</strong>。</p>
+        </div>
+        <div class="pb-block">
+          <h4>可用按鈕</h4>
+          <div class="btn-group">
+            <span class="btn-mock" style="background:#dbeafe; color:#1d4ed8; border-color:#bfdbfe;">📤 再次送審</span>
+            <span class="btn-mock" style="background:#f1f5f9; color:#475569; border-color:#e2e8f0;">💾 存為草稿</span>
+          </div>
+        </div>
+        <div class="pb-block">
+          <h4>題目鎖定狀態</h4>
+          <p>編輯<strong>重新開放</strong>，專家審題任務同步<strong>停止</strong>。</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 6: 總召審題 -->
+    <div class="phase-card p6 reveal">
+      <div class="phase-head">
+        <span class="phase-badge">階段 6</span>
+        <span class="phase-name">總召審題</span>
+        <span class="lock-tag locked">🔒 編輯鎖定</span>
+      </div>
+      <div class="phase-body">
+        <div class="pb-block">
+          <h4>誰在操作</h4>
+          <p><strong>專案梯次負責人</strong>與<strong>總召人員</strong>（可能為複數人）</p>
+        </div>
+        <div class="pb-block">
+          <h4>做什麼事</h4>
+          <p>系統把待審佇列的題目<strong>平均分配</strong>給總召層級的人員進行最終審查。這是最後一關，擁有最高的決定權。</p>
+        </div>
+        <div class="pb-block">
+          <h4>可用按鈕</h4>
+          <div class="btn-group">
+            <span class="btn-mock btn-comment">💬 給予意見</span>
+            <span class="btn-mock btn-adopt">✅ 採用</span>
+            <span class="btn-mock btn-redo">🔄 改後再審</span>
+            <span class="btn-mock btn-reject">❌ 不採用</span>
+          </div>
+        </div>
+        <div class="pb-block">
+          <h4>題目鎖定狀態</h4>
+          <p>所有命題題目<strong>鎖定不可編輯</strong>。</p>
+        </div>
+        <div class="note-box blue-note">
+          <span class="note-icon">💡</span>
+          <div><strong>直接定案：</strong>總召按下「採用」後，題目直接進入「審核結果與歷史」。不需要再經過修題階段，也不用再開放編輯。</div>
+        </div>
+        <div class="note-box">
+          <span class="note-icon">⚠️</span>
+          <div><strong>迴避規則：</strong>總召可能同時擁有審題人員身份。如果某位總召在專審階段審過某些題目，這些題目<strong>不可以再分配給同一位總召</strong>。系統必須將這些題目分給其他總召人員。</div>
+        </div>
+        <div class="note-box">
+          <span class="note-icon">👥</span>
+          <div><strong>複數總召：</strong>總召可能有多人。當其中一位總召因迴避規則不能審某些題目時，系統會自動把那些題目分給其他總召，確保每道題都有人審、且<strong>平均分攤</strong>總題數。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 7: 總召修題（含三次退回機制） -->
+    <div class="phase-card p7 reveal">
+      <div class="phase-head">
+        <span class="phase-badge">階段 7</span>
+        <span class="phase-name">總召修題</span>
+        <span class="lock-tag unlocked">🔓 編輯開放</span>
+      </div>
+      <div class="phase-body">
+        <div class="pb-block">
+          <h4>誰在操作</h4>
+          <p>命題教師（第 1、2 次退回）／ 總召本人（第 3 次不通過）</p>
+        </div>
+        <div class="pb-block">
+          <h4>做什麼事</h4>
+          <p>總召審題後退回的題目，會經歷最多<strong>三輪來回</strong>。前兩次退回由命題老師修改，第三次不通過則由<strong>總召自己修改並直接定案</strong>。</p>
+        </div>
+        <div class="pb-block" style="grid-column:1/-1;">
+          <h4>三輪退回機制</h4>
+          <div class="round-cards">
+            <!-- Round 1 -->
+            <div class="round-card">
+              <div class="round-head" style="background:var(--phase-final);">
+                <span class="round-num">1</span>
+                第一次退回
+              </div>
+              <div class="round-body">
+                <div class="round-who rw-teacher">👨‍🏫 命題老師修改</div>
+                <p>總召第一次「改後再審」→ 解鎖編輯 → 命題老師查看意見、修改題目 → 再次送審回到總召</p>
+                <div class="round-result rr-return">🔄 送審後鎖定 → 回到總召再審</div>
+              </div>
+            </div>
+            <!-- Round 2 -->
+            <div class="round-card">
+              <div class="round-head" style="background:#9333ea;">
+                <span class="round-num">2</span>
+                第二次退回
+              </div>
+              <div class="round-body">
+                <div class="round-who rw-teacher">👨‍🏫 命題老師修改</div>
+                <p>總召第二次「改後再審」→ 再次解鎖 → 命題老師查看第二次意見、修改題目 → 再次送審回到總召</p>
+                <div class="round-result rr-return">🔄 送審後鎖定 → 回到總召再審</div>
+              </div>
+            </div>
+            <!-- Round 3 -->
+            <div class="round-card">
+              <div class="round-head" style="background:#ef4444;">
+                <span class="round-num">3</span>
+                第三次不通過
+              </div>
+              <div class="round-body">
+                <div class="round-who rw-chief">👑 總召自己修改</div>
+                <p>第三次仍不通過 → <strong>不再退回給老師</strong> → 總召自行修改題目，然後直接標記「採用」或「不採用」</p>
+                <div class="round-result rr-final">⚡ 總召直接定案，不再來回</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="pb-block">
+          <h4>可用按鈕（命題老師）</h4>
+          <div class="btn-group">
+            <span class="btn-mock" style="background:#dbeafe; color:#1d4ed8; border-color:#bfdbfe;">📤 再次送審</span>
+            <span class="btn-mock" style="background:#f1f5f9; color:#475569; border-color:#e2e8f0;">💾 存為草稿</span>
+          </div>
+        </div>
+        <div class="pb-block">
+          <h4>可用按鈕（總召第三次）</h4>
+          <div class="btn-group">
+            <span class="btn-mock btn-comment">💬 給予意見</span>
+            <span class="btn-mock btn-adopt">✅ 採用</span>
+            <span class="btn-mock btn-reject">❌ 不採用</span>
+            <span class="btn-mock btn-none">🔄 改後再審</span>
+          </div>
+          <p style="font-size:0.8rem; color:#94a3b8; margin-top:6px;">＊ 第三次不通過沒有「改後再審」，因為不會再退回</p>
+        </div>
+        <div class="note-box red-note">
+          <span class="note-icon">🚨</span>
+          <div><strong>結案規則：</strong>當考務人員按下梯次的「結案」按鈕時，所有狀態不是「採用」的題目（包含「改後再審」和「不採用」），全部都會被判定為<strong>不採用、不入題庫</strong>。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ASSIGNMENT LOGIC -->
+<section class="assign-section" id="assign">
+  <div class="container">
+    <span class="section-label reveal">分題邏輯</span>
+    <h2 class="section-title reveal">題目怎麼分配給審題老師？</h2>
+    <p class="section-desc reveal">三個審題階段各有不同的分配方式和迴避規則。</p>
+
+    <div class="assign-grid">
+      <div class="assign-card reveal">
+        <div class="assign-icon" style="background:#e0e7ff;">🔄</div>
+        <h3>交互審題的分配</h3>
+        <p>待審佇列的題目會<strong>平均分配</strong>給梯次內所有命題人員。每個人分到差不多數量的題目來審。</p>
+        <div class="assign-rule">⚠️ 自己出的題目不會分配給自己</div>
+      </div>
+
+      <div class="assign-card reveal">
+        <div class="assign-icon" style="background:#cffafe;">👨‍🏫</div>
+        <h3>專家審題的分配</h3>
+        <p>待審佇列的題目會<strong>平均分配</strong>給梯次內指定的審題人員。注意：有些人同時是命題和審題角色。</p>
+        <div class="assign-rule">⚠️ 雙重身份者，自己的題不分給自己</div>
+      </div>
+
+      <div class="assign-card reveal">
+        <div class="assign-icon" style="background:#ede9fe;">👑</div>
+        <h3>總召審題的分配</h3>
+        <p>待審佇列的題目<strong>平均分配</strong>給所有總召人員（可能 2 人以上）。總召可能同時是審題人員，<strong>不可拿到自己在專審階段審過的題目</strong>，那些題目會自動分給其他總召。</p>
+        <div class="assign-rule">⚠️ 身兼審題人員的總召，自己審過的題不分給自己</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SIMULATION -->
+<section class="sim-section" id="simulation">
+  <div class="container">
+    <span class="section-label reveal">情境模擬</span>
+    <h2 class="section-title reveal">實際案例：1000 題怎麼分？</h2>
+    <p class="section-desc reveal">用一個具體的數字範例，說明當總召同時是審題人員時，系統是怎麼處理分題迴避的。</p>
+
+    <div class="sim-scenario reveal">
+      <div class="sim-header">
+        <span>🧪</span>
+        <h3>情境模擬：專審 → 總召 的題目分配</h3>
+      </div>
+
+      <div class="sim-body">
+        <!-- Setup -->
+        <div class="sim-setup">
+          <div class="sim-stat">
+            <div class="ss-num" style="color:var(--phase-expert);">1000</div>
+            <div class="ss-label">待審佇列題目數</div>
+          </div>
+          <div class="sim-stat">
+            <div class="ss-num" style="color:var(--phase-expert);">4</div>
+            <div class="ss-label">審題專家人數</div>
+          </div>
+          <div class="sim-stat">
+            <div class="ss-num" style="color:var(--phase-final);">2</div>
+            <div class="ss-label">總召人數</div>
+          </div>
+          <div class="sim-stat">
+            <div class="ss-num" style="color:#ef4444;">1</div>
+            <div class="ss-label">身兼審題的總召</div>
+          </div>
+        </div>
+
+        <!-- Step 1: 專審 -->
+        <div class="sim-step-title">
+          <span class="step-badge" style="background:var(--phase-expert);">階段 4</span>
+          專家審題 — 每人平均分到 250 題
+        </div>
+
+        <div class="sim-expert-grid">
+          <div class="sim-expert-chip is-chief">
+            <div class="ec-name">👑 專家 A</div>
+            <div class="ec-count">分到 250 題</div>
+            <div style="font-size:0.68rem; color:var(--phase-final); margin-top:4px; font-weight:600;">同時為總召</div>
+          </div>
+          <div class="sim-expert-chip">
+            <div class="ec-name">👨‍🏫 專家 B</div>
+            <div class="ec-count">分到 250 題</div>
+          </div>
+          <div class="sim-expert-chip">
+            <div class="ec-name">👨‍🏫 專家 C</div>
+            <div class="ec-count">分到 250 題</div>
+          </div>
+          <div class="sim-expert-chip">
+            <div class="ec-name">👨‍🏫 專家 D</div>
+            <div class="ec-count">分到 250 題</div>
+          </div>
+        </div>
+
+        <div class="sim-divider"></div>
+
+        <!-- Step 2: 總召 -->
+        <div class="sim-step-title">
+          <span class="step-badge" style="background:var(--phase-final);">階段 6</span>
+          總召審題 — 每人平均分擔 500 題，但有迴避限制
+        </div>
+
+        <p style="font-size:0.88rem; color:#475569; margin-bottom:16px; line-height:1.7;">專審結束後，1000 題進入總召審題。總召 A（同時是專家 A）不能拿到自己在專審階段審過的 250 題，因此系統會自動將那 250 題分給總召 B。</p>
+
+        <div class="sim-distrib">
+          <!-- 總召 A -->
+          <div class="sim-person">
+            <div class="sim-person-head">
+              <div class="sim-avatar" style="background:var(--phase-final);">A</div>
+              <div>
+                <div class="sim-person-name">總召 A</div>
+                <div class="sim-person-role">同時為審題專家</div>
+              </div>
+            </div>
+
+            <div class="sim-bar-wrap">
+              <div class="sim-bar-label">
+                <span>分到 500 題</span>
+                <span>自己審過的 250 題被排除</span>
+              </div>
+              <div class="sim-bar">
+                <div class="sim-bar-fill allowed" style="width:50%;">可審 500 題</div>
+                <div class="sim-bar-fill blocked" style="width:25%;">禁止 250 題</div>
+                <div style="flex:1;"></div>
+              </div>
+            </div>
+            <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:10px;">
+              <span class="sim-rule-tag srt-free">✅ 取得 500 題（來自其他專家審過的題）</span>
+              <span class="sim-rule-tag srt-block">🚫 自己審過的 250 題不會拿到</span>
+            </div>
+          </div>
+
+          <!-- 總召 B -->
+          <div class="sim-person">
+            <div class="sim-person-head">
+              <div class="sim-avatar" style="background:#9333ea;">B</div>
+              <div>
+                <div class="sim-person-name">總召 B</div>
+                <div class="sim-person-role">純總召身份</div>
+              </div>
+            </div>
+
+            <div class="sim-bar-wrap">
+              <div class="sim-bar-label">
+                <span>分到 500 題</span>
+                <span>必然包含總召 A 迴避的 250 題</span>
+              </div>
+              <div class="sim-bar">
+                <div class="sim-bar-fill must" style="width:25%;">必拿 250 題</div>
+                <div class="sim-bar-fill free" style="width:25%;">其餘 250 題</div>
+                <div style="flex:1;"></div>
+              </div>
+            </div>
+            <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:10px;">
+              <span class="sim-rule-tag srt-must">📌 必然分到總召 A 審過的 250 題</span>
+              <span class="sim-rule-tag srt-free">✅ 再取得其他 250 題湊滿 500</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Key Insight -->
+        <div class="sim-key-insight">
+          <h4>💡 分配邏輯重點</h4>
+          <p>總題數（1000 題）÷ 總召人數（2 人）＝ 每人平均 500 題。但因為總召 A 有 250 題必須迴避，這 250 題就<strong>一定會落到總召 B 手上</strong>。其餘的 750 題再由兩位總召平均分配（各拿 375 題），加上總召 B 必拿的 250 題，最終總召 B 拿到 250 + 250 = 500 題，總召 A 拿到剩下的 500 題。每人都是 500 題，且不違反迴避規則。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LOCK/UNLOCK PATTERN -->
+<section class="pattern-section" id="pattern">
+  <div class="container">
+    <span class="section-label reveal">鎖定規律</span>
+    <h2 class="section-title reveal">編輯權限的開關節奏</h2>
+    <p class="section-desc reveal">整個流程有一個很規律的模式：審題時鎖定 → 修題時開放 → 審題時又鎖定……交替進行。</p>
+
+    <div class="pattern-track reveal">
+      <div class="pattern-row">
+        <div class="pat-phase" style="background:var(--phase-prop);">① 命題</div>
+        <div class="pat-state">
+          <span class="pat-lock off">🔓 開放</span>
+          老師可以自由出題、編輯、送審
+        </div>
+      </div>
+      <div class="pattern-row">
+        <div class="pat-phase" style="background:var(--phase-cross);">② 交互審</div>
+        <div class="pat-state">
+          <span class="pat-lock on">🔒 鎖定</span>
+          題目凍結，審題老師給意見
+        </div>
+      </div>
+      <div class="pattern-row">
+        <div class="pat-phase" style="background:var(--phase-cross-fix);">③ 互審修題</div>
+        <div class="pat-state">
+          <span class="pat-lock off">🔓 開放</span>
+          看意見 → 改題目 → 再送審
+        </div>
+      </div>
+      <div class="pattern-row">
+        <div class="pat-phase" style="background:var(--phase-expert);">④ 專家審</div>
+        <div class="pat-state">
+          <span class="pat-lock on">🔒 鎖定</span>
+          題目凍結，審題老師給意見＋做決策
+        </div>
+      </div>
+      <div class="pattern-row">
+        <div class="pat-phase" style="background:var(--phase-expert-fix);">⑤ 專審修題</div>
+        <div class="pat-state">
+          <span class="pat-lock off">🔓 開放</span>
+          看意見 → 改題目 → 再送審
+        </div>
+      </div>
+      <div class="pattern-row">
+        <div class="pat-phase" style="background:var(--phase-final);">⑥ 總召審</div>
+        <div class="pat-state">
+          <span class="pat-lock on">🔒 鎖定</span>
+          題目凍結，總召做最終決策
+        </div>
+      </div>
+      <div class="pattern-row">
+        <div class="pat-phase" style="background:var(--phase-final-fix);">⑦ 總召修題</div>
+        <div class="pat-state">
+          <span class="pat-lock off">🔓 開放</span>
+          第 1、2 次：老師改題再送審 ／ 第 3 次：總召自改並定案
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FLOW SUMMARY -->
+<section class="summary-section" id="summary">
+  <div class="container">
+    <span class="section-label reveal">流程全覽</span>
+    <h2 class="section-title reveal">一道題目的完整旅程</h2>
+    <p class="section-desc reveal">從命題到定案，看看一道題目可能走過的所有路徑。</p>
+
+    <div class="summary-flow reveal">
+      <div class="sf-row">
+        <div class="sf-timeline">
+          <div class="sf-dot" style="background:var(--phase-prop);">📝</div>
+          <div class="sf-line"></div>
+        </div>
+        <div class="sf-card" style="border-left-color:var(--phase-prop);">
+          <h4>命題階段 <span class="sf-tag" style="background:#fef3c7; color:#b45309;">老師出題</span></h4>
+          <p>建立題目 → 確認完成 → 按「送審」→ 進入待審佇列</p>
+        </div>
+      </div>
+
+      <div class="sf-row">
+        <div class="sf-timeline">
+          <div class="sf-dot" style="background:var(--phase-cross);">💬</div>
+          <div class="sf-line"></div>
+        </div>
+        <div class="sf-card" style="border-left-color:var(--phase-cross);">
+          <h4>交互審題 <span class="sf-tag" style="background:#e0e7ff; color:#4338ca;">只給意見</span></h4>
+          <p>系統平均分題 → 命題老師互相看題 → 留下文字意見（無決策按鈕）</p>
+        </div>
+      </div>
+
+      <div class="sf-row">
+        <div class="sf-timeline">
+          <div class="sf-dot" style="background:var(--phase-cross-fix);">✏️</div>
+          <div class="sf-line"></div>
+        </div>
+        <div class="sf-card" style="border-left-color:var(--phase-cross-fix);">
+          <h4>互審修題 <span class="sf-tag" style="background:#e0e7ff; color:#6366f1;">開放修改</span></h4>
+          <p>查看意見 → 修改題目 → 再次送審 → 進入待審佇列</p>
+        </div>
+      </div>
+
+      <div class="sf-row">
+        <div class="sf-timeline">
+          <div class="sf-dot" style="background:var(--phase-expert);">🔍</div>
+          <div class="sf-line"></div>
+        </div>
+        <div class="sf-card" style="border-left-color:var(--phase-expert);">
+          <h4>專家審題 <span class="sf-tag" style="background:#cffafe; color:#0e7490;">意見＋決策</span></h4>
+          <p>系統平均分題給審題人員 → 給意見＋做決策（採用 / 改後再審 / 不採用）</p>
+        </div>
+      </div>
+
+      <div class="sf-return">🔄 「改後再審」的題目 → 進入下一階段修題</div>
+
+      <div class="sf-row">
+        <div class="sf-timeline">
+          <div class="sf-dot" style="background:var(--phase-expert-fix);">✏️</div>
+          <div class="sf-line"></div>
+        </div>
+        <div class="sf-card" style="border-left-color:var(--phase-expert-fix);">
+          <h4>專審修題 <span class="sf-tag" style="background:#cffafe; color:#0891b2;">開放修改</span></h4>
+          <p>查看專審意見 → 修改被退回的題目 → 再次送審 → 進入待審佇列</p>
+        </div>
+      </div>
+
+      <div class="sf-row">
+        <div class="sf-timeline">
+          <div class="sf-dot" style="background:var(--phase-final);">👑</div>
+          <div class="sf-line"></div>
+        </div>
+        <div class="sf-card" style="border-left-color:var(--phase-final);">
+          <h4>總召審題 <span class="sf-tag" style="background:#ede9fe; color:#6d28d9;">最終決策</span></h4>
+          <p>多位總召平均分題做最終裁決 → 身兼審題人員的總召不拿自己審過的題 → 採用的題目直接定案</p>
+        </div>
+      </div>
+
+      <div class="sf-return">🔄 第 1 次「改後再審」→ 老師修改 → 再送審回總召</div>
+
+      <div class="sf-row">
+        <div class="sf-timeline">
+          <div class="sf-dot" style="background:var(--phase-final-fix);">✏️</div>
+          <div class="sf-line"></div>
+        </div>
+        <div class="sf-card" style="border-left-color:var(--phase-final-fix);">
+          <h4>總召修題（第 1～2 次）<span class="sf-tag" style="background:#ede9fe; color:#7c3aed;">老師修改</span></h4>
+          <p>命題老師查看總召意見 → 修改題目 → 再次送審 → 鎖定後回到總召再審（最多來回兩次）</p>
+        </div>
+      </div>
+
+      <div class="sf-return">🔄 第 2 次「改後再審」→ 老師再改 → 再送審回總召</div>
+
+      <div class="sf-row">
+        <div class="sf-timeline">
+          <div class="sf-dot" style="background:#ef4444;">3</div>
+          <div class="sf-line"></div>
+        </div>
+        <div class="sf-card" style="border-left-color:#ef4444;">
+          <h4>第 3 次不通過 <span class="sf-tag" style="background:#fee2e2; color:#b91c1c;">總召自改定案</span></h4>
+          <p>不再退回給老師 → 總召自己修改題目 → 直接標記「採用」或「不採用」→ 流程結束</p>
+        </div>
+      </div>
+
+      <div class="sf-row">
+        <div class="sf-timeline">
+          <div class="sf-dot" style="background:var(--green);">📋</div>
+          <div class="sf-line" style="background:transparent;"></div>
+        </div>
+        <div class="sf-card" style="border-left-color:var(--green);">
+          <h4>審核結果出爐</h4>
+          <p>所有「採用」的題目進入題庫 ／ 結案時未採用的全部不入題庫</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CLOSING LOGIC -->
+<section class="closing-section" id="closing">
+  <div class="container">
+    <span class="section-label reveal">結案邏輯</span>
+    <h2 class="section-title reveal">考務人員按下「結案」後會發生什麼？</h2>
+    <p class="section-desc reveal">這是整個流程的最後一個動作，不可逆轉。</p>
+
+    <div class="closing-card reveal">
+      <h3>🚨 結案判定規則</h3>
+      <p>當考務人員按下梯次的<strong>「結案」按鈕</strong>後，系統會自動檢查所有題目的狀態：</p>
+
+      <div class="closing-diagram">
+        <div class="cd-box adopted">
+          <h4>✅ 狀態＝採用</h4>
+          <p>正式收錄進題庫</p>
+        </div>
+
+        <div class="cd-arrow">→</div>
+
+        <div class="cd-box not-adopted" style="flex:2;">
+          <h4>❌ 狀態 ≠ 採用（全部不入題庫）</h4>
+          <p>不管是「改後再審」還是「不採用」，<strong>統統判定為不採用</strong></p>
+        </div>
+      </div>
+
+      <p style="margin-top:1.5rem;">換句話說，結案的那一刻，只有已經被總召明確標記為「採用」的題目才會入題庫。還在等待修改、還沒審完、或是被退回但還沒改好的題目，<strong>全部都不算通過</strong>。</p>
+      <p>所以在按下結案之前，建議先確認是否還有「改後再審」的題目需要處理完畢。</p>
+    </div>
+
+    <!-- Visual summary of what happens -->
+    <div style="margin-top:24px; display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px;" class="reveal">
+      <div style="background:var(--surface); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow); text-align:center; border-top:3px solid var(--green);">
+        <div style="font-size:1.8rem; margin-bottom:8px;">✅</div>
+        <div style="font-weight:700; font-size:0.95rem;">採用</div>
+        <div style="font-size:0.8rem; color:var(--muted); margin-top:4px;">入題庫</div>
+      </div>
+      <div style="background:var(--surface); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow); text-align:center; border-top:3px solid #ef4444;">
+        <div style="font-size:1.8rem; margin-bottom:8px;">🔄</div>
+        <div style="font-weight:700; font-size:0.95rem;">改後再審</div>
+        <div style="font-size:0.8rem; color:#ef4444; margin-top:4px; font-weight:600;">結案 → 不採用</div>
+      </div>
+      <div style="background:var(--surface); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow); text-align:center; border-top:3px solid #ef4444;">
+        <div style="font-size:1.8rem; margin-bottom:8px;">❌</div>
+        <div style="font-weight:700; font-size:0.95rem;">不採用</div>
+        <div style="font-size:0.8rem; color:#ef4444; margin-top:4px; font-weight:600;">維持不採用</div>
+      </div>
+      <div style="background:var(--surface); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow); text-align:center; border-top:3px solid #ef4444;">
+        <div style="font-size:1.8rem; margin-bottom:8px;">⏳</div>
+        <div style="font-weight:700; font-size:0.95rem;">尚未審完</div>
+        <div style="font-size:0.8rem; color:#ef4444; margin-top:4px; font-weight:600;">結案 → 不採用</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <p><strong>CWT 命審階段時程</strong> — 功能邏輯討論文件</p>
+  <p style="margin-top:6px;">內部討論用 ｜ v1.0 ｜ 2026-03-05</p>
+</footer>
+
+<script>
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) entry.target.classList.add('visible');
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -30px 0px' });
+reveals.forEach(el => observer.observe(el));
+
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.side-nav a');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (scrollY >= s.offsetTop - 200) current = s.getAttribute('id');
+  });
+  navLinks.forEach(link => {
+    link.classList.remove('active');
+    if (link.getAttribute('href') === '#' + current) link.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>

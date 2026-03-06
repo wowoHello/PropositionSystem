@@ -219,7 +219,7 @@
                         <polyline points="9 18 15 12 9 6"></polyline>
                     </svg>
                 </span>
-                <span class="breadcrumb-current">命題專案列表</span>
+                <span class="breadcrumb-current">命題專案管理</span>
             </div>
 
 
@@ -252,6 +252,7 @@
                                     <select class="form-select form-select-sm bg-light border-0" id="statusFilter"
                                         onchange="renderProjectList()">
                                         <option value="active" selected>進行中</option>
+                                        <option value="preparing">準備中</option>
                                         <option value="closed">已結案</option>
                                         <option value="all">所有狀態</option>
                                     </select>
@@ -289,6 +290,10 @@
                                     </p>
                                 </div>
                                 <div class="d-flex gap-2">
+                                    <button class="btn btn-sm fw-bold shadow-sm px-3 btn-close-project"
+                                        id="btnCloseProject" onclick="closeCurrentProject()">
+                                        <i class="bi bi-archive-fill me-1"></i> 結案
+                                    </button>
                                     <button class="btn btn-outline-secondary btn-sm" onclick="editCurrentProject()">
                                         <i class="bi bi-pencil-square"></i> 編輯
                                     </button>
@@ -366,8 +371,9 @@
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">專案狀態</label>
                                 <select class="form-select" id="projStatus">
+                                    <option value="preparing">準備中</option>
                                     <option value="active">進行中</option>
-                                    <option value="closed">已結案</option>
+                                    <option value="closed" id="optClosed">已結案</option>
                                 </select>
                             </div>
                             <div class="col-md-6">
@@ -405,7 +411,7 @@
                                 </div>
                                 <div class="schedule-content">
                                     <div class="d-flex align-items-center gap-2 mb-2">
-                                        <span class="fw-bold text-dark">專案區間</span>
+                                        <span class="fw-bold text-dark">產學計畫起迄日期</span>
                                     </div>
                                     <div class="row g-2">
                                         <div class="col-md-6">
@@ -925,8 +931,10 @@
                 const badgeClass =
                     p.status === "active"
                         ? "bg-success text-success bg-opacity-10"
-                        : "bg-secondary text-secondary bg-opacity-10";
-                const badgeText = p.status === "active" ? "進行中" : "已結案";
+                        : p.status === "preparing"
+                            ? "bg-warning text-dark bg-opacity-10"
+                            : "bg-secondary text-secondary bg-opacity-10";
+                const badgeText = p.status === "active" ? "進行中" : p.status === "preparing" ? "準備中" : "已結案";
 
                 // 如果是 Active 狀態，文字顏色要調整
                 const badgeRender = isActive
@@ -1000,10 +1008,24 @@
                 statusBadge.className =
                     "badge bg-success bg-opacity-10 text-success rounded-pill ms-2";
                 statusBadge.innerText = "進行中";
+            } else if (project.status === "preparing") {
+                statusBadge.className =
+                    "badge bg-warning bg-opacity-10 text-dark rounded-pill ms-2";
+                statusBadge.innerText = "準備中";
             } else {
                 statusBadge.className =
                     "badge bg-secondary bg-opacity-10 text-secondary rounded-pill ms-2";
                 statusBadge.innerText = "已結案";
+            }
+
+            // 控制結案按鈕顯示
+            const btnCloseProject = document.getElementById("btnCloseProject");
+            if (btnCloseProject) {
+                if (project.status === "closed") {
+                    btnCloseProject.classList.add("d-none");
+                } else {
+                    btnCloseProject.classList.remove("d-none");
+                }
             }
 
             // 渲染成員統計
@@ -1306,7 +1328,9 @@
                 formFields.school.value = "";
                 formFields.start.value = "";
                 formFields.end.value = "";
-                formFields.status.value = "active";
+                document.getElementById('optClosed').style.display = 'none';
+                document.getElementById('optClosed').disabled = true;
+                formFields.status.value = "preparing";
                 clearScheduleFields();
             } else {
                 isEditMode = true;
@@ -1316,6 +1340,13 @@
                 formFields.id.value = p.id;
                 formFields.name.value = p.name;
                 formFields.school.value = p.school || "";
+                if (p.status === 'closed') {
+                    document.getElementById('optClosed').style.display = '';
+                    document.getElementById('optClosed').disabled = false;
+                } else {
+                    document.getElementById('optClosed').style.display = 'none';
+                    document.getElementById('optClosed').disabled = true;
+                }
                 formFields.status.value = p.status;
                 formFields.start.value = p.startDate;
                 formFields.end.value = p.endDate;
@@ -1378,7 +1409,7 @@
                 Swal.fire({
                     icon: 'warning',
                     title: '提示',
-                    text: '請設定專案區間開始日期'
+                    text: '請設定產學計畫開始日期'
                 });
                 return;
             }
@@ -1465,6 +1496,79 @@
                         '專案已成功刪除。',
                         'success'
                     );
+                }
+            });
+        }
+
+        function closeCurrentProject() {
+            const project = projectsData.find((p) => p.id === currentProjectId);
+            if (!project) return;
+
+            // 計算產學計畫結束日期差異
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const endDate = new Date(project.endDate);
+            endDate.setHours(0, 0, 0, 0);
+            const diffTime = endDate.getTime() - today.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            let dateWarningHtml = '';
+            if (diffDays > 0) {
+                dateWarningHtml = `
+                    <div class="alert mt-3 mb-0 text-start" style="background-color: #fdf5f4; border: 1px solid #f8e1df; border-left: 4px solid #ea595d; color: #a51318; border-radius: 4px;">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <span class="fw-bold">距離產學計畫結束日期（${project.endDate}）尚餘 ${diffDays} 日，</span>請確認是否提前結案。
+                    </div>
+                `;
+            }
+
+            Swal.fire({
+                title: '⚠️ 確定要將此專案結案嗎？',
+                html: `
+                    <div class="text-start mt-2 px-3">
+                        <p class="mb-3 text-dark">執行結案後，系統將會進行以下操作：</p>
+                        <div class="p-3 mb-3 rounded-3" style="background-color: #f8f9fa; border: 1px solid #e9ecef;">
+                            <ul class="mb-0 list-unstyled" style="color: #404040; line-height: 1.8;">
+                                <li class="mb-2 d-flex align-items-start">
+                                    <i class="bi bi-funnel-fill text-primary me-2 mt-1 py-1"></i>
+                                    <div>自動過濾所有題目，<span style="background-color: #ffeceb; color: #d62f27; padding: 2px 6px; border-radius: 4px; font-weight: 600;">僅「採用」的題目</span>會進入題庫</div>
+                                </li>
+                                <li class="mb-2 d-flex align-items-start">
+                                    <i class="bi bi-x-circle-fill text-secondary me-2 mt-1 py-1"></i>
+                                    <div>其餘狀態的題目均視為「不採用」</div>
+                                </li>
+                                <li class="d-flex align-items-start">
+                                    <i class="bi bi-lock-fill text-secondary me-2 mt-1 py-1"></i>
+                                    <div>專案狀態將變更為「已結案」且無法再修改</div>
+                                </li>
+                            </ul>
+                        </div>
+                        <p class="mb-0 fw-bold border-top pt-3">此操作 <span style="color: #ea595d;">無法復原</span>，請確認是否執行！</p>
+                        ${dateWarningHtml}
+                    </div>
+                `,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ea595d', // Notion style red for action
+                cancelButtonColor: '#e0e0e0', // Light grey for cancel
+                confirmButtonText: '<i class="bi bi-archive-fill me-1"></i> 確定結案',
+                cancelButtonText: '<span style="color: #404040;">取消</span>',
+                customClass: {
+                    confirmButton: 'fw-bold shadow-sm border-0',
+                    cancelButton: 'fw-bold shadow-sm border-0'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    project.status = 'closed';
+                    renderProjectList();
+                    renderProjectDetail();
+                    rebuildSidebarFilters();
+                    Swal.fire({
+                        title: '結案完成！',
+                        text: '系統已自動將「採用」的題目入庫，專案已正式結案。',
+                        icon: 'success',
+                        confirmButtonColor: '#198754'
+                    });
                 }
             });
         }

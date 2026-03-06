@@ -147,3 +147,19 @@ body {
     border-color: #2563eb55;
     box-shadow: 0 1px 4px rgba(37, 99, 235, 0.08);
 }
+
+/* 結案入庫按鈕樣式與 Hover 特效 */
+.btn-close-project {
+    background-color: #d1e7dd;
+    color: #0f5132;
+    border-color: #badbcc;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-close-project:hover {
+    background-color: #a3cfbb;
+    color: #0f5132;
+    border-color: #9eccb3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(15, 81, 50, 0.15) !important;
+}
