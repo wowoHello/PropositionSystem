@@ -251,10 +251,10 @@
                                 <div class="col-6">
                                     <select class="form-select form-select-sm bg-light border-0" id="statusFilter"
                                         onchange="renderProjectList()">
-                                        <option value="active" selected>進行中</option>
+                                        <option value="all" selected>所有狀態</option>
                                         <option value="preparing">準備中</option>
+                                        <option value="active">進行中</option>
                                         <option value="closed">已結案</option>
-                                        <option value="all">所有狀態</option>
                                     </select>
                                 </div>
                                 <div class="col-12">
@@ -286,7 +286,7 @@
                                         <span class="badge rounded-pill ms-2" id="detailStatusBadge">狀態</span>
                                     </div>
                                     <p class="text-secondary small mb-0">
-                                        專案區間：<span id="detailDateRange">--</span>
+                                        產學計畫起迄日期：<span id="detailDateRange">--</span>
                                     </p>
                                 </div>
                                 <div class="d-flex gap-2">
@@ -380,7 +380,7 @@
                                 <label class="form-label fw-bold">年度 <span
                                         class="text-muted fw-normal">(自動擷取)</span></label>
                                 <input type="text" class="form-control bg-light" id="projYearDisplay" readonly
-                                    placeholder="依專案區間自動帶入" />
+                                    placeholder="依產學計畫起迄日期自動帶入" />
                                 <input type="hidden" id="projYear" />
                             </div>
                         </div>
@@ -395,7 +395,7 @@
                         </h6>
                         <p class="text-muted small mb-3">
                             <i class="bi bi-info-circle me-1"></i>
-                            設定專案區間後，各階段將自動連動計算預設日期，您可手動調整。
+                            設定產學計畫起迄日期後，各階段將自動連動計算預設日期，您可手動調整。
                             <span class="badge bg-warning bg-opacity-25 text-warning ms-1">
                                 <i class="bi bi-bell-fill me-1"></i>標記
                             </span>
@@ -404,7 +404,7 @@
 
                         <!-- 8 階段時程表 -->
                         <div class="schedule-timeline">
-                            <!-- 1. 專案區間 -->
+                            <!-- 1. 產學計畫起迄日期 -->
                             <div class="schedule-item" data-step="1">
                                 <div class="schedule-marker">
                                     <span class="step-number">1</span>
@@ -786,11 +786,11 @@
                 startDate: "2024-01-01",
                 endDate: "2024-12-31",
                 members: [
-                    { userId: 0, roles: ["teacher"], status: "active", joinedDate: "2024/01/15" },
-                    { userId: 1, roles: ["teacher", "reviewer"], status: "active", joinedDate: "2024/01/18" },
-                    { userId: 2, roles: ["reviewer"], status: "active", joinedDate: "2024/02/01" },
-                    { userId: 3, roles: ["teacher"], status: "pending", joinedDate: "2024/02/05" },
-                    { userId: 4, roles: ["teacher"], status: "suspended", joinedDate: "2024/01/10" },
+                    { userId: 0, roles: ["teacher"], status: "active", joinedDate: "2024/01/15", questionCount: 5 },
+                    { userId: 1, roles: ["teacher", "reviewer"], status: "active", joinedDate: "2024/01/18", questionCount: 3 },
+                    { userId: 2, roles: ["reviewer"], status: "active", joinedDate: "2024/02/01", questionCount: 0 },
+                    { userId: 3, roles: ["teacher"], status: "pending", joinedDate: "2024/02/05", questionCount: 0 },
+                    { userId: 4, roles: ["teacher"], status: "suspended", joinedDate: "2024/01/10", questionCount: 1 },
                 ],
             },
             {
@@ -802,7 +802,7 @@
                 startDate: "2024-03-01",
                 endDate: "2024-11-15",
                 members: [
-                    { userId: 2, roles: ["teacher"], status: "active", joinedDate: "2024/03/05" },
+                    { userId: 2, roles: ["teacher"], status: "active", joinedDate: "2024/03/05", questionCount: 0 },
                 ],
             },
             {
@@ -881,6 +881,110 @@
             { id: 110, name: "許惠珍", email: "xu@test.com", avatar: "許", color: "primary", expertise: "國文", participatedProjects: [5, 6], status: "active" },
         ];
 
+        // ==========================================
+        // [Blazor Migration Note]
+        // RoleService：角色資料服務
+        // ──────────────────────────────────────
+        // 此物件封裝了所有「取得角色定義」的邏輯，
+        // 對外提供統一的介面 (getAll / getExternalRoles / getById)。
+        //
+        // 正式環境 (Blazor) 時，只需將內部實作替換為
+        // 注入的 IRoleService (呼叫後端 API / 讀取資料庫)，
+        // 所有消費端 (renderProjectDetail, editMemberRoles 等)
+        // 的程式碼不需要任何修改。
+        //
+        // DEMO 階段：資料直接寫在前端。
+        // 正式階段：RoleService.getAll() → fetch('/api/roles')
+        // ==========================================
+        const RoleService = (() => {
+
+            // 主題色 → Bootstrap color 映射表
+            // cwt-role.html 使用 theme (admin/teacher/reviewer/custom1...)
+            // cwt-prop.html 使用 Bootstrap color (primary/info/warning...)
+            const themeColorMap = {
+                'admin': 'dark',
+                'teacher': 'primary',
+                'reviewer': 'info',
+                'staff': 'secondary',
+                'custom1': 'purple',
+                'custom2': 'danger'
+            };
+
+            // 主題色 → Bootstrap Icon 推薦映射
+            const themeIconMap = {
+                'admin': 'bi-shield-lock',
+                'teacher': 'bi-pencil',
+                'reviewer': 'bi-search',
+                'staff': 'bi-person-badge',
+                'custom1': 'bi-star',
+                'custom2': 'bi-award'
+            };
+
+            // ──────────────────────────────────────
+            // DEMO 用靜態資料 (模擬 cwt-role.html 的 rolesData)
+            // 正式環境替換為 API 呼叫即可
+            // ──────────────────────────────────────
+            const _roles = [
+                { id: 'teacher', name: '命題教師', icon: 'bi-pencil', color: 'primary', desc: '負責撰寫試題內容', type: 'external' },
+                { id: 'reviewer', name: '審題委員', icon: 'bi-search', color: 'info', desc: '負責審查與反饋試題', type: 'external' },
+                { id: 'external', name: '外部專家', icon: 'bi-briefcase', color: 'warning', desc: '外部顧問或特定領域專家', type: 'external' }
+            ];
+
+            /**
+             * 取得所有可在專案中指派的角色 (排除純系統內部角色如 admin)
+             * [Blazor] → 對應 IRoleService.GetAssignableRolesAsync()
+             * @returns {Array<{id, name, icon, color, desc, type}>}
+             */
+            const getAll = () => [..._roles];
+
+            /**
+             * 僅取得外部人員可用的角色
+             * [Blazor] → 對應 IRoleService.GetExternalRolesAsync()
+             * @returns {Array}
+             */
+            const getExternalRoles = () => _roles.filter(r => r.type === 'external');
+
+            /**
+             * 依 roleId 取得單一角色定義
+             * 若 id 在已知清單中找不到，回傳帶有預設樣式的 Fallback 物件
+             * [Blazor] → 對應 IRoleService.GetByIdAsync(roleId)
+             * @param {string} roleId
+             * @returns {{id, name, icon, color, desc, type}}
+             */
+            const getById = (roleId) => {
+                const found = _roles.find(r => r.id === roleId);
+                if (found) return { ...found };
+
+                // Fallback：處理來自 cwt-role.html 動態新增但本頁尚未同步的角色
+                // 正式環境中此分支不會被觸發，因為資料來源統一
+                return {
+                    id: roleId,
+                    name: roleId === 'admin' ? '管理員' : roleId,
+                    icon: roleId === 'admin' ? 'bi-shield-lock' : 'bi-person-badge',
+                    color: roleId === 'admin' ? 'dark' : 'secondary',
+                    desc: '自訂身分 (尚未同步)',
+                    type: 'external'
+                };
+            };
+
+            /**
+             * 將 cwt-role.html 的 theme 字串轉為 Bootstrap color
+             * [Blazor] → 此邏輯可能移至 ViewModel 或 CSS 層
+             * @param {string} theme
+             * @returns {string} Bootstrap color class name
+             */
+            const themeToColor = (theme) => themeColorMap[theme] || 'secondary';
+
+            /**
+             * 將 cwt-role.html 的 theme 字串轉為 Bootstrap Icon
+             * @param {string} theme
+             * @returns {string} bi-xxx icon class
+             */
+            const themeToIcon = (theme) => themeIconMap[theme] || 'bi-person-badge';
+
+            return { getAll, getExternalRoles, getById, themeToColor, themeToIcon };
+        })();
+
         // 當前選中的專案 ID
         let currentProjectId = 1;
         let selectedRoleFilters = [];
@@ -917,11 +1021,46 @@
                 // Year Filter
                 if (yearFilter !== 'all' && p.year.toString() !== yearFilter) return false;
 
-                // School Filter
-                if (schoolFilter !== 'all' && p.school !== schoolFilter) return false;
+                // School Filter (handle 'none' or missing explicitly)
+                if (schoolFilter !== 'all') {
+                    if (schoolFilter === 'none' && p.school) return false;
+                    if (schoolFilter !== 'none' && p.school !== schoolFilter) return false;
+                }
 
                 return true;
             });
+
+            // 狀態權重對應表：數字越小越前面
+            // 準備中(1) -> 進行中(2) -> 已結案(3)
+            const statusWeight = {
+                'preparing': 1,
+                'active': 2,
+                'closed': 3
+            };
+
+            filteredProjects.sort((a, b) => {
+                // 1. 先依狀態權重排序
+                if (statusWeight[a.status] !== statusWeight[b.status]) {
+                    return statusWeight[a.status] - statusWeight[b.status];
+                }
+
+                // 2. 狀態相同時，依據產學計畫起迄日期日期倒序 (新到舊)
+                // 如果需要正序就反過來比較
+                const dateA = new Date(a.startDate).getTime();
+                const dateB = new Date(b.startDate).getTime();
+                return dateB - dateA;
+            });
+
+            if (filteredProjects.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="bi bi-folder2-open fs-1 text-muted opacity-50 mb-3 d-block"></i>
+                        <h6 class="fw-bold text-secondary mb-1">查無命題專案</h6>
+                        <p class="small text-muted mb-0">沒有符合篩選條件的專案</p>
+                    </div>
+                `;
+                return;
+            }
 
             filteredProjects.forEach((p) => {
                 const isActive = p.id === currentProjectId;
@@ -1066,15 +1205,11 @@
                 if (!user) user = { name: "未知", email: "--", avatar: "?", color: "secondary" };
 
                 // ... rest of row generation ...
-                // 產生角色標籤 HTML
+                // 產生角色標籤 HTML (透過 RoleService 動態映射)
                 let rolesHtml = "";
                 memberData.roles.forEach((r) => {
-                    if (r === "teacher")
-                        rolesHtml += `<span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-10 me-1">命題教師</span>`;
-                    if (r === "reviewer")
-                        rolesHtml += `<span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-10 me-1">審題委員</span>`;
-                    if (r === "admin")
-                        rolesHtml += `<span class="badge bg-dark me-1">管理員</span>`;
+                    const roleDef = RoleService.getById(r);
+                    rolesHtml += `<span class="badge bg-${roleDef.color} bg-opacity-10 text-${roleDef.color} border border-${roleDef.color} border-opacity-10 me-1"><i class="bi ${roleDef.icon} me-1" style="font-size: 0.75rem;"></i>${roleDef.name}</span>`;
                 });
 
                 // 產生狀態標籤 HTML
@@ -1105,7 +1240,16 @@
                 <td>${rolesHtml}</td>
                 <td>${statusHtml}</td>
                 <td class="text-end pe-4">
-                    <button class="btn btn-sm btn-light text-secondary"><i class="bi bi-three-dots-vertical"></i></button>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-light text-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-three-dots-vertical"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" style="border-radius: 0.5rem;">
+                            <li><button class="dropdown-item py-2" onclick="editMemberRoles(${memberData.userId})"><i class="bi bi-person-gear text-primary me-2"></i>編輯身分</button></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><button class="dropdown-item py-2 text-danger" onclick="removeMember(${memberData.userId})"><i class="bi bi-person-x me-2"></i>移除成員</button></li>
+                        </ul>
+                    </div>
                 </td>
             </tr>
         `;
@@ -1204,7 +1348,7 @@
         // 日期加 1 天（下一階段開始 = 上一階段結束 + 1 天）
         const nextDay = (dateStr) => addDays(dateStr, 1);
 
-        // 自動計算年度（從專案區間開始日期擷取年份）
+        // 自動計算年度（從產學計畫起迄日期開始日期擷取年份）
         const updateYearFromStart = () => {
             const startVal = document.getElementById('projStart').value;
             const yearDisplay = document.getElementById('projYearDisplay');
@@ -1248,7 +1392,7 @@
                 prevEnd = endEl.value;
             }
 
-            // 專案區間結束日期 = 總審修題結束日期
+            // 產學計畫結束日期 = 總審修題結束日期
             document.getElementById('projEnd').value = prevEnd;
         };
 
@@ -1274,13 +1418,13 @@
                 prevEnd = endEl.value;
             }
 
-            // 專案區間結束日期 = 總審修題結束日期
+            // 產學計畫結束日期 = 總審修題結束日期
             document.getElementById('projEnd').value = prevEnd;
         };
 
         // 初始化時程連動事件監聽
         const initScheduleCascade = () => {
-            // 專案區間開始日期變動 → 連動年度 + 全部時程
+            // 產學計畫開始日期變動 → 連動年度 + 全部時程
             document.getElementById('projStart').addEventListener('change', () => {
                 updateYearFromStart();
                 // 重置所有時程結束日期，重新計算
@@ -1448,6 +1592,7 @@
             // Keep first option
             yearSelect.innerHTML = '<option value="all" selected>所有年度</option>';
             schoolSelect.innerHTML = '<option value="all" selected>所有學校</option>';
+            schoolSelect.innerHTML += '<option value="none">未設定</option>';
 
             const years = [...new Set(projectsData.map(p => p.year))].sort((a, b) => b - a);
             const schools = [...new Set(projectsData.map(p => p.school).filter(s => s))].sort();
@@ -1573,7 +1718,175 @@
             });
         }
 
-        // 6. 年份篩選
+        // ==========================================
+        // Member Detail View Actions (Edit / Remove)
+        // ==========================================
+
+        function removeMember(userId) {
+            const project = projectsData.find((p) => p.id === currentProjectId);
+            if (!project) return;
+
+            const member = project.members.find(m => m.userId === userId);
+            if (!member) return;
+
+            // 尋找教師名稱以供顯示
+            let user = mockUsers ? mockUsers[userId] : null;
+            if (!user) user = mockTeacherPool.find(t => t.id === userId);
+            const userName = user ? user.name : "此成員";
+
+            // [Blazor Migration Note]
+            // 防呆檢查：若該成員已開始命題 (questionCount > 0)，則不允許移除
+            // 正式環境應透過 API 查詢該成員在此專案中的題數
+            const hasQuestions = (member.questionCount || 0) > 0;
+
+            if (hasQuestions) {
+                Swal.fire({
+                    icon: 'error',
+                    title: '無法移除此成員',
+                    html: `
+                        <div class="text-start">
+                            <p class="mb-2">
+                                <strong class="text-primary">${userName}</strong> 已在本專案中建立
+                                <strong class="text-danger">${member.questionCount}</strong> 道題目，無法直接移除。
+                            </p>
+                            <div class="alert alert-warning bg-warning bg-opacity-10 border-warning border-opacity-25 py-2 px-3 small mb-0">
+                                <i class="bi bi-lightbulb me-1"></i>
+                                請先將該成員的題目重新指派給其他教師，或將題目刪除後，再執行移除操作。
+                            </div>
+                        </div>
+                    `,
+                    confirmButtonText: '我知道了',
+                    confirmButtonColor: '#6c757d',
+                    customClass: {
+                        confirmButton: 'fw-bold shadow-sm border-0 px-4'
+                    }
+                });
+                return;
+            }
+
+            Swal.fire({
+                title: '⚠️ 確定要移除成員嗎？',
+                html: `確定要將 <strong class="text-danger">${userName}</strong> 從本專案中移除？<br><span class="text-muted small">此操作將會移除該成員的所有專案權限。</span>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#e0e0e0',
+                confirmButtonText: '<i class="bi bi-person-x-fill me-1"></i> 確定移除',
+                cancelButtonText: '<span class="text-dark">取消</span>',
+                customClass: {
+                    confirmButton: 'fw-bold shadow-sm border-0',
+                    cancelButton: 'fw-bold shadow-sm border-0'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    project.members = project.members.filter(m => m.userId !== userId);
+                    renderProjectDetail();
+
+                    Swal.fire({
+                        title: '已移除',
+                        text: `已成功將 ${userName} 移出專案。`,
+                        icon: 'success',
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 3000
+                    });
+                }
+            });
+        }
+
+        function editMemberRoles(userId) {
+            const project = projectsData.find((p) => p.id === currentProjectId);
+            if (!project) return;
+
+            const member = project.members.find(m => m.userId === userId);
+            if (!member) return;
+
+            let user = mockUsers ? mockUsers[userId] : null;
+            if (!user) user = mockTeacherPool.find(t => t.id === userId);
+            const userName = user ? user.name : "未知成員";
+
+            // 透過 RoleService 取得所有可指派角色，並合併成員身上已有但不在清單中的角色
+            let rolesHtml = '';
+            const allRolesToRender = RoleService.getAll();
+            member.roles.forEach(memberRole => {
+                if (!allRolesToRender.find(r => r.id === memberRole) && memberRole !== 'admin') {
+                    allRolesToRender.push(RoleService.getById(memberRole));
+                }
+            });
+
+            allRolesToRender.forEach(role => {
+                const isChecked = member.roles.includes(role.id);
+                rolesHtml += `
+                    <label class="role-select-card d-flex align-items-center p-3 mb-2 rounded-3 border" for="swalEditRole_${role.id}">
+                        <input class="role-checkbox d-none" type="checkbox" id="swalEditRole_${role.id}" value="${role.id}" ${isChecked ? 'checked' : ''}>
+                        <div class="role-icon-box bg-${role.color} bg-opacity-10 text-${role.color} rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 42px; height: 42px; font-size: 1.2rem;">
+                            <i class="bi ${role.icon}"></i>
+                        </div>
+                        <div class="role-content flex-grow-1 text-start">
+                            <div class="fw-bold fs-6 text-dark mb-1">${role.name}</div>
+                            <div class="text-muted" style="font-size: 0.8rem; line-height: 1.2;">${role.desc}</div>
+                        </div>
+                        <div class="role-check-indicator text-primary fs-4">
+                            <i class="bi bi-check-circle-fill"></i>
+                        </div>
+                    </label>
+                `;
+            });
+
+            Swal.fire({
+                title: '編輯成員身分',
+                html: `
+                    <div class="px-2 mt-3 text-center">
+                        <p class="mb-3 text-muted">請設定 <strong class="text-primary fs-5">${userName}</strong> 在本專案的角色</p>
+                        <div class="role-selection-container">
+                            ${rolesHtml}
+                        </div>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonColor: '#0d6efd',
+                cancelButtonColor: '#e0e0e0',
+                confirmButtonText: '<i class="bi bi-person-check-fill me-1"></i>儲存變更',
+                cancelButtonText: '<span class="text-dark">取消</span>',
+                width: '450px',
+                customClass: {
+                    confirmButton: 'fw-bold shadow-sm border-0 px-4 rounded-pill',
+                    cancelButton: 'fw-bold shadow-sm border-0 px-4 rounded-pill'
+                },
+                preConfirm: () => {
+                    const selectedRoles = [];
+                    allRolesToRender.forEach(role => {
+                        const cb = document.getElementById(`swalEditRole_${role.id}`);
+                        if (cb && cb.checked) {
+                            selectedRoles.push(role.id);
+                        }
+                    });
+
+                    if (selectedRoles.length === 0) {
+                        Swal.showValidationMessage('請至少選擇一種身分，若要移除成員請使用刪除功能！');
+                        return false;
+                    }
+
+                    return selectedRoles;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    member.roles = result.value;
+                    renderProjectDetail();
+
+                    Swal.fire({
+                        title: '身分已更新',
+                        text: `${userName} 的身分變更已儲存。`,
+                        icon: 'success',
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 2000
+                    });
+                }
+            });
+        }
         function initYearSelect() {
             const select = document.getElementById("projYear");
             const currentYear = new Date().getFullYear(); // 抓取現在年份
@@ -1677,12 +1990,12 @@
             container.innerHTML = '';
             if (filtered.length === 0) {
                 container.innerHTML = `
-                    <div class="text-center py-5 text-secondary">
+                        <div class="text-center py-5 text-secondary">
                         <i class="bi bi-search fs-1 mb-3 d-block"></i>
                         <p class="mb-0">沒有符合條件的教師</p>
                         <p class="small text-muted mb-0">請調整篩選條件或搜尋關鍵字</p>
                     </div>
-                `;
+                            `;
                 return;
             }
 
@@ -1697,11 +2010,11 @@
                     <div class="card-body p-2">
                         <div class="d-flex align-items-center">
                             <div class="form-check me-2">
-                                <input class="form-check-input" type="checkbox" ${isSelected ? 'checked' : ''} 
-                                       onclick="event.stopPropagation(); toggleTeacherSelection(${teacher.id})">
+                                <input class="form-check-input" type="checkbox" ${isSelected ? 'checked' : ''}
+                                    onclick="event.stopPropagation(); toggleTeacherSelection(${teacher.id})">
                             </div>
-                            <div class="bg-${teacher.color} bg-opacity-10 text-${teacher.color} rounded-circle d-flex justify-content-center align-items-center me-2 fw-bold" 
-                                 style="width: 32px; height: 32px; min-width: 32px;">${teacher.avatar}</div>
+                            <div class="bg-${teacher.color} bg-opacity-10 text-${teacher.color} rounded-circle d-flex justify-content-center align-items-center me-2 fw-bold"
+                                style="width: 32px; height: 32px; min-width: 32px;">${teacher.avatar}</div>
                             <div class="flex-grow-1" style="min-width: 0;">
                                 <div class="fw-bold small text-truncate">${teacher.name}</div>
                                 <div class="text-muted" style="font-size: 0.7rem;">${teacher.email}</div>
@@ -1714,7 +2027,7 @@
                             </div>
                         </div>
                     </div>
-                `;
+                            `;
 
                 container.appendChild(card);
             });
@@ -1829,7 +2142,7 @@
                         </button>
                     </div>
                     ${roles.length === 0 ? '<div class="px-2 pb-1 text-danger small" style="font-size: 0.7rem;"><i class="bi bi-exclamation-triangle me-1"></i>請選擇身分</div>' : ''}
-                `;
+                        `;
 
                 container.appendChild(card);
             });

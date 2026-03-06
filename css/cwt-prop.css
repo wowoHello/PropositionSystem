@@ -163,3 +163,61 @@ body {
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(15, 81, 50, 0.15) !important;
 }
+
+/* 修正下拉選單點擊時的藍色背景 (Bootstrap 預設會套用 bg-primary) */
+.dropdown-item:active {
+    background-color: #f8f9fa;
+    color: inherit;
+}
+
+.dropdown-item:active .text-primary {
+    color: #0d6efd !important;
+}
+
+.dropdown-item.text-danger:active {
+    background-color: #fff5f5;
+    color: #dc3545 !important;
+}
+
+/* ==========================================
+   Role Select Card (SweetAlert Edit Roles)
+   ========================================== */
+.role-select-card {
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.165, 0.84, 0.44, 1);
+    background-color: #ffffff;
+    border-color: #eaeaea;
+    position: relative;
+    overflow: hidden;
+}
+
+.role-select-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.06);
+    border-color: #c0c0c0;
+}
+
+/* Base state for indicator */
+.role-select-card .role-check-indicator {
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Checked State using :has() for modern browsers */
+.role-select-card:has(.role-checkbox:checked) {
+    border-color: var(--bs-primary);
+    background-color: #f8fbff;
+    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.08);
+}
+
+.role-select-card:has(.role-checkbox:checked) .role-check-indicator {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Subtle active click effect */
+.role-select-card:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
