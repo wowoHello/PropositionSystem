@@ -230,8 +230,8 @@
             <div class="row g-4 h-100">
                 <!-- 命題專案列表 -->
                 <div class="col-lg-3 col-md-4">
-                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden d-flex flex-column"
-                        style="min-height: 100%">
+                    <div class="card border-0 shadow-sm rounded-4 d-flex flex-column"
+                        style="overflow: visible">
                         <div class="card-header bg-white border-bottom p-3">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <h6 class="fw-bold m-0 text-dark">命題專案列表</h6>
@@ -244,13 +244,13 @@
                             <div class="row g-2">
                                 <div class="col-6">
                                     <select class="form-select form-select-sm bg-light border-0" id="yearFilter"
-                                        onchange="renderProjectList()">
+                                        onchange="renderProjectList(1)">
                                         <option value="all" selected>所有年度</option>
                                     </select>
                                 </div>
                                 <div class="col-6">
                                     <select class="form-select form-select-sm bg-light border-0" id="statusFilter"
-                                        onchange="renderProjectList()">
+                                        onchange="renderProjectList(1)">
                                         <option value="all" selected>所有狀態</option>
                                         <option value="preparing">準備中</option>
                                         <option value="active">進行中</option>
@@ -259,15 +259,16 @@
                                 </div>
                                 <div class="col-12">
                                     <select class="form-select form-select-sm bg-light border-0" id="schoolFilter"
-                                        onchange="renderProjectList()">
+                                        onchange="renderProjectList(1)">
                                         <option value="all" selected>所有學校</option>
                                     </select>
                                 </div>
                             </div>
                         </div>
-                        <div class="flex-grow-1 custom-scrollbar"
-                            style="overflow-y: auto; min-height: 0; background-color: #f8fafc">
+                        <div class="flex-grow-1" style="min-height: 0; background-color: #f8fafc">
                             <div class="list-group" id="projectListContainer"></div>
+                        </div>
+                        <div class="card-footer bg-white border-top px-3 py-2" id="projectPagination">
                         </div>
                     </div>
                 </div>
@@ -789,8 +790,8 @@
                     { userId: 0, roles: ["teacher"], status: "active", joinedDate: "2024/01/15", questionCount: 5 },
                     { userId: 1, roles: ["teacher", "reviewer"], status: "active", joinedDate: "2024/01/18", questionCount: 3 },
                     { userId: 2, roles: ["reviewer"], status: "active", joinedDate: "2024/02/01", questionCount: 0 },
-                    { userId: 3, roles: ["teacher"], status: "pending", joinedDate: "2024/02/05", questionCount: 0 },
-                    { userId: 4, roles: ["teacher"], status: "suspended", joinedDate: "2024/01/10", questionCount: 1 },
+                    { userId: 3, roles: ["teacher"], status: "inactive", joinedDate: "2024/02/05", questionCount: 0 },
+                    { userId: 4, roles: ["teacher"], status: "inactive", joinedDate: "2024/01/10", questionCount: 1 },
                 ],
             },
             {
@@ -1005,51 +1006,44 @@
 
         // [Blazor Migration Note] The render functions (renderProjectList, renderProjectDetail, etc.) manually construct HTML strings and update the DOM. In Blazor, this will be handled automatically by data binding and Razor syntax.
         // 1. 渲染左側專案列表
-        function renderProjectList() {
+        let projectListPage = 1;
+        const PROJECT_PAGE_SIZE = 5;
+
+        function renderProjectList(page) {
+            if (typeof page === 'number') projectListPage = page;
             const container = document.getElementById("projectListContainer");
+            const pagination = document.getElementById("projectPagination");
             const statusFilter = document.getElementById("statusFilter").value;
             const yearFilter = document.getElementById("yearFilter").value;
             const schoolFilter = document.getElementById("schoolFilter").value;
 
-            container.innerHTML = ""; // 清空
+            container.innerHTML = "";
 
             // 篩選與排序
             const filteredProjects = projectsData.filter((p) => {
-                // Status Filter
                 if (statusFilter !== 'all' && p.status !== statusFilter) return false;
-
-                // Year Filter
                 if (yearFilter !== 'all' && p.year.toString() !== yearFilter) return false;
-
-                // School Filter (handle 'none' or missing explicitly)
                 if (schoolFilter !== 'all') {
                     if (schoolFilter === 'none' && p.school) return false;
                     if (schoolFilter !== 'none' && p.school !== schoolFilter) return false;
                 }
-
                 return true;
             });
 
-            // 狀態權重對應表：數字越小越前面
-            // 準備中(1) -> 進行中(2) -> 已結案(3)
-            const statusWeight = {
-                'preparing': 1,
-                'active': 2,
-                'closed': 3
-            };
-
+            const statusWeight = { 'preparing': 1, 'active': 2, 'closed': 3 };
             filteredProjects.sort((a, b) => {
-                // 1. 先依狀態權重排序
                 if (statusWeight[a.status] !== statusWeight[b.status]) {
                     return statusWeight[a.status] - statusWeight[b.status];
                 }
-
-                // 2. 狀態相同時，依據產學計畫起迄日期日期倒序 (新到舊)
-                // 如果需要正序就反過來比較
-                const dateA = new Date(a.startDate).getTime();
-                const dateB = new Date(b.startDate).getTime();
-                return dateB - dateA;
+                return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
             });
+
+            // 分頁計算
+            const totalPages = Math.max(1, Math.ceil(filteredProjects.length / PROJECT_PAGE_SIZE));
+            if (projectListPage > totalPages) projectListPage = totalPages;
+            if (projectListPage < 1) projectListPage = 1;
+            const startIdx = (projectListPage - 1) * PROJECT_PAGE_SIZE;
+            const pageProjects = filteredProjects.slice(startIdx, startIdx + PROJECT_PAGE_SIZE);
 
             if (filteredProjects.length === 0) {
                 container.innerHTML = `
@@ -1057,16 +1051,15 @@
                         <i class="bi bi-folder2-open fs-1 text-muted opacity-50 mb-3 d-block"></i>
                         <h6 class="fw-bold text-secondary mb-1">查無命題專案</h6>
                         <p class="small text-muted mb-0">沒有符合篩選條件的專案</p>
-                    </div>
-                `;
+                    </div>`;
+                pagination.innerHTML = '';
                 return;
             }
 
-            filteredProjects.forEach((p) => {
+            pageProjects.forEach((p) => {
                 const isActive = p.id === currentProjectId;
-                const activeClass = isActive
-                    ? "active border-primary"
-                    : "border-transparent";
+                const statusBorderColor = p.status === "active" ? "#10b981"
+                    : p.status === "preparing" ? "#f59e0b" : "#9ca3af";
                 const badgeClass =
                     p.status === "active"
                         ? "bg-success text-success bg-opacity-10"
@@ -1075,31 +1068,44 @@
                             : "bg-secondary text-secondary bg-opacity-10";
                 const badgeText = p.status === "active" ? "進行中" : p.status === "preparing" ? "準備中" : "已結案";
 
-                // 如果是 Active 狀態，文字顏色要調整
                 const badgeRender = isActive
                     ? `<span class="badge bg-white text-primary rounded-pill">${badgeText}</span>`
                     : `<span class="badge ${badgeClass} rounded-pill">${badgeText}</span>`;
 
                 const textMutedClass = isActive ? "text-white-50" : "text-muted";
                 const textTitleClass = isActive ? "text-white" : "text-dark";
+                const activeClass = isActive ? "active" : "";
+                const borderStyle = isActive ? "border-color: #2563eb !important;" : `border-color: ${statusBorderColor} !important;`;
 
-                const html = `
-            <a href="javascript:void(0)" onclick="switchProject(${p.id})" 
-               class="list-group-item list-group-item-action py-3 border-start border-4 rounded-0 ${activeClass}">
+                container.innerHTML += `
+            <a href="javascript:void(0)" onclick="switchProject(${p.id})"
+               class="list-group-item list-group-item-action project-card ${activeClass}"
+               style="border-left: 4px solid; ${borderStyle}">
                 <div class="d-flex w-100 justify-content-between mb-1">
                     <small class="${textMutedClass}">${p.year} 年度</small>
                     ${badgeRender}
                 </div>
                 <h6 class="mb-1 fw-bold ${textTitleClass}">${p.name}</h6>
-                <small class="${isActive ? "text-white-50" : "text-secondary"}">
-                     <div><i class="bi bi-building me-1"></i>${p.school || '未設定'}</div>
-                     <div><i class="bi bi-people-fill me-1"></i>成員：${p.members.length} 人</div>
-                </small>
-            </a>
-        `;
-                container.innerHTML += html;
+                <div class="project-card-meta ${isActive ? "text-white-50" : "text-secondary"}">
+                     <span><i class="bi bi-building me-1"></i>${p.school || '未設定'}</span>
+                     <span><i class="bi bi-people-fill me-1"></i>${p.members.length} 人</span>
+                     <span><i class="bi bi-calendar3 me-1"></i>${p.startDate}</span>
+                </div>
+            </a>`;
             });
-            container.innerHTML += '<div style="height: 1px;"></div>';
+
+            // 分頁按鈕
+            let pagHtml = `<div class="d-flex justify-content-between align-items-center">
+                <small class="text-muted">${filteredProjects.length} 筆，第 ${projectListPage}/${totalPages} 頁</small>
+                <div class="btn-group btn-group-sm">
+                    <button class="btn btn-outline-secondary" ${projectListPage <= 1 ? 'disabled' : ''} onclick="renderProjectList(${projectListPage - 1})"><i class="bi bi-chevron-left"></i></button>`;
+            for (let i = 1; i <= totalPages; i++) {
+                pagHtml += `<button class="btn ${i === projectListPage ? 'btn-primary' : 'btn-outline-secondary'}" onclick="renderProjectList(${i})">${i}</button>`;
+            }
+            pagHtml += `<button class="btn btn-outline-secondary" ${projectListPage >= totalPages ? 'disabled' : ''} onclick="renderProjectList(${projectListPage + 1})"><i class="bi bi-chevron-right"></i></button>
+                </div>
+            </div>`;
+            pagination.innerHTML = pagHtml;
         }
 
         // 2. 切換專案
@@ -1214,16 +1220,10 @@
 
                 // 產生狀態標籤 HTML
                 let statusHtml = "";
-                switch (memberData.status) {
-                    case "active":
-                        statusHtml = `<span class="badge bg-success bg-opacity-10 text-success rounded-pill">啟用中</span>`;
-                        break;
-                    case "pending":
-                        statusHtml = `<span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill">未開通</span>`;
-                        break;
-                    case "suspended":
-                        statusHtml = `<span class="badge bg-danger bg-opacity-10 text-danger rounded-pill">已停權</span>`;
-                        break;
+                if (memberData.status === "active") {
+                    statusHtml = `<span class="badge bg-success bg-opacity-10 text-success rounded-pill">啟用中</span>`;
+                } else {
+                    statusHtml = `<span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill">未啟用</span>`;
                 }
 
                 const row = `

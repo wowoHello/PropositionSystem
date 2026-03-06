@@ -289,9 +289,9 @@
                         <label class="form-label-sm">審查狀態</label>
                         <select class="form-select form-select-sm-custom" id="filterStatus">
                             <option value="all" selected>全部狀態</option>
-                            <option value="passed">已通過</option>
+                            <option value="passed">已採用</option>
                             <option value="reviewing">審查中</option>
-                            <option value="rejected">未通過</option>
+                            <option value="rejected">不採用</option>
                         </select>
                     </div>
                     <div class="col-xl-2 col-lg-3 col-md-4">
@@ -372,34 +372,42 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body" id="modalBody">
-                    <!-- 三燈 Stepper -->
-                    <div class="review-stepper" id="modalStepper">
-                        <div class="review-step pending" id="step-peer">
-                            <div class="step-circle">
-                                <span class="step-number">1</span>
-                                <span class="step-check">&#10003;</span>
-                            </div>
-                            <div class="step-label">互審</div>
-                            <div class="step-sub" id="step-peer-sub">教師互審</div>
-                            <div class="step-time" id="step-peer-time"></div>
+                    <!-- 七階段 Stepper -->
+                    <div class="review-stepper review-stepper-7" id="modalStepper">
+                        <div class="review-step pending" id="step-composing">
+                            <div class="step-circle"><span class="step-number">1</span><span class="step-check">&#10003;</span></div>
+                            <div class="step-label">命題</div>
+                            <div class="step-time" id="step-composing-time"></div>
                         </div>
-                        <div class="review-step pending" id="step-expert">
-                            <div class="step-circle">
-                                <span class="step-number">2</span>
-                                <span class="step-check">&#10003;</span>
-                            </div>
-                            <div class="step-label">專審</div>
-                            <div class="step-sub" id="step-expert-sub">專家審查</div>
-                            <div class="step-time" id="step-expert-time"></div>
+                        <div class="review-step pending" id="step-peer-review">
+                            <div class="step-circle"><span class="step-number">2</span><span class="step-check">&#10003;</span></div>
+                            <div class="step-label">交互審題</div>
+                            <div class="step-time" id="step-peer-review-time"></div>
                         </div>
-                        <div class="review-step pending" id="step-final">
-                            <div class="step-circle">
-                                <span class="step-number">3</span>
-                                <span class="step-check">&#10003;</span>
-                            </div>
-                            <div class="step-label">總審</div>
-                            <div class="step-sub" id="step-final-sub">最終決議</div>
-                            <div class="step-time" id="step-final-time"></div>
+                        <div class="review-step pending" id="step-peer-revision">
+                            <div class="step-circle"><span class="step-number">3</span><span class="step-check">&#10003;</span></div>
+                            <div class="step-label">互審修題</div>
+                            <div class="step-time" id="step-peer-revision-time"></div>
+                        </div>
+                        <div class="review-step pending" id="step-expert-review">
+                            <div class="step-circle"><span class="step-number">4</span><span class="step-check">&#10003;</span></div>
+                            <div class="step-label">專家審題</div>
+                            <div class="step-time" id="step-expert-review-time"></div>
+                        </div>
+                        <div class="review-step pending" id="step-expert-revision">
+                            <div class="step-circle"><span class="step-number">5</span><span class="step-check">&#10003;</span></div>
+                            <div class="step-label">專審修題</div>
+                            <div class="step-time" id="step-expert-revision-time"></div>
+                        </div>
+                        <div class="review-step pending" id="step-final-review">
+                            <div class="step-circle"><span class="step-number">6</span><span class="step-check">&#10003;</span></div>
+                            <div class="step-label">總召審題</div>
+                            <div class="step-time" id="step-final-review-time"></div>
+                        </div>
+                        <div class="review-step pending" id="step-final-revision">
+                            <div class="step-circle"><span class="step-number">7</span><span class="step-check">&#10003;</span></div>
+                            <div class="step-label">總審修題</div>
+                            <div class="step-time" id="step-final-revision-time"></div>
                         </div>
                     </div>
                     <!-- JS 動態渲染區 -->
@@ -431,10 +439,11 @@
                 id: 'Q-2024-0001', type: '一般題目', difficulty: 1, diffLabel: '難度一（易）',
                 category: '字形辨識', teacher: '李文華', project: '進行中梯次範例一', projectId: '1',
                 status: 'passed', date: '2024-09-15', modifyDate: '2024-09-30',
-                reviewStage: 4,
+                reviewStage: 'adopted',
                 reviews: [
-                    { reviewer: '陳秀蘭', role: '互審教師', time: '2024-09-20 14:30', decision: 'adopt', comment: '題目設計良好，選項具有鑑別度，文字敘述清晰。建議採用。' },
-                    { reviewer: '張國維', role: '專審委員', time: '2024-09-25 10:15', decision: 'adopt', comment: '題幹語句流暢，考核目標明確，符合字形辨識的考核要求。通過。' }
+                    { reviewer: '陳秀蘭', role: '互審教師', stage: 'peer-review', time: '2024-09-20 14:30', comment: '題目設計良好，選項具有鑑別度，文字敘述清晰。' },
+                    { reviewer: '張國維', role: '專審委員', stage: 'expert-review', time: '2024-09-25 10:15', decision: 'adopt', comment: '題幹語句流暢，考核目標明確，符合字形辨識的考核要求。通過。' },
+                    { reviewer: '沈雅茹', role: '總審委員', stage: 'final-review', time: '2024-09-28 16:00', decision: 'adopt', comment: '整體品質良好，採用。' }
                 ],
                 stem: '下列各組「 」內的字，何者字形完全正確？',
                 options: [
@@ -450,9 +459,9 @@
                 id: 'Q-2024-0002', type: '一般題目', difficulty: 2, diffLabel: '難度二（中）',
                 category: '詞義辨析', teacher: '陳秀蘭', project: '進行中梯次範例一', projectId: '1',
                 status: 'reviewing', date: '2024-09-18', modifyDate: '2024-09-22',
-                reviewStage: 2,
+                reviewStage: 'expert-review',
                 reviews: [
-                    { reviewer: '林志豪', role: '互審教師', time: '2024-09-22 09:45', decision: 'adopt', comment: '用語精準，選項設計具有誘答力。「獨樹一幟」的選項 A 容易混淆，鑑別度佳。建議採用。' }
+                    { reviewer: '林志豪', role: '互審教師', stage: 'peer-review', time: '2024-09-22 09:45', comment: '用語精準，選項設計具有誘答力。「獨樹一幟」的選項 A 容易混淆，鑑別度佳。' }
                 ],
                 stem: '「他的作品風格獨樹一幟，在文壇上佔有重要的地位。」句中「獨樹一幟」的意思是：',
                 options: [
@@ -468,10 +477,11 @@
                 id: 'Q-2024-0003', type: '精選題目', difficulty: 3, diffLabel: '難度三（難）',
                 category: '閱讀理解', teacher: '林志豪', project: '進行中梯次範例一', projectId: '1',
                 status: 'passed', date: '2024-09-20', modifyDate: '2024-10-01',
-                reviewStage: 4,
+                reviewStage: 'adopted',
                 reviews: [
-                    { reviewer: '王偉', role: '互審教師', time: '2024-09-25 11:00', decision: 'revise', comment: '選項 C「專注記住每一個細節」與文意有些接近，建議修改為更明顯的誘答選項，降低爭議。' },
-                    { reviewer: '張國維', role: '專審委員', time: '2024-10-01 15:20', decision: 'adopt', comment: '修改後的版本選項鑑別度已提升。題目設計符合閱讀理解考核要求，建議採用。' }
+                    { reviewer: '王偉', role: '互審教師', stage: 'peer-review', time: '2024-09-25 11:00', comment: '選項 C「專注記住每一個細節」與文意有些接近，建議修改為更明顯的誘答選項，降低爭議。' },
+                    { reviewer: '張國維', role: '專審委員', stage: 'expert-review', time: '2024-10-01 15:20', decision: 'adopt', comment: '修改後的版本選項鑑別度已提升。題目設計符合閱讀理解考核要求，建議採用。' },
+                    { reviewer: '沈雅茹', role: '總審委員', stage: 'final-review', time: '2024-10-05 14:00', decision: 'adopt', comment: '題目品質優良，採用。' }
                 ],
                 stem: '根據下文，作者認為「真正的閱讀」應具備什麼條件？\n\n「閱讀不是被動地接收文字訊息，而是主動地與作者對話、思辨、質疑。唯有帶著問題去讀，才能真正理解作者的意圖。」',
                 options: [
@@ -487,9 +497,9 @@
                 id: 'Q-2024-0004', type: '長文題目', difficulty: 3, diffLabel: '難度三（難）',
                 category: '文學賞析', teacher: '李文華', project: '進行中梯次範例一', projectId: '1',
                 status: 'reviewing', date: '2024-10-01', modifyDate: '2024-10-08',
-                reviewStage: -1,
+                reviewStage: 'peer-revision',
                 reviews: [
-                    { reviewer: '王偉', role: '互審教師', time: '2024-10-05 11:00', decision: 'revise', comment: '題目立意佳，但答題引導不夠明確，建議調整題幹敘述使考生更容易理解作答方向後重新送審。' }
+                    { reviewer: '王偉', role: '互審教師', stage: 'peer-review', time: '2024-10-05 11:00', comment: '題目立意佳，但答題引導不夠明確，建議調整題幹敘述使考生更容易理解作答方向後重新送審。' }
                 ],
                 stem: '閱讀以下文章後，回答問題：\n\n余光中曾說：「鄉愁是一枚小小的郵票」，試從修辭技巧與情感表達兩個面向，分析此句的文學特色。',
                 options: [],
@@ -500,10 +510,11 @@
                 id: 'Q-2024-0005', type: '一般題目', difficulty: 1, diffLabel: '難度一（易）',
                 category: '字音辨識', teacher: '陳秀蘭', project: '進行中梯次範例一', projectId: '1',
                 status: 'passed', date: '2024-09-22', modifyDate: '2024-09-30',
-                reviewStage: 4,
+                reviewStage: 'adopted',
                 reviews: [
-                    { reviewer: '李文華', role: '互審教師', time: '2024-09-26 16:30', decision: 'adopt', comment: '字音辨識方向正確，選項設計符合基礎程度考生的程度，通過。' },
-                    { reviewer: '張國維', role: '專審委員', time: '2024-09-30 09:40', decision: 'adopt', comment: '沒有問題，採用。' }
+                    { reviewer: '李文華', role: '互審教師', stage: 'peer-review', time: '2024-09-26 16:30', comment: '字音辨識方向正確，選項設計符合基礎程度考生的程度。' },
+                    { reviewer: '張國維', role: '專審委員', stage: 'expert-review', time: '2024-09-30 09:40', decision: 'adopt', comment: '沒有問題，採用。' },
+                    { reviewer: '沈雅茹', role: '總審委員', stage: 'final-review', time: '2024-10-02 11:00', decision: 'adopt', comment: '採用。' }
                 ],
                 stem: '下列各組「 」內的字，何者讀音完全相同？',
                 options: [
@@ -519,10 +530,11 @@
                 id: 'Q-2024-0006', type: '聽力題目', difficulty: 2, diffLabel: '難度二（中）',
                 category: '語句理解', teacher: '王偉', project: '進行中梯次範例一', projectId: '1',
                 status: 'passed', date: '2024-10-05', modifyDate: '2024-10-12',
-                reviewStage: 4,
+                reviewStage: 'adopted',
                 reviews: [
-                    { reviewer: '陳秀蘭', role: '互審教師', time: '2024-10-08 10:00', decision: 'adopt', comment: '聽力素材清晰，選項設計合理。通過。' },
-                    { reviewer: '林美芳', role: '專審委員', time: '2024-10-12 14:30', decision: 'adopt', comment: '整體品質良好，採用。' }
+                    { reviewer: '陳秀蘭', role: '互審教師', stage: 'peer-review', time: '2024-10-08 10:00', comment: '聽力素材清晰，選項設計合理。' },
+                    { reviewer: '林美芳', role: '專審委員', stage: 'expert-review', time: '2024-10-12 14:30', decision: 'adopt', comment: '整體品質良好，採用。' },
+                    { reviewer: '沈雅茹', role: '總審委員', stage: 'final-review', time: '2024-10-15 10:00', decision: 'adopt', comment: '採用。' }
                 ],
                 stem: '【音檔播放後】請根據所聽到的對話內容，選出最適當的回應。',
                 options: [
@@ -538,10 +550,10 @@
                 id: 'Q-2024-0007', type: '閱讀題組', difficulty: 4, diffLabel: '難度四（精熟）',
                 category: '文學鑑賞', teacher: '李文華', project: '進行中梯次範例一', projectId: '1',
                 status: 'reviewing', date: '2024-11-01', modifyDate: '2024-11-10',
-                reviewStage: 3,
+                reviewStage: 'expert-revision',
                 reviews: [
-                    { reviewer: '陳秀蘭', role: '互審教師', time: '2024-11-05 14:20', decision: 'adopt', comment: '古文選材佳，子題設計由淺入深，具有梯度。建議採用。' },
-                    { reviewer: '張國維', role: '專審委員', time: '2024-11-10 10:45', decision: 'revise', comment: '第二子題的選項 C 與正確答案語意過於接近，建議修改選項用語以提高鑑別度。' }
+                    { reviewer: '陳秀蘭', role: '互審教師', stage: 'peer-review', time: '2024-11-05 14:20', comment: '古文選材佳，子題設計由淺入深，具有梯度。' },
+                    { reviewer: '張國維', role: '專審委員', stage: 'expert-review', time: '2024-11-10 10:45', decision: 'revise', comment: '第二子題的選項 C 與正確答案語意過於接近，建議修改選項用語以提高鑑別度。' }
                 ],
                 stem: '閱讀以下古文節選，回答第1～3題。\n\n「庖丁為文惠君解牛，手之所觸，肩之所倚，足之所履，膝之所踦，砉然嚮然，奏刀騞然，莫不中音。合於桑林之舞，乃中經首之會。」（《莊子‧養生主》）',
                 options: [],
@@ -587,11 +599,11 @@
                 id: 'Q-2024-0008', type: '聽力題組', difficulty: 3, diffLabel: '難度三（難）',
                 category: '語文表達', teacher: '王偉', project: '進行中梯次範例一', projectId: '1',
                 status: 'rejected', date: '2024-10-12', modifyDate: '2024-10-22',
-                reviewStage: 0,
+                reviewStage: 'rejected',
                 reviews: [
-                    { reviewer: '林志豪', role: '互審教師', time: '2024-10-15 11:00', decision: 'adopt', comment: '題組結構合理，音檔長度適中。通過。' },
-                    { reviewer: '林美芳', role: '專審委員', time: '2024-10-18 16:00', decision: 'adopt', comment: '聽力素材與題目搭配得宜。通過。' },
-                    { reviewer: '沈雅茹', role: '總審委員', time: '2024-10-22 14:30', decision: 'reject', comment: '音檔錄製品質不佳，背景噪音過大影響聽音判斷，不採用。' }
+                    { reviewer: '林志豪', role: '互審教師', stage: 'peer-review', time: '2024-10-15 11:00', comment: '題組結構合理，音檔長度適中。' },
+                    { reviewer: '林美芳', role: '專審委員', stage: 'expert-review', time: '2024-10-18 16:00', decision: 'adopt', comment: '聽力素材與題目搭配得宜。通過。' },
+                    { reviewer: '沈雅茹', role: '總審委員', stage: 'final-review', time: '2024-10-22 14:30', decision: 'reject', comment: '音檔錄製品質不佳，背景噪音過大影響聽音判斷，不採用。' }
                 ],
                 stem: '【聽力題組】請先聽一段對話後，回答以下兩道子題。',
                 options: [],
@@ -626,10 +638,11 @@
                 id: 'Q-2024-0009', type: '短文題組', difficulty: 2, diffLabel: '難度二（中）',
                 category: '閱讀理解', teacher: '林志豪', project: '進行中梯次範例一', projectId: '1',
                 status: 'passed', date: '2024-10-20', modifyDate: '2024-10-30',
-                reviewStage: 4,
+                reviewStage: 'adopted',
                 reviews: [
-                    { reviewer: '李文華', role: '互審教師', time: '2024-10-25 13:30', decision: 'adopt', comment: '短文選文具哲理性，子題設計能考核推論能力，通過。' },
-                    { reviewer: '張國維', role: '專審委員', time: '2024-10-30 11:15', decision: 'adopt', comment: '題目品質良好，建議採用。' }
+                    { reviewer: '李文華', role: '互審教師', stage: 'peer-review', time: '2024-10-25 13:30', comment: '短文選文具哲理性，子題設計能考核推論能力。' },
+                    { reviewer: '張國維', role: '專審委員', stage: 'expert-review', time: '2024-10-30 11:15', decision: 'adopt', comment: '題目品質良好，建議採用。' },
+                    { reviewer: '沈雅茹', role: '總審委員', stage: 'final-review', time: '2024-11-02 09:30', decision: 'adopt', comment: '採用。' }
                 ],
                 stem: '閱讀下面短文，回答第1～2題。\n\n「一個人的價值不在於他擁有什麼，而在於他貢獻了什麼。真正有意義的人生，是不斷為他人創造價值的過程。」',
                 options: [],
@@ -652,10 +665,10 @@
                 id: 'Q-2024-0010', type: '精選題目', difficulty: 2, diffLabel: '難度二（中）',
                 category: '修辭辨識', teacher: '李文華', project: '進行中梯次範例一', projectId: '1',
                 status: 'reviewing', date: '2024-10-25', modifyDate: '2024-11-02',
-                reviewStage: -2,
+                reviewStage: 'expert-revision',
                 reviews: [
-                    { reviewer: '王偉', role: '互審教師', time: '2024-10-28 09:15', decision: 'adopt', comment: '修辭考核方向正確，選項設計具有誘答力。通過。' },
-                    { reviewer: '林美芳', role: '專審委員', time: '2024-11-02 15:00', decision: 'revise', comment: '「轉化」與「轉品」的定義在學術界仍有爭議，建議調整選項用語或題幹敘述以避免爭議。' }
+                    { reviewer: '王偉', role: '互審教師', stage: 'peer-review', time: '2024-10-28 09:15', comment: '修辭考核方向正確，選項設計具有誘答力。' },
+                    { reviewer: '林美芳', role: '專審委員', stage: 'expert-review', time: '2024-11-02 15:00', decision: 'revise', comment: '「轉化」與「轉品」的定義在學術界仍有爭議，建議調整選項用語或題幹敘述以避免爭議。' }
                 ],
                 stem: '「春風又綠江南岸」使用了哪一種修辭手法？',
                 options: [
@@ -690,9 +703,9 @@
         };
 
         const statusConfig = {
-            passed: { label: '已通過', cssClass: 'badge-passed' },
+            passed: { label: '已採用', cssClass: 'badge-passed' },
             reviewing: { label: '審查中', cssClass: 'badge-reviewing' },
-            rejected: { label: '未通過', cssClass: 'badge-rejected' }
+            rejected: { label: '不採用', cssClass: 'badge-rejected' }
         };
 
         // 審題決策對應
@@ -703,54 +716,53 @@
         };
 
         // =========================================
-        // 三燈號生成器（互審 → 專審 → 總審）
-        //  正數: 1=互審中, 2=專審中, 3=總審中, 4=已通過
-        //  負數: -1=互審改後再審(橘), -2=專審改後再審(橘), -3=總審改後再審(橘)
-        //     0: 總審不採用(紅) — 僅總審有不採用權限
+        // 七階段燈號生成器
+        // 階段：命題 → 交互審題 → 互審修題 → 專家審題 → 專審修題 → 總召審題 → 總審修題
+        // reviewStage 值：composing / peer-review / peer-revision / expert-review /
+        //                 expert-revision / final-review / final-revision / adopted / rejected
         // =========================================
+        const reviewStageOrder = [
+            { key: 'composing', label: '命題' },
+            { key: 'peer-review', label: '交互審題' },
+            { key: 'peer-revision', label: '互審修題' },
+            { key: 'expert-review', label: '專家審題' },
+            { key: 'expert-revision', label: '專審修題' },
+            { key: 'final-review', label: '總召審題' },
+            { key: 'final-revision', label: '總審修題' }
+        ];
+
         const buildReviewLights = (reviewStage) => {
-            const stages = ['互審', '專審', '總審'];
+            const isAdopted = reviewStage === 'adopted';
+            const isRejected = reviewStage === 'rejected';
+            const stageIdx = reviewStageOrder.findIndex(s => s.key === reviewStage);
 
-            // 0 = 總審不採用：互審通過、專審通過、總審紅燈
-            if (reviewStage === 0) {
-                return `<div class="review-lights">
-                    <span class="review-light done" title="互審（已通過）"></span>
-                    <span class="review-light done" title="專審（已通過）"></span>
-                    <span class="review-light rejected" title="總審（不採用）"></span>
-                </div>`;
-            }
-
-            const absStage = Math.abs(reviewStage);
-            const isRevise = reviewStage < 0; // 負數 = 該階段改後再審
-
-            const lights = stages.map((label, idx) => {
-                const stageNum = idx + 1;
+            const lights = reviewStageOrder.map((stage, idx) => {
                 let cls = '';
-                let title = label;
+                let title = stage.label;
 
-                if (isRevise) {
-                    // 負數模式：前面的已通過，該階段橘燈，後面灰色
-                    if (stageNum < absStage) {
+                if (isAdopted) {
+                    cls = 'done';
+                    title = `${stage.label}（已完成）`;
+                } else if (isRejected) {
+                    if (idx < 6) {
                         cls = 'done';
-                        title = `${label}（已通過）`;
-                    } else if (stageNum === absStage) {
-                        cls = 'revise';
-                        title = `${label}（改後再審）`;
+                        title = `${stage.label}（已完成）`;
                     } else {
-                        cls = '';
-                        title = `${label}（待審）`;
+                        cls = 'rejected';
+                        title = `${stage.label}（不採用）`;
                     }
-                } else {
-                    // 正數模式：正常審題流程
-                    if (reviewStage >= stageNum + 1) {
+                } else if (stageIdx >= 0) {
+                    if (idx < stageIdx) {
                         cls = 'done';
-                        title = `${label}（已通過）`;
-                    } else if (reviewStage === stageNum) {
-                        cls = 'active';
-                        title = `${label}（進行中）`;
+                        title = `${stage.label}（已完成）`;
+                    } else if (idx === stageIdx) {
+                        // 修題階段用橘色，審題階段用藍色
+                        const isRevisionStage = stage.key.includes('revision');
+                        cls = isRevisionStage ? 'revise' : 'active';
+                        title = `${stage.label}（進行中）`;
                     } else {
                         cls = '';
-                        title = `${label}（待審）`;
+                        title = `${stage.label}（待審）`;
                     }
                 }
 
@@ -815,7 +827,7 @@
           <tr class="clickable-row" data-id="${item.id}" onclick="viewQuestion('${item.id}')">
             <td class="cell-id">${item.id}</td>
             <td><span class="type-badge ${typeCls}">${item.type}</span></td>
-            <td><span class="badge-difficulty ${diff.cssClass}">${diff.label}</span></td>
+            <td><span class="badge bg-light text-dark border">${diff.label}</span></td>
             <td><div class="cell-summary" title="${stemText.replace(/"/g, '&quot;')}">${shortenedStem}</div></td>
             <td class="d-none d-lg-table-cell"><div class="cell-teacher"><span class="teacher-avatar">${item.teacher.charAt(0)}</span>${item.teacher}</div></td>
             <td class="text-center">${lightsHtml}</td>
@@ -863,86 +875,57 @@
         };
 
         // =========================================
-        // 三燈 Stepper 渲染（含審核時間戳）
+        // 七階段 Stepper 渲染
         // =========================================
         const renderReviewStepper = (reviewStage, reviews) => {
-            const steps = [
-                { id: 'step-peer',   label: '互審', subDefault: '教師互審', reviewIdx: 0 },
-                { id: 'step-expert', label: '專審', subDefault: '專家審查', reviewIdx: 1 },
-                { id: 'step-final',  label: '總審', subDefault: '最終決議', reviewIdx: 2 }
-            ];
+            const steps = reviewStageOrder.map(s => ({
+                id: `step-${s.key}`,
+                key: s.key,
+                label: s.label
+            }));
 
-            //  正數: 1=互審中, 2=專審中, 3=總審中, 4=已通過
-            //  負數: -1=互審改後再審, -2=專審改後再審
-            //     0: 總審不採用
+            const isAdopted = reviewStage === 'adopted';
+            const isRejected = reviewStage === 'rejected';
+            const stageIdx = reviewStageOrder.findIndex(s => s.key === reviewStage);
 
-            // 0 = 總審不採用
-            if (reviewStage === 0) {
-                steps.forEach((step, idx) => {
-                    const el = document.getElementById(step.id);
-                    const subEl = document.getElementById(`${step.id}-sub`);
-                    el.className = 'review-step';
-                    if (idx < 2) {
+            steps.forEach((step, idx) => {
+                const el = document.getElementById(step.id);
+                if (!el) return;
+                el.className = 'review-step';
+
+                if (isAdopted) {
+                    el.classList.add('completed');
+                } else if (isRejected) {
+                    if (idx < 6) {
                         el.classList.add('completed');
-                        subEl.textContent = '已通過';
                     } else {
                         el.classList.add('rejected');
-                        subEl.textContent = '不採用';
                     }
-                });
-            } else {
-                const absStage = Math.abs(reviewStage);
-                const isRevise = reviewStage < 0;
-
-                steps.forEach((step, idx) => {
-                    const el = document.getElementById(step.id);
-                    const subEl = document.getElementById(`${step.id}-sub`);
-                    const stageNum = idx + 1;
-
-                    el.className = 'review-step';
-
-                    if (isRevise) {
-                        // 負數模式：改後再審（橘色）
-                        if (stageNum < absStage) {
-                            el.classList.add('completed');
-                            subEl.textContent = '已通過';
-                        } else if (stageNum === absStage) {
-                            el.classList.add('revise');
-                            subEl.textContent = '改後再審';
-                        } else {
-                            el.classList.add('pending');
-                            subEl.textContent = step.subDefault;
-                        }
+                } else if (stageIdx >= 0) {
+                    if (idx < stageIdx) {
+                        el.classList.add('completed');
+                    } else if (idx === stageIdx) {
+                        const isRevision = step.key.includes('revision');
+                        el.classList.add(isRevision ? 'revise' : 'active');
                     } else {
-                        // 正數模式：正常流程
-                        if (reviewStage >= stageNum + 1) {
-                            el.classList.add('completed');
-                            subEl.textContent = '已通過';
-                        } else if (reviewStage === stageNum) {
-                            el.classList.add('active');
-                            subEl.textContent = '進行中';
-                        } else {
-                            el.classList.add('pending');
-                            subEl.textContent = step.subDefault;
-                        }
+                        el.classList.add('pending');
                     }
-                });
-            }
-
-            // 渲染每步的審核時間戳
-            steps.forEach((step) => {
-                const el = document.getElementById(step.id);
-                const timeEl = document.getElementById(`${step.id}-time`);
-                const review = reviews && reviews[step.reviewIdx];
-
-                // 只有已動作的步驟（completed / revise / rejected）才顯示時間
-                if (review && review.time &&
-                    (el.classList.contains('completed') || el.classList.contains('revise') || el.classList.contains('rejected'))) {
-                    timeEl.textContent = review.time;
-                    timeEl.style.display = 'block';
                 } else {
-                    timeEl.textContent = '';
-                    timeEl.style.display = 'none';
+                    el.classList.add('pending');
+                }
+
+                // 渲染時間戳：找出對應階段的 review 紀錄
+                const timeEl = document.getElementById(`${step.id}-time`);
+                if (timeEl) {
+                    const review = reviews && reviews.find(r => r.stage === step.key);
+                    if (review && review.time &&
+                        (el.classList.contains('completed') || el.classList.contains('revise') || el.classList.contains('rejected'))) {
+                        timeEl.textContent = review.time;
+                        timeEl.style.display = 'block';
+                    } else {
+                        timeEl.textContent = '';
+                        timeEl.style.display = 'none';
+                    }
                 }
             });
         };
@@ -970,7 +953,7 @@
                 <div class="meta-grid">
                     <div class="meta-item">
                         <div class="meta-label">${isListening ? '難度' : '適用等級'}</div>
-                        <div class="meta-value"><span class="badge-difficulty ${diff.cssClass || ''}">${diff.label || item.diffLabel || '--'}</span></div>
+                        <div class="meta-value"><span class="badge bg-light text-dark border">${diff.label || item.diffLabel || '--'}</span></div>
                     </div>
                     <div class="meta-item">
                         <div class="meta-label">主類別</div>
@@ -1092,23 +1075,46 @@
                 </div>`;
             }
 
-            // ④ 審題評語
+            // ④ 審題結果（原「審題評語」，依 PRD FR-13 更名）
             html += `<div class="detail-section">
-                <div class="section-title"><i class="bi bi-chat-square-quote"></i> 審題評語</div>`;
+                <div class="section-title"><i class="bi bi-chat-square-quote"></i> 審題結果</div>`;
 
             if (item.reviews && item.reviews.length > 0) {
                 html += '<div class="review-timeline">';
                 item.reviews.forEach(r => {
-                    const dec = decisionConfig[r.decision] || { label: '--', icon: 'bi-dash', cssClass: '' };
+                    // 根據審題階段決定是否顯示決策標籤
+                    let decisionHtml = '';
+                    if (r.stage === 'peer-review') {
+                        // 互審：僅提供意見，不顯示決策標籤
+                        decisionHtml = `<div class="review-comment-decision" style="color:#8b5cf6;">
+                            <i class="bi bi-chat-dots"></i> 互審意見
+                        </div>`;
+                    } else if (r.stage === 'expert-review') {
+                        // 專審：僅「採用」或「改後再審」
+                        const dec = decisionConfig[r.decision] || { label: '--', icon: 'bi-dash', cssClass: '' };
+                        decisionHtml = `<div class="review-comment-decision ${dec.cssClass}">
+                            <i class="bi ${dec.icon}"></i> ${dec.label}
+                        </div>`;
+                    } else if (r.stage === 'final-review') {
+                        // 總審：「採用」「改後再審」「不採用」，可能多次
+                        const dec = decisionConfig[r.decision] || { label: '--', icon: 'bi-dash', cssClass: '' };
+                        decisionHtml = `<div class="review-comment-decision ${dec.cssClass}">
+                            <i class="bi ${dec.icon}"></i> ${dec.label}
+                            ${r.round ? `<span class="ms-1 small text-muted">（第${r.round}次）</span>` : ''}
+                        </div>`;
+                    }
+
+                    // 階段標籤
+                    const stageLabelMap = { 'peer-review': '交互審題', 'expert-review': '專家審題', 'final-review': '總召審題' };
+                    const stageLabel = stageLabelMap[r.stage] || '';
+
                     html += `<div class="review-comment-card">
                         <div class="review-comment-header">
                             <span class="reviewer-name">${r.reviewer}</span>
-                            <span class="reviewer-role">${r.role}</span>
+                            <span class="reviewer-role">${r.role}${stageLabel ? ` · ${stageLabel}` : ''}</span>
                             <span class="review-time"><i class="bi bi-clock me-1"></i>${r.time}</span>
                         </div>
-                        <div class="review-comment-decision ${dec.cssClass}">
-                            <i class="bi ${dec.icon}"></i> ${dec.label}
-                        </div>
+                        ${decisionHtml}
                         <div class="review-comment-body">${r.comment}</div>
                     </div>`;
                 });
@@ -1116,7 +1122,7 @@
             } else {
                 html += `<div class="review-no-comments">
                     <i class="bi bi-chat-square-dots"></i>
-                    尚無審題評語
+                    尚無審題結果
                 </div>`;
             }
 

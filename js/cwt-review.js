@@ -348,10 +348,32 @@ window.openReviewModal = function (btn, stage) {
         reviewActions.classList.toggle('d-none', isHistory);
     }
 
-    // 依據 PRD 規則：僅「總審」階段顯示「不採用」按鈕，互審與專審不提供
+    // 依據 PRD 規則設定各階段決策按鈕顯示
+    const btnSubmitOpinion = document.getElementById('btnSubmitOpinion');
+    const btnAdopt = document.getElementById('btnAdopt');
+    const btnAdoptModify = document.getElementById('btnAdoptModify');
     const btnReject = document.getElementById('btnReject');
-    if (btnReject) {
-        btnReject.classList.toggle('d-none', stage !== 'final');
+
+    if (!isHistory) {
+        if (stage === 'mutual') {
+            // 互審：僅提供意見，無任何決策按鈕
+            if (btnSubmitOpinion) btnSubmitOpinion.classList.remove('d-none');
+            if (btnAdopt) btnAdopt.classList.add('d-none');
+            if (btnAdoptModify) btnAdoptModify.classList.add('d-none');
+            if (btnReject) btnReject.classList.add('d-none');
+        } else if (stage === 'expert') {
+            // 專審：僅「採用」與「改後再審」，無「不採用」
+            if (btnSubmitOpinion) btnSubmitOpinion.classList.add('d-none');
+            if (btnAdopt) btnAdopt.classList.remove('d-none');
+            if (btnAdoptModify) btnAdoptModify.classList.remove('d-none');
+            if (btnReject) btnReject.classList.add('d-none');
+        } else if (stage === 'final') {
+            // 總審：「採用」「改後再審」「不採用」三種決策
+            if (btnSubmitOpinion) btnSubmitOpinion.classList.add('d-none');
+            if (btnAdopt) btnAdopt.classList.remove('d-none');
+            if (btnAdoptModify) btnAdoptModify.classList.remove('d-none');
+            if (btnReject) btnReject.classList.remove('d-none');
+        }
     }
 
     // 3. 填充唯讀資料 (題目內容) — 支援 7 種題型
@@ -491,13 +513,14 @@ window.submitReview = function (action) {
     let actionText = '';
     let statusText = '';
 
-    if (action === 'adopt') { actionText = '採用'; statusText = '採用'; }
+    if (action === 'opinion-only') { actionText = '提交意見'; }
+    else if (action === 'adopt') { actionText = '採用'; statusText = '採用'; }
     else if (action === 'adopt-modify') { actionText = '改後再審'; statusText = '改後再審'; }
     else if (action === 'reject') { actionText = '不採用'; statusText = '不採用'; }
 
     Swal.fire({
         title: `確定要${actionText}？`,
-        text: "提交後將進入下一流程",
+        text: action === 'opinion-only' ? '提交後將記錄您的互審意見' : '提交後將進入下一流程',
         icon: 'question',
         showCancelButton: true,
         confirmButtonColor: '#2563eb',
@@ -512,21 +535,52 @@ window.submitReview = function (action) {
                 let badgeClass = 'badge-completed';
                 let finalStatusText = statusText;
 
-                // 根據 PRD 審題流程規則處理狀態流轉
+                // 根據 PRD 七階段審題流程規則處理狀態流轉
                 if (currentStage === 'mutual') {
-                    // 互審結束後 → 進入專審（僅有採用/改後再審，無不採用）
-                    finalStatusText = '專審中';
+                    // 互審僅提供意見 → 進入互審修題（教師依意見修改）
+                    finalStatusText = '互審修題';
                     badgeClass = 'badge-expert';
                 } else if (currentStage === 'expert') {
-                    // 專審結束後 → 進入總審（僅有採用/改後再審，無不採用）
-                    // 無論決策為何，專審後都進入總審階段
-                    finalStatusText = '總審中';
-                    badgeClass = 'badge-final';
-                } else {
-                    // 總審階段 → 最終判決（採用/改後再審/不採用）
-                    if (statusText === '改後再審') badgeClass = 'badge-returned';
-                    else if (statusText === '不採用') badgeClass = 'badge-rejected';
-                    else if (statusText === '採用') badgeClass = 'badge-approved';
+                    if (action === 'adopt') {
+                        // 專審採用 → 進入總召審題
+                        finalStatusText = '總審中';
+                        badgeClass = 'badge-final';
+                    } else {
+                        // 專審改後再審 → 進入專審修題，教師修改後直接進總審
+                        finalStatusText = '專審修題';
+                        badgeClass = 'badge-returned';
+                    }
+                } else if (currentStage === 'final') {
+                    // 總審階段 → 追蹤退回次數
+                    const returnCount = parseInt(currentRow.getAttribute('data-return-count') || '0');
+
+                    if (action === 'adopt') {
+                        finalStatusText = '採用';
+                        badgeClass = 'badge-approved';
+                    } else if (action === 'reject') {
+                        finalStatusText = '不採用';
+                        badgeClass = 'badge-rejected';
+                    } else if (action === 'adopt-modify') {
+                        const newCount = returnCount + 1;
+                        currentRow.setAttribute('data-return-count', newCount);
+
+                        if (newCount >= 3) {
+                            // 第三次不通過：由總審自行修改並裁決
+                            finalStatusText = '總審修題';
+                            badgeClass = 'badge-final';
+                            // 提示總審需自行修改
+                            Swal.fire({
+                                icon: 'info',
+                                title: '已達退回上限',
+                                text: '此題已退回 3 次，將由總審自行修改試題並給予最終裁決。',
+                                confirmButtonColor: '#2563eb'
+                            });
+                        } else {
+                            // 第 1-2 次退回：回到總審修題，教師修改後再回到總審
+                            finalStatusText = '總審修題';
+                            badgeClass = 'badge-returned';
+                        }
+                    }
                 }
 
                 // 更新第 4 欄 (狀態)
@@ -542,7 +596,7 @@ window.submitReview = function (action) {
             }
 
             // 2. 顯示成功訊息
-            showToast(`已提交決策：${actionText}`, 'success');
+            showToast(`已提交：${actionText}`, 'success');
 
             // 3. 關閉 Modal
             reviewModal.hide();
@@ -627,22 +681,26 @@ window.filterByStatus = function (status) {
         }
     }
 
+    // 七階段審題流程狀態分組
+    const workingStatuses = ['互審中', '專審中', '總審中', '交互審題', '互審修題', '專審修題', '總審修題'];
+    const historyStatuses = ['採用', '不採用'];
+
     rows.forEach(row => {
         const rowStatus = row.getAttribute('data-status');
         let show = false;
 
         if (status === 'working_all') {
             // 顯示所有作業區狀態
-            if (['互審中', '專審中', '總審中'].includes(rowStatus)) show = true;
+            if (workingStatuses.includes(rowStatus)) show = true;
         } else if (status === 'history_all') {
-            // 顯示所有歷史區狀態
-            if (['採用', '改後再審', '不採用'].includes(rowStatus)) show = true;
+            // 顯示所有歷史區狀態（僅採用/不採用，題目判決後才進入）
+            if (historyStatuses.includes(rowStatus)) show = true;
         } else if (status === 'all') {
             // 視當前 Tab 決定顯示哪些
             if (window.currentTab === 'working') {
-                if (['互審中', '專審中', '總審中'].includes(rowStatus)) show = true;
+                if (workingStatuses.includes(rowStatus)) show = true;
             } else {
-                if (['採用', '改後再審', '不採用'].includes(rowStatus)) show = true;
+                if (historyStatuses.includes(rowStatus)) show = true;
             }
         } else {
             // 單一狀態
@@ -711,12 +769,15 @@ function filterTable() {
 
 function updateStats() {
     let counts = {
-        mutual: 0, expert: 0, final: 0, // Working
-        adopt: 0, modify: 0, reject: 0  // History
+        mutual: 0, expert: 0, final: 0, // Working（審題中）
+        adopt: 0, reject: 0             // History（僅採用/不採用）
     };
     let totalWorkingPending = 0; // 只計算含有「審題」按鈕的數量
 
-    const rows = document.querySelectorAll('tbody tr.data-row'); // 只抓有資料的列
+    // 七階段審題流程中，屬於「作業中」的所有狀態
+    const workingStatuses = ['互審中', '專審中', '總審中', '交互審題', '互審修題', '專審修題', '總審修題'];
+
+    const rows = document.querySelectorAll('tbody tr.data-row');
     rows.forEach(row => {
         const status = row.getAttribute('data-status');
 
@@ -724,34 +785,34 @@ function updateStats() {
         const actionBtn = row.querySelector('.action-links button');
         const isPendingReview = actionBtn && actionBtn.textContent.includes('審題');
 
-        if (status === '互審中') counts.mutual++;
+        if (status === '互審中' || status === '交互審題') counts.mutual++;
         else if (status === '專審中') counts.expert++;
         else if (status === '總審中') counts.final++;
         else if (status === '採用') counts.adopt++;
-        else if (status === '改後再審') counts.modify++;
         else if (status === '不採用') counts.reject++;
+        // 互審修題/專審修題/總審修題 屬於修題狀態，不計入審題統計卡片
 
-        if (['互審中', '專審中', '總審中'].includes(status) && isPendingReview) {
+        if (workingStatuses.includes(status) && isPendingReview) {
             totalWorkingPending++;
         }
     });
 
-    const totalHistory = counts.adopt + counts.modify + counts.reject;
+    const totalHistory = counts.adopt + counts.reject;
 
     // Helper
     const setTxt = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
 
-    // Group A
+    // Group A（審題作業區）
     setTxt('stat-total-working', totalWorkingPending);
     setTxt('stat-mutual', counts.mutual);
     setTxt('stat-expert', counts.expert);
     setTxt('stat-final', counts.final);
 
-    // Group B
+    // Group B（審核結果與歷史 - 僅採用/不採用）
     setTxt('stat-total-history', totalHistory);
     setTxt('stat-adopt', counts.adopt);
-    setTxt('stat-modify', counts.modify);
     setTxt('stat-reject', counts.reject);
+    // 移除「改後再審」的獨立統計（改後再審為中間狀態，不進入歷史區）
 }
 
 // ==========================================

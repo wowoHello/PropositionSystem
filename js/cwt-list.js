@@ -1970,9 +1970,11 @@ window.saveProp = function (targetStatus) {
     const specificData = handler.collect(targetStatus);
     if (!specificData) return;
 
-    const rowData = { type: type, status: targetStatus, time: getCurrentTime(), ...specificData };
+    // 命題送審 → 實際狀態為「待審中」，進入審修任務區
+    const actualStatus = (targetStatus === '命題送審') ? '待審中' : targetStatus;
+    const rowData = { type: type, status: actualStatus, time: getCurrentTime(), ...specificData };
     writeToTable(rowData);
-    showToast(`已儲存：${targetStatus}`);
+    showToast(targetStatus === '命題送審' ? '已送審，題目進入審修任務區' : `已儲存：${actualStatus}`);
     propModal.hide();
 };
 
@@ -1985,23 +1987,26 @@ window.deleteRow = function (btn) {
 window.batchUpdateStatus = function (status) {
     const checks = document.querySelectorAll('tbody .data-row input:checked:not(:disabled)');
     if (checks.length === 0) return Swal.fire({ icon: 'warning', text: '請先勾選' });
-    Swal.fire({ title: `設為 ${status}?`, icon: 'question', showCancelButton: true }).then((r) => {
+    // 命題送審 → 實際狀態為「待審中」
+    const actualStatus = (status === '命題送審') ? '待審中' : status;
+    const displayMsg = (status === '命題送審') ? '設為 命題送審（進入審修任務區）?' : `設為 ${actualStatus}?`;
+    Swal.fire({ title: displayMsg, icon: 'question', showCancelButton: true }).then((r) => {
         if (r.isConfirmed) {
             checks.forEach(c => {
                 const row = c.closest('tr');
-                const badge = getStatusClass(status);
-                row.cells[4].innerHTML = `<span class="badge-outline badge-${badge}">${status}</span>`;
-                row.setAttribute('data-status', status);
+                const badge = getStatusClass(actualStatus);
+                row.cells[4].innerHTML = `<span class="badge-outline badge-${badge}">${actualStatus}</span>`;
+                row.setAttribute('data-status', actualStatus);
                 let json = safeJsonParse(row.getAttribute('data-json') || '{}', {});
-                json.status = status;
+                json.status = actualStatus;
                 row.setAttribute('data-json', JSON.stringify(json));
 
-                if (status === '命題送審' || status === '不採用') {
+                if (isLockedStatus(actualStatus)) {
                     row.classList.add('row-locked'); c.disabled = true;
                 } else {
                     row.classList.remove('row-locked'); c.disabled = false;
                 }
-                updateRowActionButtons(row, status);
+                updateRowActionButtons(row, actualStatus);
             });
             resetSelection(); updateStats(); sortPropList(); showToast('已更新狀態');
         }
@@ -2035,7 +2040,7 @@ function writeToTable(data) {
         initCheckboxLogic();
     }
 
-    if (data.status === '命題送審') { row.classList.add('row-locked'); row.querySelector('input').disabled = true; }
+    if (isLockedStatus(data.status)) { row.classList.add('row-locked'); row.querySelector('input').disabled = true; }
     else { row.classList.remove('row-locked'); row.querySelector('input').disabled = false; }
 
     row.setAttribute('data-type', data.type);
@@ -2235,13 +2240,13 @@ window.openPreviewModal = function(btn) {
 
 function getActionHtml(status) {
     let html = `<button class="btn btn-link p-0 text-decoration-none fw-bold text-info" onclick="openPreviewModal(this)">預覽</button>`;
-    if (status !== '命題送審' && status !== '不採用') {
-        // 可編輯列：預覽 | 編輯 | 刪除（有「編輯」就不需要「檢視」）
-        html += `<span class="text-muted mx-1">|</span><button class="btn btn-link p-0 text-decoration-none fw-bold text-success" onclick="openPropModal(this, 'edit')">編輯</button>
-                 <span class="text-muted mx-1">|</span><button class="btn btn-link p-0 text-decoration-none fw-bold text-danger" onclick="deleteRow(this)">刪除</button>`;
-    } else {
+    if (isLockedStatus(status)) {
         // 鎖定列：預覽 | 檢視（唯一能看到答案、解析等後台資訊的入口）
         html += `<span class="text-muted mx-1">|</span><button class="btn btn-link p-0 text-decoration-none fw-bold" onclick="openPropModal(this, 'view')">檢視</button>`;
+    } else {
+        // 可編輯列：預覽 | 編輯 | 刪除
+        html += `<span class="text-muted mx-1">|</span><button class="btn btn-link p-0 text-decoration-none fw-bold text-success" onclick="openPropModal(this, 'edit')">編輯</button>
+                 <span class="text-muted mx-1">|</span><button class="btn btn-link p-0 text-decoration-none fw-bold text-danger" onclick="deleteRow(this)">刪除</button>`;
     }
     return html;
 }
@@ -2259,30 +2264,38 @@ function checkEmptyState() {
 }
 
 function updateStats() {
-    let s = { total: 0, draft: 0, confirmed: 0, sent: 0, adopted: 0, revise: 0, rejected: 0 };
+    const lockedReviewStatuses = ['待審中', '交互審題', '專家審題', '總召審題'];
+    const editingReviewStatuses = ['互審修題', '專審修題', '總審修題'];
+
+    let s = { draft: 0, confirmed: 0, adopted: 0, rejected: 0, reviewLocked: 0, reviewEditing: 0 };
     document.querySelectorAll('.data-row').forEach(r => {
         const st = r.getAttribute('data-status');
         if (st === '命題草稿') s.draft++;
         else if (st === '命題完成') s.confirmed++;
-        else if (st === '命題送審') s.sent++;
         else if (st === '採用') s.adopted++;
-        else if (st === '改後再審') s.revise++;
         else if (st === '不採用') s.rejected++;
+        else if (lockedReviewStatuses.includes(st)) s.reviewLocked++;
+        else if (editingReviewStatuses.includes(st)) s.reviewEditing++;
     });
-    // 有效總計 (排除不採用)
-    s.total = s.draft + s.confirmed + s.sent + s.adopted + s.revise;
 
     const setT = (id, v) => { const el = document.getElementById(id); if (el) el.innerText = v; };
 
-    // 更新兩個區域的總計
-    setT('stat-total-working', s.total);
-    setT('stat-total-review', s.total);
-
+    // 命題作業區統計
+    const workingTotal = s.draft + s.confirmed;
+    setT('stat-total-working', workingTotal);
     setT('stat-draft', s.draft);
     setT('stat-confirmed', s.confirmed);
-    setT('stat-sent', s.sent);
+
+    // 審修任務區統計
+    const reviewEditTotal = s.reviewLocked + s.reviewEditing;
+    setT('stat-total-review-edit', reviewEditTotal);
+    setT('stat-review-locked', s.reviewLocked);
+    setT('stat-review-editing', s.reviewEditing);
+
+    // 審核結果與歷史統計
+    const reviewTotal = s.adopted + s.rejected;
+    setT('stat-total-review', reviewTotal);
     setT('stat-adopted', s.adopted);
-    setT('stat-revise', s.revise);
     setT('stat-rejected', s.rejected);
 }
 
@@ -2291,7 +2304,7 @@ function sortPropList() {
     const tbody = document.querySelector('tbody');
     const rows = Array.from(document.querySelectorAll('.data-row'));
     const no = document.getElementById('noDataRow');
-    const pri = { '改後再審': 1, '命題草稿': 2, '命題完成': 3, '命題送審': 4, '採用': 5, '不採用': 6 };
+    const pri = { '命題草稿': 1, '命題完成': 2, '命題送審': 3, '待審中': 4, '交互審題': 5, '互審修題': 6, '專家審題': 7, '專審修題': 8, '總召審題': 9, '總審修題': 10, '採用': 11, '不採用': 12 };
     rows.sort((a, b) => {
         const sa = a.getAttribute('data-status'), sb = b.getAttribute('data-status');
         if ((pri[sa] || 99) !== (pri[sb] || 99)) return (pri[sa] || 99) - (pri[sb] || 99);
@@ -2337,7 +2350,9 @@ function getStatusClass(s) {
     if (s === '命題草稿') return 'draft';
     if (s === '命題完成') return 'confirmed';
     if (s === '命題送審') return 'sent';
-    if (s === '改後再審') return 'returned';
+    if (s === '待審中' || s === '交互審題' || s === '專家審題' || s === '總召審題') return 'sent';
+    if (s === '互審修題' || s === '專審修題' || s === '總審修題') return 'returned';
+    if (s === '採用') return 'confirmed';
     if (s === '不採用') return 'rejected';
     return 'secondary';
 }
@@ -2405,8 +2420,9 @@ function initAutoSelect() {
 function initFilter() {
     const tabState = { current: 'working' };
     const statusGroups = {
-        'working': ['命題草稿', '命題完成', '命題送審'],
-        'review': ['採用', '改後再審', '不採用']
+        'working': ['命題草稿', '命題完成'],
+        'review-edit': ['待審中', '交互審題', '互審修題', '專家審題', '專審修題', '總召審題', '總審修題'],
+        'review': ['採用', '不採用']
     };
 
     // 1. 更新狀態下拉選單
@@ -2483,7 +2499,7 @@ function initFilter() {
 
     // --- 事件綁定 ---
 
-    // Tab 切換監聽
+    // Tab 切換監聽（支援三個 Tab：命題作業區 / 審修任務區 / 審核結果與歷史）
     document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(tab => {
         tab.addEventListener('shown.bs.tab', function (event) {
             const targetType = event.target.getAttribute('data-tab-type');
@@ -2492,21 +2508,14 @@ function initFilter() {
 
                 // UI 切換邏輯
                 const workingStats = document.getElementById('stats-working');
+                const reviewEditStats = document.getElementById('stats-review-edit');
                 const reviewStats = document.getElementById('stats-review');
                 const hint = document.getElementById('operationHint');
 
-                if (workingStats) {
-                    if (targetType === 'working') workingStats.classList.remove('d-none');
-                    else workingStats.classList.add('d-none');
-                }
-                if (reviewStats) {
-                    if (targetType === 'review') reviewStats.classList.remove('d-none');
-                    else reviewStats.classList.add('d-none');
-                }
-                if (hint) {
-                    if (targetType === 'working') hint.classList.remove('d-none');
-                    else hint.classList.add('d-none');
-                }
+                if (workingStats) workingStats.classList.toggle('d-none', targetType !== 'working');
+                if (reviewEditStats) reviewEditStats.classList.toggle('d-none', targetType !== 'review-edit');
+                if (reviewStats) reviewStats.classList.toggle('d-none', targetType !== 'review');
+                if (hint) hint.classList.toggle('d-none', targetType !== 'working');
 
                 updateStatusDropdown(targetType);
                 doFilter();
@@ -2555,8 +2564,25 @@ function initFilter() {
             return;
         }
 
+        // 處理審修任務區的虛擬狀態（統計卡片點擊）
+        if (targetStatus === 'locked' || targetStatus === 'editing') {
+            const tabBtn = document.querySelector('button[data-tab-type="review-edit"]');
+            if (tabBtn && !tabBtn.classList.contains('active')) {
+                const bsTab = new bootstrap.Tab(tabBtn);
+                bsTab.show();
+            }
+            // locked/editing 不對應單一狀態，顯示全部後透過 doFilter 處理
+            setTimeout(() => {
+                const select = document.getElementById('filterStatus');
+                if (select) { select.value = 'all'; select.dispatchEvent(new Event('change')); }
+            }, 50);
+            return;
+        }
+
         let targetTab = 'working';
-        if (statusGroups['review'].includes(targetStatus)) {
+        if (statusGroups['review-edit'].includes(targetStatus)) {
+            targetTab = 'review-edit';
+        } else if (statusGroups['review'].includes(targetStatus)) {
             targetTab = 'review';
         }
 
@@ -2605,9 +2631,10 @@ function initRowLocking() {
     }
 }
 
-// Helper: 判斷是否鎖定
+// Helper: 判斷是否鎖定（含審修任務區的鎖定狀態）
 function isLockedStatus(status) {
-    return (status === '命題送審' || status === '不採用');
+    const lockedStatuses = ['命題送審', '不採用', '待審中', '交互審題', '專家審題', '總召審題', '採用'];
+    return lockedStatuses.includes(status);
 }
 
 
