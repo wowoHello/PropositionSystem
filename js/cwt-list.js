@@ -2066,7 +2066,7 @@ const PreviewRenderer = {
     renderOptions(data, prefix) {
         const labels = ['A', 'B', 'C', 'D'];
         const keys = prefix ? [`${prefix}A`, `${prefix}B`, `${prefix}C`, `${prefix}D`]
-                            : ['optA', 'optB', 'optC', 'optD'];
+            : ['optA', 'optB', 'optC', 'optD'];
         let html = '<ul class="exam-options">';
         keys.forEach((key, i) => {
             const content = this.decode(data[key]);
@@ -2099,7 +2099,7 @@ const PreviewRenderer = {
 
     // ──────── 各題型渲染函式 ────────
 
-    '一般題目': function(data) {
+    '一般題目': function (data) {
         const stem = this.decode(data.content);
         return `<div class="exam-question">
                     <div class="exam-question-stem">${stem || '<span class="text-muted">（題幹未填寫）</span>'}</div>
@@ -2107,11 +2107,11 @@ const PreviewRenderer = {
                 </div>`;
     },
 
-    '精選題目': function(data) {
+    '精選題目': function (data) {
         return this['一般題目'](data);
     },
 
-    '長文題目': function(data) {
+    '長文題目': function (data) {
         const topic = this.decode(data.topic);
         const content = this.decode(data.content);
         return `<div class="exam-question">
@@ -2120,7 +2120,7 @@ const PreviewRenderer = {
                 </div>`;
     },
 
-    '閱讀題組': function(data) {
+    '閱讀題組': function (data) {
         const topic = this.decode(data.topic);
         const article = this.decode(data.article);
         let html = `<div class="exam-question">
@@ -2147,7 +2147,7 @@ const PreviewRenderer = {
         return html;
     },
 
-    '短文題組': function(data) {
+    '短文題組': function (data) {
         const topic = this.decode(data.topic);
         const article = this.decode(data.article);
         let html = `<div class="exam-question">
@@ -2173,7 +2173,7 @@ const PreviewRenderer = {
         return html;
     },
 
-    '聽力題目': function(data) {
+    '聽力題目': function (data) {
         const stem = this.decode(data.content);
         return `<div class="exam-question">
                     ${this.renderAudioPlayer()}
@@ -2182,7 +2182,7 @@ const PreviewRenderer = {
                 </div>`;
     },
 
-    '聽力題組': function(data) {
+    '聽力題組': function (data) {
         const parentContent = this.decode(data.content);
         let html = `<div class="exam-question">
                         ${this.renderAudioPlayer()}`;
@@ -2215,7 +2215,7 @@ const PreviewRenderer = {
 };
 
 // 開啟考試預覽 Modal
-window.openPreviewModal = function(btn) {
+window.openPreviewModal = function (btn) {
     const row = btn.closest('tr');
     if (!row) return;
 
@@ -2304,11 +2304,35 @@ function sortPropList() {
     const tbody = document.querySelector('tbody');
     const rows = Array.from(document.querySelectorAll('.data-row'));
     const no = document.getElementById('noDataRow');
-    const pri = { '命題草稿': 1, '命題完成': 2, '命題送審': 3, '待審中': 4, '交互審題': 5, '互審修題': 6, '專家審題': 7, '專審修題': 8, '總召審題': 9, '總審修題': 10, '採用': 11, '不採用': 12 };
+
+    // 優先權重設：修題中（互審修題、專審修題、總審修題）排在前面，接著是待審核的鎖定狀態
+    const pri = {
+        '命題草稿': 1,
+        '命題完成': 2,
+
+        // 審修任務區 - 修題中 (優先，皆設為 3 以便跨狀態依時間排序)
+        '互審修題': 3,
+        '專審修題': 3,
+        '總審修題': 3,
+
+        // 審修任務區 - 鎖定中 (次等優先，皆設為 4)
+        '命題送審': 4,
+        '待審中': 4,
+        '交互審題': 4,
+        '專家審題': 4,
+        '總召審題': 4,
+
+        '採用': 5,
+        '不採用': 6
+    };
+
     rows.sort((a, b) => {
         const sa = a.getAttribute('data-status'), sb = b.getAttribute('data-status');
-        if ((pri[sa] || 99) !== (pri[sb] || 99)) return (pri[sa] || 99) - (pri[sb] || 99);
-        return b.cells[5].innerText.localeCompare(a.cells[5].innerText);
+        if ((pri[sa] || 99) !== (pri[sb] || 99)) {
+            return (pri[sa] || 99) - (pri[sb] || 99);
+        }
+        // 日期由新到舊排序 (使用最後修改時間 cells[6] 或建立時間 cells[5])
+        return b.cells[6].innerText.localeCompare(a.cells[6].innerText);
     });
 
     // 使用 DocumentFragment 避免逐行 DOM 操作

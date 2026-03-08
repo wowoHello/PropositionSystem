@@ -21,6 +21,10 @@ Semantic Colors（語意色 - 錯誤提示）: 柔和的磚紅色，用於表單
 
 建議 HEX: #C85A5A
 
+## Interaction Pro (高階互動版)
+- **技術與工具**：Tailwind CSS, GSAP (ScrollTrigger), Iconify, Anime.js。
+- **特點**：手電筒光暈、無限跑馬燈、Sonar 聲納脈衝、垂直文字剪裁滑動、**進階磨砂玻璃 / 毛玻璃 (Glassmorphism) 質感排版**。
+
 ✍️ 2. 字體排印 (Typography)
 字體混合了現代的無襯線體與優雅的襯線體，創造出層次感。
 
@@ -84,7 +88,13 @@ Unselected (未選取): 透明底色，淺灰色邊框，黑色文字。
 E. 空狀態面板 (Empty State Panel)
 視覺: 使用大面積的暖灰色塊，帶有明顯的柔和陰影，使其像一張實體的卡片放在背景上。
 
-內容: 包含一個淡化的背景圖形、一個線條圖示（如收據），以及引導性的文案（"Find a receipt. Try adjusting filters"）。
+💡 通用 UI 指標 (UI Standards)
+- **視覺風格**：自動推導最契合的色調組合與字體策略，建立**統一的高級圓角系統 (Corner Radius System)**。
+- **響應式配置**：必須確保在手機、平板與桌機上均有完美的視覺呈現，文字與佈局需隨螢幕寬度自動優化。
+- 全站加入「垂直容器參考線」、數字編號裝飾、及多層次視差深度。
+- **細節質感**：全站套用輕微的**全域雜訊紋理 (Global Grain/Noise)** 以提升電影感。
+- 動態品質須具備 GPU 驅動的物理感，使其感覺像是一場電影等級的技術 Demo。
+
 
 💡 UX 互動設計建議
 微動畫 (Micro-interactions): 因為風格強調「觸感」，按鈕的點擊與 Hover 狀態應加入約 0.2s ease-in-out 的轉場動畫，模擬真實按壓實體按鍵的感覺。

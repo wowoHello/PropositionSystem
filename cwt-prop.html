@@ -230,8 +230,7 @@
             <div class="row g-4 h-100">
                 <!-- 命題專案列表 -->
                 <div class="col-lg-3 col-md-4">
-                    <div class="card border-0 shadow-sm rounded-4 d-flex flex-column"
-                        style="overflow: visible">
+                    <div class="card border-0 shadow-sm rounded-4 d-flex flex-column" style="overflow: visible">
                         <div class="card-header bg-white border-bottom p-3">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <h6 class="fw-bold m-0 text-dark">命題專案列表</h6>
@@ -302,6 +301,10 @@
                                         <i class="bi bi-trash"></i> 刪除
                                     </button>
                                     <div class="vr mx-1"></div>
+                                    <button class="btn btn-outline-primary btn-sm fw-bold shadow-sm"
+                                        onclick="distributeQuotasEqually()">
+                                        <i class="bi bi-diagram-3 me-1"></i> 平均分配
+                                    </button>
                                     <button class="btn btn-primary btn-sm fw-bold shadow-sm"
                                         onclick="openAddMemberModal()">
                                         <i class="bi bi-person-plus-fill me-1"></i> 加入人員
@@ -383,6 +386,52 @@
                                 <input type="text" class="form-control bg-light" id="projYearDisplay" readonly
                                     placeholder="依產學計畫起迄日期自動帶入" />
                                 <input type="hidden" id="projYear" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-3" />
+
+                    <!-- 命題數量需求設定區 -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-dark mb-3">
+                            <i class="bi bi-ui-checks-grid me-1 text-primary"></i>命題數量需求設定
+                        </h6>
+                        <div class="row g-3" id="projectQuotasContainer">
+                            <div class="col-md-3 col-sm-6">
+                                <label class="form-label small text-muted mb-1">一般題目</label>
+                                <input type="number" class="form-control form-control-sm" id="quota_general" min="0"
+                                    value="0" />
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <label class="form-label small text-muted mb-1">精選題目</label>
+                                <input type="number" class="form-control form-control-sm" id="quota_select" min="0"
+                                    value="0" />
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <label class="form-label small text-muted mb-1">長文題目</label>
+                                <input type="number" class="form-control form-control-sm" id="quota_long" min="0"
+                                    value="0" />
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <label class="form-label small text-muted mb-1">短文題組</label>
+                                <input type="number" class="form-control form-control-sm" id="quota_short" min="0"
+                                    value="0" />
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <label class="form-label small text-muted mb-1">閱讀題組</label>
+                                <input type="number" class="form-control form-control-sm" id="quota_reading" min="0"
+                                    value="0" />
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <label class="form-label small text-muted mb-1">聽力題目</label>
+                                <input type="number" class="form-control form-control-sm" id="quota_listen" min="0"
+                                    value="0" />
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <label class="form-label small text-muted mb-1">聽力題組</label>
+                                <input type="number" class="form-control form-control-sm" id="quota_listenGroup" min="0"
+                                    value="0" />
                             </div>
                         </div>
                     </div>
@@ -735,6 +784,68 @@
         </div>
     </div>
 
+    <!-- Teacher Quota Modal -->
+    <div class="modal fade" id="teacherQuotaModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-white border-bottom">
+                    <h5 class="modal-title fw-bold">
+                        <i class="bi bi-ui-checks-grid me-2 text-primary"></i>設定命題數量
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="mb-3 text-muted">請設定 <strong class="text-primary fs-5" id="quotaTeacherName"></strong>
+                        分配的命題數量。</p>
+                    <input type="hidden" id="quotaUserId" />
+
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="form-label small text-muted mb-1">一般題目</label>
+                            <input type="number" class="form-control form-control-sm" id="t_quota_general" min="0"
+                                value="0" />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small text-muted mb-1">精選題目</label>
+                            <input type="number" class="form-control form-control-sm" id="t_quota_select" min="0"
+                                value="0" />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small text-muted mb-1">長文題目</label>
+                            <input type="number" class="form-control form-control-sm" id="t_quota_long" min="0"
+                                value="0" />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small text-muted mb-1">短文題組</label>
+                            <input type="number" class="form-control form-control-sm" id="t_quota_short" min="0"
+                                value="0" />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small text-muted mb-1">閱讀題組</label>
+                            <input type="number" class="form-control form-control-sm" id="t_quota_reading" min="0"
+                                value="0" />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small text-muted mb-1">聽力題目</label>
+                            <input type="number" class="form-control form-control-sm" id="t_quota_listen" min="0"
+                                value="0" />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small text-muted mb-1">聽力題組</label>
+                            <input type="number" class="form-control form-control-sm" id="t_quota_listenGroup" min="0"
+                                value="0" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary fw-bold px-4" onclick="saveTeacherQuota()"><i
+                            class="bi bi-check-lg me-1"></i>儲存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/sweetalert2.min.js"></script>
     <script src="js/app.js"></script>
@@ -786,12 +897,13 @@
                 status: "active",
                 startDate: "2024-01-01",
                 endDate: "2024-12-31",
+                quotas: { general: 30, select: 10, long: 5, short: 5, reading: 5, listen: 10, listenGroup: 5 },
                 members: [
-                    { userId: 0, roles: ["teacher"], status: "active", joinedDate: "2024/01/15", questionCount: 5 },
-                    { userId: 1, roles: ["teacher", "reviewer"], status: "active", joinedDate: "2024/01/18", questionCount: 3 },
+                    { userId: 0, roles: ["teacher"], status: "active", joinedDate: "2024/01/15", questionCount: 5, quotas: { general: 10, select: 4, long: 2, short: 2, reading: 2, listen: 4, listenGroup: 2 } },
+                    { userId: 1, roles: ["teacher", "reviewer"], status: "active", joinedDate: "2024/01/18", questionCount: 3, quotas: { general: 10, select: 3, long: 2, short: 2, reading: 2, listen: 3, listenGroup: 2 } },
                     { userId: 2, roles: ["reviewer"], status: "active", joinedDate: "2024/02/01", questionCount: 0 },
-                    { userId: 3, roles: ["teacher"], status: "inactive", joinedDate: "2024/02/05", questionCount: 0 },
-                    { userId: 4, roles: ["teacher"], status: "inactive", joinedDate: "2024/01/10", questionCount: 1 },
+                    { userId: 3, roles: ["teacher"], status: "inactive", joinedDate: "2024/02/05", questionCount: 0, quotas: { general: 10, select: 3, long: 1, short: 1, reading: 1, listen: 3, listenGroup: 1 } },
+                    { userId: 4, roles: ["teacher"], status: "inactive", joinedDate: "2024/01/10", questionCount: 1, quotas: { general: 0, select: 0, long: 0, short: 0, reading: 0, listen: 0, listenGroup: 0 } },
                 ],
             },
             {
@@ -1226,6 +1338,14 @@
                     statusHtml = `<span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill">未啟用</span>`;
                 }
 
+                // 計算分配題數
+                let quotaSummary = "";
+                if (memberData.roles.includes('teacher')) {
+                    const q = memberData.quotas || { general: 0, select: 0, long: 0, short: 0, reading: 0, listen: 0, listenGroup: 0 };
+                    let totalQuota = q.general + q.select + q.long + q.short + q.reading + q.listen + q.listenGroup;
+                    quotaSummary = `<div class="mt-1 small text-muted">配額：總計 ${totalQuota} 題 <span class="${memberData.questionCount >= totalQuota ? 'text-success' : 'text-primary'} fw-bold">(已命 ${memberData.questionCount || 0} 題)</span></div>`;
+                }
+
                 const row = `
             <tr>
                 <td class="ps-4">
@@ -1237,7 +1357,10 @@
                         </div>
                     </div>
                 </td>
-                <td>${rolesHtml}</td>
+                <td>
+                    ${rolesHtml}
+                    ${quotaSummary}
+                </td>
                 <td>${statusHtml}</td>
                 <td class="text-end pe-4">
                     <div class="dropdown">
@@ -1246,6 +1369,7 @@
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" style="border-radius: 0.5rem;">
                             <li><button class="dropdown-item py-2" onclick="editMemberRoles(${memberData.userId})"><i class="bi bi-person-gear text-primary me-2"></i>編輯身分</button></li>
+                            ${memberData.roles.includes('teacher') ? `<li><button class="dropdown-item py-2" onclick="openTeacherQuotaModal(${memberData.userId})"><i class="bi bi-ui-checks-grid text-success me-2"></i>設定命題數量</button></li>` : ''}
                             <li><hr class="dropdown-divider"></li>
                             <li><button class="dropdown-item py-2 text-danger" onclick="removeMember(${memberData.userId})"><i class="bi bi-person-x me-2"></i>移除成員</button></li>
                         </ul>
@@ -1463,6 +1587,8 @@
                 end: document.getElementById("projEnd"),
             };
 
+            const quotaKeys = ['general', 'select', 'long', 'short', 'reading', 'listen', 'listenGroup'];
+
             if (mode === "add") {
                 isEditMode = false;
                 modalTitle.innerHTML = '<i class="bi bi-folder-plus me-2 text-primary"></i>新增命題專案';
@@ -1475,6 +1601,8 @@
                 document.getElementById('optClosed').style.display = 'none';
                 document.getElementById('optClosed').disabled = true;
                 formFields.status.value = "preparing";
+                // 清空 配額
+                quotaKeys.forEach(k => document.getElementById(`quota_${k}`).value = "0");
                 clearScheduleFields();
             } else {
                 isEditMode = true;
@@ -1494,6 +1622,12 @@
                 formFields.status.value = p.status;
                 formFields.start.value = p.startDate;
                 formFields.end.value = p.endDate;
+
+                // 填入 配額
+                const q = p.quotas || {};
+                quotaKeys.forEach(k => {
+                    document.getElementById(`quota_${k}`).value = q[k] || 0;
+                });
 
                 // 填入時程資料（若有），否則自動計算
                 if (p.schedule) {
@@ -1524,6 +1658,12 @@
         function saveProject() {
             const idField = document.getElementById("projId").value;
             const yearVal = document.getElementById("projYear").value;
+            const quotaKeys = ['general', 'select', 'long', 'short', 'reading', 'listen', 'listenGroup'];
+            const quotasInputs = {};
+            quotaKeys.forEach(k => {
+                quotasInputs[k] = parseInt(document.getElementById(`quota_${k}`).value) || 0;
+            });
+
             const newData = {
                 year: yearVal ? parseInt(yearVal) : new Date().getFullYear(),
                 name: document.getElementById("projName").value,
@@ -1531,6 +1671,7 @@
                 status: document.getElementById("projStatus").value,
                 startDate: document.getElementById("projStart").value,
                 endDate: document.getElementById("projEnd").value,
+                quotas: quotasInputs,
                 // 收集 8 階段時程資料
                 schedule: scheduleDefaults.map(({ step, label }) => ({
                     step,
@@ -2221,12 +2362,17 @@
                     updatedCount++;
                 } else {
                     // Add new member
-                    project.members.push({
+                    const newMember = {
                         userId: parseInt(teacherId),
                         roles: data.roles,
                         status: "active",
-                        joinedDate: new Date().toISOString().split('T')[0]
-                    });
+                        joinedDate: new Date().toISOString().split('T')[0].replace(/-/g, '/'),
+                        questionCount: 0
+                    };
+                    if (data.roles.includes("teacher")) {
+                        newMember.quotas = { general: 0, select: 0, long: 0, short: 0, reading: 0, listen: 0, listenGroup: 0 };
+                    }
+                    project.members.push(newMember);
                     addedCount++;
                 }
             });
@@ -2251,6 +2397,107 @@
 
             renderProjectDetail();
             addMemberModal.hide();
+        }
+
+        // ==========================================
+        // Quota Management JS Logic
+        // ==========================================
+        function distributeQuotasEqually() {
+            const project = projectsData.find(p => p.id === currentProjectId);
+            if (!project) return;
+
+            const pQuotas = project.quotas || { general: 0, select: 0, long: 0, short: 0, reading: 0, listen: 0, listenGroup: 0 };
+            const teacherMembers = project.members.filter(m => m.roles.includes('teacher'));
+            const count = teacherMembers.length;
+
+            if (count === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: '分配失敗',
+                    text: '專案中沒有任何命題教師',
+                });
+                return;
+            }
+
+            const quotaKeys = ['general', 'select', 'long', 'short', 'reading', 'listen', 'listenGroup'];
+
+            for (let t of teacherMembers) {
+                if (!t.quotas) t.quotas = { general: 0, select: 0, long: 0, short: 0, reading: 0, listen: 0, listenGroup: 0 };
+            }
+
+            // Distribute each quota across teachers
+            quotaKeys.forEach(k => {
+                const total = pQuotas[k] || 0;
+                const baseAmount = Math.floor(total / count);
+                let remainder = total % count;
+
+                teacherMembers.forEach((t, i) => {
+                    t.quotas[k] = baseAmount;
+                    if (remainder > 0) {
+                        t.quotas[k] += 1;
+                        remainder -= 1;
+                    }
+                });
+            });
+
+            renderProjectDetail();
+
+            Swal.fire({
+                icon: 'success',
+                title: '分配完成',
+                text: `已將專案設定的命題數量，平均分配給 ${count} 位命題教師！`,
+            });
+        }
+
+        const teacherQuotaModal = bootstrap.Modal.getOrCreateInstance(document.getElementById("teacherQuotaModal"));
+
+        function openTeacherQuotaModal(userId) {
+            const project = projectsData.find(p => p.id === currentProjectId);
+            const member = project.members.find(m => m.userId === userId);
+
+            if (!project || !member) return;
+
+            let user = mockUsers ? mockUsers[userId] : null;
+            if (!user) user = mockTeacherPool.find(t => t.id === userId);
+            const userName = user ? user.name : "未知成員";
+
+            document.getElementById("quotaTeacherName").innerText = userName;
+            document.getElementById("quotaUserId").value = userId;
+
+            const q = member.quotas || { general: 0, select: 0, long: 0, short: 0, reading: 0, listen: 0, listenGroup: 0 };
+            const quotaKeys = ['general', 'select', 'long', 'short', 'reading', 'listen', 'listenGroup'];
+            quotaKeys.forEach(k => {
+                document.getElementById(`t_quota_${k}`).value = q[k] || 0;
+            });
+
+            teacherQuotaModal.show();
+        }
+
+        function saveTeacherQuota() {
+            const userId = parseInt(document.getElementById("quotaUserId").value);
+            const project = projectsData.find(p => p.id === currentProjectId);
+            const member = project.members.find(m => m.userId === userId);
+
+            if (!project || !member) return;
+
+            if (!member.quotas) member.quotas = { general: 0, select: 0, long: 0, short: 0, reading: 0, listen: 0, listenGroup: 0 };
+
+            const quotaKeys = ['general', 'select', 'long', 'short', 'reading', 'listen', 'listenGroup'];
+            quotaKeys.forEach(k => {
+                member.quotas[k] = parseInt(document.getElementById(`t_quota_${k}`).value) || 0;
+            });
+
+            teacherQuotaModal.hide();
+            renderProjectDetail();
+
+            Swal.fire({
+                icon: 'success',
+                title: '配額更新成功',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2000
+            });
         }
     </script>
 </body>
